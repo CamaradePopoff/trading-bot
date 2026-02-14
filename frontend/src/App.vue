@@ -378,7 +378,7 @@
         <div style="height: calc(100dvh - 64px - 40px); overflow-y: auto;">
           <router-view />
           <div
-            v-show="main.btcDrawer && route.path === '/bots'"
+            v-show="main.btcDrawer && route.path === '/bots' && !route.query.id"
             id="btc-chart"
             :style="{ 
               height: '350px', 
