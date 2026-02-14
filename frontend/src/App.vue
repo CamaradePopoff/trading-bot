@@ -385,7 +385,7 @@
               overflowY: 'hidden', 
               width: `calc(100% - ${(main.menuDrawer ? 180 : 0) + (main.transactionsDrawer ? 260 : 0)}px)`, 
               position: 'absolute', 
-              bottom: 0,
+              bottom: '39px',
               transition: 'width 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
             }"
           >
