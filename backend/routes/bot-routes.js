@@ -323,6 +323,174 @@ module.exports = function (io, logger) {
     }
   })
 
+  router.post('/stop-buy-on-drop-all', async (req, res) => {
+    try {
+      const { botIds } = req.body
+      const userBots = await botService.getAllUserBots(req.user._id)
+      const results = { stopped: 0, failed: 0, errors: [], failedBotIds: [] }
+
+      const botsToProcess =
+        botIds && botIds.length > 0
+          ? userBots.filter((bot) => botIds.includes(bot._id.toString()))
+          : userBots
+
+      for (const leanBot of botsToProcess) {
+        try {
+          const bot = getBot(leanBot._id.toString())
+          if (bot && !bot.stopBuyingOnDrop) {
+            await bot.stopBuyingOnDropPositions()
+            results.stopped++
+          }
+        } catch (error) {
+          results.failed++
+          results.failedBotIds.push(leanBot._id.toString())
+          results.errors.push({
+            botId: leanBot._id,
+            botName: leanBot.config.label || leanBot.config.symbol,
+            error: error.message
+          })
+          logger.error(
+            `Failed to stop buying on drop for bot ${leanBot._id}:`,
+            error
+          )
+        }
+      }
+
+      res.status(results.failed > 0 ? 207 : 200).json(results)
+    } catch (error) {
+      res.status(500).json({
+        message: 'Failed to stop buying on drop for all bots',
+        error: error.message
+      })
+    }
+  })
+
+  router.post('/go-buy-on-drop-all', async (req, res) => {
+    try {
+      const { botIds } = req.body
+      const userBots = await botService.getAllUserBots(req.user._id)
+      const results = { resumed: 0, failed: 0, errors: [], failedBotIds: [] }
+
+      const botsToProcess =
+        botIds && botIds.length > 0
+          ? userBots.filter((bot) => botIds.includes(bot._id.toString()))
+          : userBots
+
+      for (const leanBot of botsToProcess) {
+        try {
+          const bot = getBot(leanBot._id.toString())
+          if (bot && bot.stopBuyingOnDrop) {
+            await bot.goBuyingOnDropPositions()
+            results.resumed++
+          }
+        } catch (error) {
+          results.failed++
+          results.failedBotIds.push(leanBot._id.toString())
+          results.errors.push({
+            botId: leanBot._id,
+            botName: leanBot.config.label || leanBot.config.symbol,
+            error: error.message
+          })
+          logger.error(
+            `Failed to resume buying on drop for bot ${leanBot._id}:`,
+            error
+          )
+        }
+      }
+
+      res.status(results.failed > 0 ? 207 : 200).json(results)
+    } catch (error) {
+      res.status(500).json({
+        message: 'Failed to resume buying on drop for all bots',
+        error: error.message
+      })
+    }
+  })
+
+  router.post('/stop-buy-on-rebuy-all', async (req, res) => {
+    try {
+      const { botIds } = req.body
+      const userBots = await botService.getAllUserBots(req.user._id)
+      const results = { stopped: 0, failed: 0, errors: [], failedBotIds: [] }
+
+      const botsToProcess =
+        botIds && botIds.length > 0
+          ? userBots.filter((bot) => botIds.includes(bot._id.toString()))
+          : userBots
+
+      for (const leanBot of botsToProcess) {
+        try {
+          const bot = getBot(leanBot._id.toString())
+          if (bot && !bot.stopBuyingOnRebuy) {
+            await bot.stopBuyingOnRebuyPositions()
+            results.stopped++
+          }
+        } catch (error) {
+          results.failed++
+          results.failedBotIds.push(leanBot._id.toString())
+          results.errors.push({
+            botId: leanBot._id,
+            botName: leanBot.config.label || leanBot.config.symbol,
+            error: error.message
+          })
+          logger.error(
+            `Failed to stop buying on rebuy for bot ${leanBot._id}:`,
+            error
+          )
+        }
+      }
+
+      res.status(results.failed > 0 ? 207 : 200).json(results)
+    } catch (error) {
+      res.status(500).json({
+        message: 'Failed to stop buying on rebuy for all bots',
+        error: error.message
+      })
+    }
+  })
+
+  router.post('/go-buy-on-rebuy-all', async (req, res) => {
+    try {
+      const { botIds } = req.body
+      const userBots = await botService.getAllUserBots(req.user._id)
+      const results = { resumed: 0, failed: 0, errors: [], failedBotIds: [] }
+
+      const botsToProcess =
+        botIds && botIds.length > 0
+          ? userBots.filter((bot) => botIds.includes(bot._id.toString()))
+          : userBots
+
+      for (const leanBot of botsToProcess) {
+        try {
+          const bot = getBot(leanBot._id.toString())
+          if (bot && bot.stopBuyingOnRebuy) {
+            await bot.goBuyingOnRebuyPositions()
+            results.resumed++
+          }
+        } catch (error) {
+          results.failed++
+          results.failedBotIds.push(leanBot._id.toString())
+          results.errors.push({
+            botId: leanBot._id,
+            botName: leanBot.config.label || leanBot.config.symbol,
+            error: error.message
+          })
+          logger.error(
+            `Failed to resume buying on rebuy for bot ${leanBot._id}:`,
+            error
+          )
+        }
+      }
+
+      res.status(results.failed > 0 ? 207 : 200).json(results)
+    } catch (error) {
+      res.status(500).json({
+        message: 'Failed to resume buying on rebuy for all bots',
+        error: error.message
+      })
+    }
+  })
+
   router.post('/:id/stop-buy', async (req, res) => {
     const id = req.params.id
     let dbBot = await botService.getBotById(id)

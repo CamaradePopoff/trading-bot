@@ -133,16 +133,33 @@
       >
         <template #activator="{ props: tooltipProps }">
           <v-icon
-            :color="main.isGloballyStoppingBuying ? 'primary' : 'error'"
+            :color="main.isGloballyStoppingBuyingOnDrop ? 'primary' : 'error'"
             class="mt-3 mr-2"
             :size="mdAndUp ? 'large' : 'small'"
             v-bind="tooltipProps"
-            @click="toggleGlobalStopBuying"
+            @click="toggleGlobalStopBuyingOnDrop"
           >
-            {{ main.isGloballyStoppingBuying ? 'mdi-currency-usd' : 'mdi-currency-usd-off' }}
+            {{ main.isGloballyStoppingBuyingOnDrop ? 'mdi-download' : 'mdi-download-off' }}
           </v-icon>
         </template>
-        {{ main.isGloballyStoppingBuying ? $t('pages.bots.resumeBuyingAllBots') : $t('pages.bots.stopBuyingAllBots') }}
+        {{ main.isGloballyStoppingBuyingOnDrop ? $t('pages.bots.resumeBuyingOnDropAllBots') : $t('pages.bots.stopBuyingOnDropAllBots') }}
+      </v-tooltip>
+      <v-tooltip
+        location="bottom"
+        content-class="text-caption"
+      >
+        <template #activator="{ props: tooltipProps }">
+          <v-icon
+            :color="main.isGloballyStoppingBuyingOnRebuy ? 'primary' : 'error'"
+            class="mt-3 mr-2"
+            :size="mdAndUp ? 'large' : 'small'"
+            v-bind="tooltipProps"
+            @click="toggleGlobalStopBuyingOnRebuy"
+          >
+            {{ main.isGloballyStoppingBuyingOnRebuy ? 'mdi-upload' : 'mdi-upload-off' }}
+          </v-icon>
+        </template>
+        {{ main.isGloballyStoppingBuyingOnRebuy ? $t('pages.bots.resumeBuyingOnRebuyAllBots') : $t('pages.bots.stopBuyingOnRebuyAllBots') }}
       </v-tooltip>
       <v-tooltip
         v-if="!main.tableDisplay"
@@ -512,17 +529,31 @@ const toggleGlobalPause = async () => {
   }
 }
 
-const toggleGlobalStopBuying = async () => {
+const toggleGlobalStopBuyingOnDrop = async () => {
   try {
-    if (main.isGloballyStoppingBuying) {
-      await main.goBuyingFilteredBots(filteredBots.value)
+    if (main.isGloballyStoppingBuyingOnDrop) {
+      await main.goBuyingOnDropFilteredBots(filteredBots.value)
     } else {
-      await main.stopBuyingFilteredBots(filteredBots.value)
+      await main.stopBuyingOnDropFilteredBots(filteredBots.value)
     }
     await main.getBots()
     main.updateFilteredGlobalStoppingBuyingState(filteredBots.value)
   } catch (error) {
-    console.error('Error toggling global stop buying:', error)
+    console.error('Error toggling global stop buying on drop:', error)
+  }
+}
+
+const toggleGlobalStopBuyingOnRebuy = async () => {
+  try {
+    if (main.isGloballyStoppingBuyingOnRebuy) {
+      await main.goBuyingOnRebuyFilteredBots(filteredBots.value)
+    } else {
+      await main.stopBuyingOnRebuyFilteredBots(filteredBots.value)
+    }
+    await main.getBots()
+    main.updateFilteredGlobalStoppingBuyingState(filteredBots.value)
+  } catch (error) {
+    console.error('Error toggling global stop buying on rebuy:', error)
   }
 }
 </script>

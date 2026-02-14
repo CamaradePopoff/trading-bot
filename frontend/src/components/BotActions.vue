@@ -42,7 +42,10 @@
         />
         {{ botNewsCount }}
       </div>
-      <div style="margin-top: 2px" v-if="!transparent">
+      <div
+        v-if="!transparent"
+        style="margin-top: 2px"
+      >
         <v-icon class="mr-1">
           mdi-update
         </v-icon>

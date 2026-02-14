@@ -153,6 +153,8 @@ export const useMainStore = defineStore('main', {
     adminMode: false,
     isGloballyPaused: false,
     isGloballyStoppingBuying: false,
+    isGloballyStoppingBuyingOnDrop: false,
+    isGloballyStoppingBuyingOnRebuy: false,
     snackbar: { show: false, color: 'primary', text: '' },
     wsConnected: false
   }),
@@ -513,6 +515,50 @@ export const useMainStore = defineStore('main', {
         throw error
       }
     },
+    async stopBuyingOnDropFilteredBots(bots) {
+      try {
+        const botIds = bots.map(bot => bot._id)
+        const result = await botService.stopBuyingOnDropAllBots(botIds)
+        console.log('Filtered bots buying on drop stopped:', result)
+        return result
+      } catch (error) {
+        console.error('Failed to stop buying on drop for filtered bots:', error)
+        throw error
+      }
+    },
+    async goBuyingOnDropFilteredBots(bots) {
+      try {
+        const botIds = bots.map(bot => bot._id)
+        const result = await botService.goBuyingOnDropAllBots(botIds)
+        console.log('Filtered bots buying on drop resumed:', result)
+        return result
+      } catch (error) {
+        console.error('Failed to resume buying on drop for filtered bots:', error)
+        throw error
+      }
+    },
+    async stopBuyingOnRebuyFilteredBots(bots) {
+      try {
+        const botIds = bots.map(bot => bot._id)
+        const result = await botService.stopBuyingOnRebuyAllBots(botIds)
+        console.log('Filtered bots buying on rebuy stopped:', result)
+        return result
+      } catch (error) {
+        console.error('Failed to stop buying on rebuy for filtered bots:', error)
+        throw error
+      }
+    },
+    async goBuyingOnRebuyFilteredBots(bots) {
+      try {
+        const botIds = bots.map(bot => bot._id)
+        const result = await botService.goBuyingOnRebuyAllBots(botIds)
+        console.log('Filtered bots buying on rebuy resumed:', result)
+        return result
+      } catch (error) {
+        console.error('Failed to resume buying on rebuy for filtered bots:', error)
+        throw error
+      }
+    },
     updateGlobalPauseState() {
       if (this.bots.length === 0) {
         this.isGloballyPaused = false
@@ -537,6 +583,8 @@ export const useMainStore = defineStore('main', {
     updateFilteredGlobalStoppingBuyingState(filteredBots) {
       if (filteredBots.length === 0) {
         this.isGloballyStoppingBuying = false
+        this.isGloballyStoppingBuyingOnDrop = false
+        this.isGloballyStoppingBuyingOnRebuy = false
         return
       }
       // Check if all filtered bots have both stopBuyingOnDrop and stopBuyingOnRebuy = true
@@ -547,6 +595,23 @@ export const useMainStore = defineStore('main', {
         this.isGloballyStoppingBuying = true
       } else if (allResumed) {
         this.isGloballyStoppingBuying = false
+      }
+      
+      // Check individual flags
+      const allStoppedOnDrop = filteredBots.every(bot => bot.stopBuyingOnDrop)
+      const allResumedOnDrop = filteredBots.every(bot => !bot.stopBuyingOnDrop)
+      if (allStoppedOnDrop) {
+        this.isGloballyStoppingBuyingOnDrop = true
+      } else if (allResumedOnDrop) {
+        this.isGloballyStoppingBuyingOnDrop = false
+      }
+      
+      const allStoppedOnRebuy = filteredBots.every(bot => bot.stopBuyingOnRebuy)
+      const allResumedOnRebuy = filteredBots.every(bot => !bot.stopBuyingOnRebuy)
+      if (allStoppedOnRebuy) {
+        this.isGloballyStoppingBuyingOnRebuy = true
+      } else if (allResumedOnRebuy) {
+        this.isGloballyStoppingBuyingOnRebuy = false
       }
     },
     updateFilteredGlobalPauseState(filteredBots) {

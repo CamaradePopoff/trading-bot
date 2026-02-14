@@ -113,6 +113,22 @@ function goBuyingAllBots(botIds) {
   return Api.sendRequestPOST('bots/go-buy-all', { botIds })
 }
 
+function stopBuyingOnDropAllBots(botIds) {
+  return Api.sendRequestPOST('bots/stop-buy-on-drop-all', { botIds })
+}
+
+function goBuyingOnDropAllBots(botIds) {
+  return Api.sendRequestPOST('bots/go-buy-on-drop-all', { botIds })
+}
+
+function stopBuyingOnRebuyAllBots(botIds) {
+  return Api.sendRequestPOST('bots/stop-buy-on-rebuy-all', { botIds })
+}
+
+function goBuyingOnRebuyAllBots(botIds) {
+  return Api.sendRequestPOST('bots/go-buy-on-rebuy-all', { botIds })
+}
+
 function getAdminBots(userId, exchange) {
   return Api.sendRequestGET(`bots/admin/${userId}/${exchange}`)
 }
@@ -129,6 +145,10 @@ export default {
   resumeAllBots,
   stopBuyingAllBots,
   goBuyingAllBots,
+  stopBuyingOnDropAllBots,
+  goBuyingOnDropAllBots,
+  stopBuyingOnRebuyAllBots,
+  goBuyingOnRebuyAllBots,
   sellAllPositive,
   stopBot,
   deleteBot,
