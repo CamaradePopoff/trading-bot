@@ -210,7 +210,7 @@
         {{ $t('pages.bots.viewBtcChart') }}
       </v-tooltip>
       <div
-        v-if="mdAndUp"
+        v-if="mdAndUp && main.tableDisplay"
         class="d-flex flex-wrap mr-2"
       >
         <v-checkbox
