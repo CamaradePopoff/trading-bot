@@ -270,6 +270,11 @@ class MemoryBot {
   }
 
   async shouldAvoidRebuyingInExistingPositionArea(sellingPrice) {
+    // Determines if we should avoid rebuying at the given selling price
+    // by checking if we already have a cluster of positions in that price area.
+    // This prevents over-concentration of positions in a single price range,
+    // which could reduce profit potential and increase risk.
+    
     // Get current unsold purchases for this bot
     const purchases = await this.transactionService.getBotPurchases(
       this.id,
@@ -284,27 +289,31 @@ class MemoryBot {
     }
 
     if (purchases.length < this.config.positionsToRebuy) {
-      // Not enough purchases to form a position cluster
+      // Not enough purchases to form a position cluster worthy of avoidance
+      // If we have fewer positions than the threshold, we want to accumulate more
       return false
     }
 
-    // Sort purchases by price (highest first)
+    // Sort purchases by price (descending order - highest first)
     const sortedPurchases = purchases.sort((a, b) => b.price - a.price)
 
-    // Take the top N purchases where N = positionsToRebuy
+    // Identify the top N positions (where N = positionsToRebuy)
+    // These represent the densest position cluster in our portfolio
     const topPositions = sortedPurchases.slice(0, this.config.positionsToRebuy)
 
-    // Get min and max prices of this position cluster
+    // Get the price range boundaries of this position cluster
     const maxPositionPrice = topPositions[0].price
     const minPositionPrice = topPositions[topPositions.length - 1].price
 
-    // Get the current threshold
+    // Get the current drop threshold
     const currentThreshold = this.getCurrentThreshold()
 
-    // Calculate the lower bound: min - threshold
+    // Calculate the lower bound: positions could have been bought below the minimum position price
+    // We extend the area downward by the drop threshold percentage
     const lowerBound = minPositionPrice * (1 - currentThreshold / 100)
 
-    // Calculate the upper bound: max(maxPositionPrice + profitMargin, maxWorkingPrice)
+    // Calculate the upper bound: this is where these positions would profitably sell
+    // It's either the target sell price for the highest position, or the max working price
     const sellTargetPrice =
       maxPositionPrice * (1 + this.config.profitMargin / 100)
     const upperBound = Math.max(
@@ -312,14 +321,16 @@ class MemoryBot {
       this.config.maxWorkingPrice || 0
     )
 
-    // Check if selling price is within [lowerBound, upperBound]
-    // If yes, we already have positions in this area, so avoid rebuying
+    // Check if the selling price falls within the position cluster area [lowerBound, upperBound]
+    // If yes, we already have a sufficient concentration of positions in this price range,
+    // so we should avoid rebuying to maintain better price distribution and preserve capital
+    // for opportunities at different price levels
     const hasPositionsInArea =
       sellingPrice >= lowerBound && sellingPrice <= upperBound
 
     // if (hasPositionsInArea) {
     // this.log(
-    //   `⚠️ Selling at ${sellingPrice} is within existing position area [${jsRound(lowerBound)}, ${jsRound(upperBound)}]. Not rebuying to preserve funds.`
+    //   `⚠️ Selling at ${sellingPrice} is within existing position area [${jsRound(lowerBound)}, ${jsRound(upperBound)}]. Not rebuying to preserve funds for better opportunities.`
     //     .yellow
     // )
     // }
@@ -1136,7 +1147,9 @@ class MemoryBot {
             // Check if we should rebuy after selling
             let shouldRebuy = false
             if (soldOne) {
-              // Check if we're not in an area where we already have positions
+              // After a sale, check if we should immediately rebuy
+              // We avoid rebuying if the selling price falls within an area where we already have
+              // a cluster of positions, to maintain better price distribution
               const inPositionArea =
                 await this.shouldAvoidRebuyingInExistingPositionArea(
                   this.lastSoldPrice
@@ -1144,10 +1157,11 @@ class MemoryBot {
               shouldRebuy = !inPositionArea
             }
 
-            // Check if current price is in an area where we already have positions
+            // Check if current price is in an area where we already have position clusters
             let shouldAvoidBuyingInPositionArea = false
             if (hasDropped && !soldOne) {
-              // When price drops but we haven't sold, check if current price is in an existing position area
+              // When price drops but we haven't sold, verify the current price doesn't fall
+              // within an existing position cluster area to avoid over-concentration
               shouldAvoidBuyingInPositionArea =
                 await this.shouldAvoidRebuyingInExistingPositionArea(
                   this.currentPrice
@@ -1168,14 +1182,19 @@ class MemoryBot {
               this.currentPrice >= (this.config.minWorkingPrice || -Infinity) &&
               this.currentPrice <= (this.config.maxWorkingPrice || Infinity)
             ) {
-              // Buy condition:
-              // - The bot has just started
-              //     OR the price has dropped by the configured threshold from last sold price (and not in an existing position area)
-              //     OR we just sold a position and the sell price is NOT in an existing position area
-              // - AND there is still at least a free position to buy
-              // - AND we are not stopping buying
-              // - AND the current price is above the minimum working price (if defined)
-              // - AND the current price is below the maximum working price (if defined)
+              // Buy condition (all of the following must be true):
+              // 1. One of these trigger conditions:
+              //    - The bot has just started (first purchase)
+              //    - The price has dropped by the configured threshold from the last highest price
+              //      AND the current price is NOT within an existing position cluster area
+              //    - We just sold a position and the sell price does NOT fall within an existing
+              //      position cluster area (allowing immediate rebuy at a better distribution)
+              // 2. There is at least one free position available to buy
+              // 3. Buying is not stopped (stopBuyingOnDrop or stopBuyingOnRebuy flags)
+              // 4. The current price is within the configured working price range (if limits are set)
+              //
+              // The position cluster avoidance ensures we maintain good price distribution
+              // across our portfolio rather than concentrating too many positions at similar prices
               if (this.cycles === 0) {
                 this.log('🚀 Bot just started')
               }
