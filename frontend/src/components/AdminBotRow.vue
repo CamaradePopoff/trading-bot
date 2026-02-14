@@ -70,9 +70,9 @@
         <template #activator="{ props: tooltipProps }">
           <v-icon
             v-bind="tooltipProps"
-            size="medium"
+            size="24"
             :color="props.bot.hasStarted ? 'error' : 'primary'"
-            class="clickable mr-1"
+            class="clickable mr-2"
             @click.stop="toggleStartStop"
           >
             {{ props.bot.hasStarted ? 'mdi-stop' : 'mdi-play' }}
@@ -84,10 +84,10 @@
         <template #activator="{ props: tooltipProps }">
           <v-icon
             v-bind="tooltipProps"
-            size="medium"
+            size="24"
             :color="!props.bot.isPaused ? 'warning' : 'primary'"
             :disabled="!props.bot.hasStarted"
-            class="clickable mr-1"
+            class="clickable mr-2"
             @click.stop="togglePause"
           >
             {{ props.bot.isPaused ? 'mdi-play' : 'mdi-pause' }}
@@ -96,23 +96,23 @@
         {{ props.bot.isPaused ? $t('buttons.resume') : $t('buttons.pause') }}
       </v-tooltip>
       <v-icon
-        size="medium"
+        size="24"
         color="primary"
-        class="clickable mr-1"
+        class="clickable mr-2"
         @click.stop="showConfigDialog = true"
       >
         mdi-cog-outline
       </v-icon>
       <v-icon
-        size="medium"
+        size="24"
         color="primary"
-        class="clickable mr-1"
+        class="clickable mr-2"
         @click.stop="getLogs"
       >
         mdi-text-box-outline
       </v-icon>
       <v-icon
-        size="medium"
+        size="24"
         color="error"
         class="clickable"
         @click.stop="showConfirmDeletionDialog = true"

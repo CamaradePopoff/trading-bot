@@ -412,23 +412,11 @@
         </v-row>
       </v-container>
     </div>
-    <div
-      v-if="main.btcDrawer"
-      style="height: 350px; overflow-y: hidden;"
-    >
-      <TradingView
-        v-if="main.btcDrawer"
-        :key="main.lang"
-        :pair="`BTC${main.exchangeAsset}`"
-        :lang="main.lang"
-        show-date-ranges
-      />
-    </div>
   </template>
 </template>
 
 <script setup>
-import { watch, ref, computed, onMounted, onUnmounted } from 'vue'
+import { watch, ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useMainStore } from '@/store'
 import { useDisplay } from 'vuetify'
@@ -542,6 +530,28 @@ watch(
   }
 )
 
+// Watch for btcDrawer changes and move chart accordingly
+watch(
+  () => main.btcDrawer,
+  async (isOpen) => {
+    await nextTick()
+    const btcChart = document.getElementById('btc-chart')
+    if (!btcChart) return
+    
+    if (isOpen) {
+      const btcChartContainer = document.getElementById('btc-chart-container')
+      if (btcChartContainer && !btcChartContainer.contains(btcChart)) {
+        btcChartContainer.appendChild(btcChart)
+      }
+    } else {
+      const btcChartHolder = document.getElementById('btc-chart-holder')
+      if (btcChartHolder && !btcChartHolder.contains(btcChart)) {
+        btcChartHolder.appendChild(btcChart)
+      }
+    }
+  }
+)
+
 onMounted(async () => {
   isLoading.value = true
   await main.getBots()
@@ -553,7 +563,9 @@ onMounted(async () => {
   interval.value = setInterval(main.getBots, 3000)
 })
 
-onUnmounted(() => clearInterval(interval.value))
+onUnmounted(() => {
+  clearInterval(interval.value)
+})
 
 const selectBotRow = (bot) => {
   selectedBots.value = new Set([...selectedBots.value, bot._id])

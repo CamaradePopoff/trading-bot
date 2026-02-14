@@ -377,6 +377,26 @@
       <v-main>
         <div style="height: calc(100dvh - 64px - 40px); overflow-y: auto;">
           <router-view />
+          <div
+            v-show="main.btcDrawer && route.path === '/bots'"
+            id="btc-chart"
+            :style="{ 
+              height: '350px', 
+              overflowY: 'hidden', 
+              width: `calc(100% - ${(main.menuDrawer ? 180 : 0) + (main.transactionsDrawer ? 260 : 0)}px)`, 
+              position: 'absolute', 
+              bottom: 0,
+              transition: 'width 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+            }"
+          >
+            <TradingView
+              v-if="main.user && main.lang && main.exchangeAsset"
+              :key="main.lang"
+              :pair="`BTC${main.exchangeAsset}`"
+              :lang="main.lang"
+              show-date-ranges
+            />
+          </div>
         </div>
       </v-main>
 
@@ -530,6 +550,7 @@ import userService from '@services/user.service'
 import Login from '@components/Login.vue'
 import Register from '@components/Register.vue'
 import HelpDialog from '@components/HelpDialog.vue'
+import TradingView from '@components/TradingView.vue'
 
 const main = useMainStore()
 const router = useRouter()
