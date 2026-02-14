@@ -551,11 +551,26 @@ Cela garantit que les frais et la marge bénéficiaire sont pris en compte.
 
 === Comportements Spéciaux
 
-==== Mode Arrêt des Achats
-* Activé via le bouton "Arrêter les Achats"
-* Le bot continue de vendre les positions rentables mais n'achète pas de nouvelles
-* Utile pour sortir progressivement d'une position
-* Peut être inversé avec le bouton "Reprendre les Achats"
+==== Modes Arrêt des Achats
+Le bot dispose de deux contrôles indépendants pour arrêter les achats dans différentes conditions de marché :
+
+*1. Arrêt des Achats lors de Baisse de Prix*
+* Activé via le bouton "Arrêter les Achats en Baisse"
+* Le bot cesse d'acheter lorsque les prix baissent mais continue le comportement normal de rachat lorsque les prix montent
+* Utile quand vous croyez que le marché a touché le fond et que vous voulez préserver le capital
+* Peut être inversé avec le bouton "Reprendre les Achats en Baisse"
+
+*2. Arrêt des Achats lors de Rachat*
+* Activé via le bouton "Arrêter les Achats au Rachat"
+* Le bot cesse le rachat automatique après la vente de positions lors de la hausse des prix
+* Continue à acheter lors de nouvelles baisses de prix selon la configuration
+* Utile pour verrouiller les bénéfices lors de tendances haussières sans attraper les couteaux qui tombent
+* Peut être inversé avec le bouton "Reprendre les Achats au Rachat"
+
+*Les Deux Modes :*
+* Le bot continue de vendre les positions rentables même lorsqu'un des modes est actif
+* Peuvent être combinés (tous deux activés simultanément) pour mettre en pause toute activité d'achat
+* Chacun peut être contrôlé indépendamment pour des scénarios de marché spécifiques
 
 ==== Actions Manuelles Forcées
 Les utilisateurs peuvent déclencher manuellement des actions :
@@ -634,6 +649,88 @@ Le tableau de bord principal affiche :
 * Tous les paramètres de configuration clés
 * Plage de prix de travail actuelle
 * Curseur de prix visuel montrant la position relative à la plage
+
+=== Sélection des Bots
+
+La liste des bots fournit un système de sélection par case à cocher pour gérer plusieurs bots :
+
+*Sélection Individuelle de Bot :*
+* Cliquez sur la case à cocher à gauche de n'importe quelle ligne de bot pour sélectionner/désélectionner
+* Les bots sélectionnés sont mis en évidence pour faciliter l'identification
+* La sélection persiste pendant que vous naviguez et que les bots se mettent à jour en temps réel
+* Les sélections sont effacées lorsque vous modifiez les critères de filtre
+
+*Case à Cocher Maître :*
+* Situé dans la ligne d'en-tête au-dessus de tous les bots
+* *État Coché* (✓) : Tous les bots visibles sont sélectionnés
+* *État Décoché* (☐) : Aucun bot n'est sélectionné
+* *État Indéterminé* (⊟) : Certains bots sont sélectionnés
+* Cliquez sur la case à cocher maître pour sélectionner/désélectionner rapidement tous les bots visibles
+* N'affecte que les bots actuellement visibles (respecte les filtres actifs)
+
+*Effacement des Sélections :*
+* Les sélections sont automatiquement effacées lorsque vous modifiez :
+** Critères de filtre (recherche, basculement de simulation, filtre en cours d'exécution/en pause)
+** Cela garantit que votre sélection reste pertinente pour votre vue actuelle
+
+*Utilisation des Sélections :*
+* Les opérations globales (Pause, Reprendre, contrôles Arrêter les Achats) n'affectent que les bots sélectionnés
+* Consultez la section "Contrôles Globaux du Bot" ci-dessous pour plus de détails
+
+=== Tableau de Bord du Bot
+
+Le tableau de bord principal affiche :
+
+*Indicateurs d'État du Bot :*
+* *En Cours d'Exécution* (Vert) : Le bot trade activement
+* *En Pause* (Jaune) : Le bot est en pause
+* *Arrêté* (Gris) : Le bot n'est pas en cours d'exécution
+
+*Métriques de Performance :*
+* *Profit Total (USDT)* : Profit USDT cumulé
+* *Profit Total (Crypto)* : Cryptomonnaie accumulée (si activé)
+* *Transactions Totales* : Nombre de cycles d'achat/vente complétés
+* *Prix Actuel* : Prix de la cryptomonnaie en direct
+* *Positions Libres* : Positions disponibles pour l'achat
+* *Cycles* : Nombre de cycles de vérification complétés
+
+*Affichage de la Configuration :*
+* Tous les paramètres de configuration clés
+* Plage de prix de travail actuelle
+* Curseur de prix visuel montrant la position relative à la plage
+
+=== Contrôles Globaux du Bot
+
+L'en-tête de la liste des bots fournit des contrôles qui affectent les bots sélectionnés :
+
+*Pause/Reprendre*
+* *Pause* : Interrompt tous les bots sélectionnés (si aucun n'est sélectionné, s'affiche désactivé)
+* *Reprendre* : Reprend tous les bots sélectionnés (si aucun n'est sélectionné, s'affiche désactivé)
+* N'affecte que les bots actuellement sélectionnés via les cases à cocher
+* Utilisez la case à cocher maître pour mettre en pause/reprendre rapidement tous les bots visibles
+
+*Contrôles Arrêt des Achats*
+* *Arrêter les Achats en Baisse* : Empêche les achats lors de baisses de prix pour les bots sélectionnés
+* *Arrêter les Achats au Rachat* : Empêche les rachats automatiques pour les bots sélectionnés
+* *Reprendre les Achats en Baisse* : Réactive les achats lors de baisses de prix pour les bots sélectionnés
+* *Reprendre les Achats au Rachat* : Réactive les rachats automatiques pour les bots sélectionnés
+* Tous les boutons de contrôle d'achat n'affectent que les bots sélectionnés
+* Les boutons affichent l'état activé/désactivé selon la sélection
+
+*Exigences de Sélection :*
+* Pour utiliser un contrôle global, vous devez sélectionner au moins un bot
+* Les contrôles sont désactivés (grisés) lorsqu'aucun bot n'est sélectionné
+* L'état de sélection est affiché dans l'en-tête (par exemple, "3 sélectionnés")
+
+*Exemple de Flux de Travail :*
+. Sélectionnez les bots que vous souhaitez contrôler à l'aide des cases à cocher
+. Cliquez sur *Pause* pour interrompre uniquement ces bots
+. Vos autres bots continuent à fonctionner normalement
+. Cliquez sur *Arrêter les Achats en Baisse* pour empêcher les achats lors de baisses de prix uniquement sur les bots sélectionnés
+
+*Conseil :*
+* Utilisez la case à cocher maître pour sélectionner/désélectionner rapidement tous les bots visibles
+* Combinez avec les filtres pour cibler des groupes de bots spécifiques (par exemple, tous les bots de simulation)
 
 === Visualisation des Prix
 
@@ -768,9 +865,9 @@ Le tableau de bord principal affiche :
 +
 ** Solution : Attendez les ventes ou augmentez les positions maximales
 
-. *Arrêt des Achats Actif* : Vérifiez si le mode "Arrêter les Achats" est activé
+. *Arrêt des Achats Actif* : Vérifiez si le mode "Arrêter les Achats en Baisse" ou "Arrêter les Achats au Rachat" est activé
 +
-** Solution : Cliquez sur "Reprendre les Achats"
+** Solution : Cliquez sur "Reprendre les Achats en Baisse" et/ou "Reprendre les Achats au Rachat" selon le cas
 
 . *Prix Hors de la Plage* : Le prix actuel est en dehors de la plage de travail
 +

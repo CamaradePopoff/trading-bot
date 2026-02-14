@@ -551,11 +551,26 @@ This ensures that both fees and profit margin are accounted for.
 
 === Special Behaviors
 
-==== Stop Buying Mode
-* Activated via "Stop Buying" button
-* Bot continues to sell profitable positions but won't buy new ones
-* Useful for gradually exiting a position
-* Can be reversed with "Resume Buying" button
+==== Stop Buying Modes
+The bot features two independent stop buying controls for different market conditions:
+
+*1. Stop Buying on Price Drop*
+* Activated via "Stop Buying on Drop" button
+* Bot stops buying when prices drop but continues normal rebuy behavior when prices rise
+* Useful when you believe the market has bottomed and want to preserve capital
+* Can be reversed with "Resume Buying on Drop" button
+
+*2. Stop Buying on Rebuy*
+* Activated via "Stop Buying on Rebuy" button
+* Bot stops automatic rebuying after selling positions during rising prices
+* Continues to buy on new price drops as configured
+* Useful to lock in profits during uptrends without catching falling knives
+* Can be reversed with "Resume Buying on Rebuy" button
+
+*Both Modes:*
+* Bot continues to sell profitable positions even when either stop mode is active
+* Can be combined (both enabled simultaneously) to pause all buying activity
+* Each can be controlled independently for specific market scenarios
 
 ==== Forced Manual Actions
 Users can manually trigger actions:
@@ -613,6 +628,33 @@ Users can manually trigger actions:
 
 == Monitoring & Analytics
 
+=== Bot Selection
+
+The bot list provides a checkbox selection system for managing multiple bots:
+
+*Individual Bot Selection:*
+* Click the checkbox on the left of any bot row to select/deselect it
+* Selected bots are highlighted for easy identification
+* Selection persists while you navigate and while bots refresh in real-time
+* Selections are cleared when you change filter criteria
+
+*Master Checkbox:*
+* Located in the header row above all bots
+* *Checked state* (✓): All visible bots are selected
+* *Unchecked state* (☐): No bots are selected
+* *Indeterminate state* (⊟): Some bots are selected
+* Click the master checkbox to quickly select/deselect all visible bots
+* Only affects currently visible bots (respects active filters)
+
+*Selection Clearing:*
+* Selections are automatically cleared when you change:
+** Filter criteria (search, simulation toggle, running/paused filter)
+** This ensures your selection stays relevant to your current view
+
+*Using Selections:*
+* Global operations (Pause, Resume, Stop Buying controls) only affect selected bots
+* See "Global Bot Controls" section below for details
+
 === Bot Dashboard
 
 The main dashboard displays:
@@ -634,6 +676,39 @@ The main dashboard displays:
 * All key configuration parameters
 * Current working price range
 * Visual price cursor showing position relative to range
+
+=== Global Bot Controls
+
+The bot list header provides controls that affect selected bots:
+
+*Pause/Resume*
+* *Pause*: Pauses all selected bots (if none selected, shows grayed out)
+* *Resume*: Resumes all selected bots (if none selected, shows grayed out)
+* Only affects bots that are currently selected via checkboxes
+* Use master checkbox to quickly pause/resume all visible bots
+
+*Stop Buying Controls*
+* *Stop Buying on Drop*: Prevents buying on price drops for selected bots
+* *Stop Buying on Rebuy*: Prevents automatic rebuying for selected bots
+* *Resume Buying on Drop*: Re-enables buying on price drops for selected bots
+* *Resume Buying on Rebuy*: Re-enables automatic rebuying for selected bots
+* All buying control buttons only affect selected bots
+* Buttons show enabled/disabled state based on selection
+
+*Selection Requirements:*
+* To use any global control, you must select at least one bot
+* Controls are disabled (grayed out) when no bots are selected
+* Selection status shown in the header (e.g., "3 selected")
+
+*Example Workflow:*
+. Select the bots you want to control using checkboxes
+. Click *Pause* to pause only those bots
+. Your other bots continue operating normally
+. Click *Stop Buying on Drop* to prevent drop-based buys on selected bots only
+
+*Tip:*
+* Use the master checkbox for quick selection/deselection of all visible bots
+* Combine with filters to target specific bot groups (e.g., all simulation bots)
 
 === Price Visualization
 
@@ -768,9 +843,9 @@ The main dashboard displays:
 +
 ** Solution: Wait for sells or increase max positions
 
-. *Stop Buying Active*: Check if "Stop Buying" mode is enabled
+. *Stop Buying Active*: Check if "Stop Buying on Drop" or "Stop Buying on Rebuy" mode is enabled
 +
-** Solution: Click "Resume Buying"
+** Solution: Click "Resume Buying on Drop" and/or "Resume Buying on Rebuy" as appropriate
 
 . *Price Outside Range*: Current price is outside working range
 +

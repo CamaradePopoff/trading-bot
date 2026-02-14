@@ -167,7 +167,7 @@
     <td style="text-align: center; width: 34px;">
       <v-checkbox
         v-model="isSelected"
-        style="margin: 0 0 0 3px;"
+        style="margin: -4px 0 -4px 3px;"
         color="primary"
         density="compact"
         hide-details

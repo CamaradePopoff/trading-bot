@@ -551,11 +551,26 @@ Esto asegura que las comisiones y el margen de ganancia se tengan en cuenta.
 
 === Comportamientos Especiales
 
-==== Modo Detener Compras
-* Activado a través del botón "Detener Compras"
-* El bot continúa vendiendo posiciones rentables pero no compra nuevas
-* Útil para salir gradualmente de una posición
-* Puede invertirse con el botón "Reanudar Compras"
+==== Modos Detener Compras
+El bot cuenta con dos controles independientes para detener compras en diferentes condiciones de mercado:
+
+*1. Detener Compra en Caída de Precio*
+* Activado a través del botón "Detener Compra en Caída"
+* El bot deja de comprar cuando los precios caen, pero continúa con el comportamiento normal de recompra cuando los precios suben
+* Útil cuando crees que el mercado ha tocado fondo y deseas preservar capital
+* Puede invertirse con el botón "Reanudar Compra en Caída"
+
+*2. Detener Compra en Recompra*
+* Activado a través del botón "Detener Compra en Recompra"
+* El bot deja de recomprar automáticamente después de vender posiciones durante precios en alza
+* Continúa comprando en nuevas caídas de precio según se configure
+* Útil para asegurar ganancias durante tendencias alcistas sin atrapar cuchillos que caen
+* Puede invertirse con el botón "Reanudar Compra en Recompra"
+
+*Ambos Modos:*
+* El bot continúa vendiendo posiciones rentables incluso cuando uno de los modos está activo
+* Pueden combinarse (ambos habilitados simultáneamente) para pausar toda actividad de compra
+* Cada uno puede ser controlado independientemente para escenarios de mercado específicos
 
 ==== Acciones Manuales Forzadas
 Los usuarios pueden desencadenar manualmente acciones:
@@ -634,6 +649,88 @@ El panel principal muestra:
 * Todos los parámetros de configuración clave
 * Rango de precio de trabajo actual
 * Cursor de precio visual mostrando la posición relativa al rango
+
+=== Selección de Bots
+
+El listado de bots proporciona un sistema de selección mediante casillas de verificación para administrar múltiples bots:
+
+*Selección Individual de Bot:*
+* Haz clic en la casilla de verificación a la izquierda de cualquier fila de bot para seleccionar/deseleccionar
+* Los bots seleccionados se resaltan para fácil identificación
+* La selección persiste mientras navegas y los bots se actualizan en tiempo real
+* Las selecciones se borran cuando cambias los criterios de filtro
+
+*Casilla Maestra:*
+* Ubicada en la fila de encabezado arriba de todos los bots
+* *Estado Marcado* (✓): Todos los bots visibles están seleccionados
+* *Estado Desmarcado* (☐): Ningún bot está seleccionado
+* *Estado Indeterminado* (⊟): Algunos bots están seleccionados
+* Haz clic en la casilla maestra para seleccionar/deseleccionar rápidamente todos los bots visibles
+* Solo afecta a los bots actualmente visibles (respeta filtros activos)
+
+*Borrado de Selecciones:*
+* Las selecciones se borran automáticamente cuando cambias:
+** Criterios de filtro (búsqueda, alternancia de simulación, filtro de ejecutándose/pausado)
+** Esto asegura que tu selección sea relevante para tu vista actual
+
+*Usando Selecciones:*
+* Las operaciones globales (Pausar, Reanudar, controles Detener Compras) solo afectan a los bots seleccionados
+* Consulta la sección "Controles Globales de Bot" a continuación para más detalles
+
+=== Panel de Control del Bot
+
+El panel principal muestra:
+
+*Indicadores de Estado del Bot:*
+* *En Ejecución* (Verde): El bot está operando activamente
+* *Pausado* (Amarillo): El bot está pausado
+* *Detenido* (Gris): El bot no se está ejecutando
+
+*Métricas de Rendimiento:*
+* *Ganancia Total (USDT)*: Ganancia acumulada en USDT
+* *Ganancia Total (Cripto)*: Criptomoneda acumulada (si está habilitada)
+* *Transacciones Totales*: Número de ciclos de compra/venta completados
+* *Precio Actual*: Precio de criptomoneda en vivo
+* *Posiciones Libres*: Posiciones disponibles para compra
+* *Ciclos*: Número de ciclos de verificación completados
+
+*Visualización de Configuración:*
+* Todos los parámetros de configuración clave
+* Rango de precio de trabajo actual
+* Cursor de precio visual mostrando la posición relativa al rango
+
+=== Controles Globales de Bot
+
+El encabezado de la lista de bots proporciona controles que afectan a los bots seleccionados:
+
+*Pausar/Reanudar*
+* *Pausar*: Pausa todos los bots seleccionados (si ninguno está seleccionado, se muestra atenuado)
+* *Reanudar*: Reanuda todos los bots seleccionados (si ninguno está seleccionado, se muestra atenuado)
+* Solo afecta a los bots seleccionados actualmente mediante casillas
+* Usa la casilla maestra para pausar/reanudar rápidamente todos los bots visibles
+
+*Controles Detener Compras*
+* *Detener Compra en Caída*: Previene compras en caídas de precio para bots seleccionados
+* *Detener Compra en Recompra*: Previene recompras automáticas para bots seleccionados
+* *Reanudar Compra en Caída*: Reactiva compras en caídas de precio para bots seleccionados
+* *Reanudar Compra en Recompra*: Reactiva recompras automáticas para bots seleccionados
+* Todos los botones de control de compras solo afectan a bots seleccionados
+* Los botones muestran estado habilitado/deshabilitado según la selección
+
+*Requisitos de Selección:*
+* Para usar cualquier control global, debes seleccionar al menos un bot
+* Los controles están deshabilitados (atenuados) cuando no hay bots seleccionados
+* El estado de selección se muestra en el encabezado (por ejemplo, "3 seleccionados")
+
+*Ejemplo de Flujo de Trabajo:*
+. Selecciona los bots que deseas controlar usando casillas
+. Haz clic en *Pausar* para pausar solo esos bots
+. Tus otros bots continúan operando normalmente
+. Haz clic en *Detener Compra en Caída* para prevenir compras por caída de precio solo en bots seleccionados
+
+*Consejo:*
+* Usa la casilla maestra para seleccionar/deseleccionar rápidamente todos los bots visibles
+* Combina con filtros para dirigirse a grupos específicos de bots (por ejemplo, todos los bots de simulación)
 
 === Visualización de Precios
 
@@ -768,9 +865,9 @@ El panel principal muestra:
 +
 ** Solución: Espera ventas o aumenta las posiciones máximas
 
-. *Detener Compras Activo*: Verifica si el modo "Detener Compras" está habilitado
+. *Detener Compras Activo*: Verifica si el modo "Detener Compra en Caída" o "Detener Compra en Recompra" está habilitado
 +
-** Solución: Haz clic en "Reanudar Compras"
+** Solución: Haz clic en "Reanudar Compra en Caída" y/o "Reanudar Compra en Recompra" según sea apropiado
 
 . *Precio Fuera de Rango*: El precio actual está fuera del rango de trabajo
 +
