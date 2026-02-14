@@ -218,12 +218,14 @@ Para todos los exchanges:
 * Fórmula: `Inversión Máxima / Posiciones Máximas`
 * Ejemplo: 1000 USDT / 10 posiciones = 100 USDT por posición
 
-*Posiciones Altas* (Requerido, default: 1)
-* Número de posiciones de precio más alto analizadas para determinar la zona de precio alto
-* Se utiliza para evitar recomprar cuando se vende a precios inflados
+*Umbral de Clúster de Posiciones* (Requerido, predeterminado: 1)
+* Número de posiciones que activa la detección de clúster cerca de cualquier nivel de precio
+* Al recomprar, el bot verifica si existen tantas posiciones cerca del precio de venta
 * Rango: 1 a (Posiciones Máximas - 1)
-* Valores más altos = zona de precio alto más amplia, estrategia de recompra más conservadora
-* *Recomendación*: Comienza con 1-2 para trading conservador
+* El bot crea una zona de amortiguación alrededor del precio de venta usando ±porcentaje de margen de ganancia
+* Ejemplo: Con 5% de margen y umbral de 2, si existen 2+ posiciones entre $95-$105 al vender en $100, omitir recompra
+* Valores más altos = permite más posiciones al mismo nivel de precio antes de evitar recompra
+* *Recomendación*: Usa 1-2 para mantener amplia distribución, 3-4 para más tolerancia a la concentración
 
 *Ganancias como Criptomoneda* (Interruptor)
 * Cuando está habilitado, una parte de cada venta mantiene la criptomoneda en lugar de convertir todo a USDT

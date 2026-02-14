@@ -218,12 +218,14 @@ For all exchanges:
 * Formula: `Max Investment / Max Positions`
 * Example: 1000 USDT / 10 positions = 100 USDT per position
 
-*High Positions* (Required, default: 1)
-* Number of highest-priced positions analyzed to determine the high price area
-* Used to avoid rebuying when selling at inflated prices
+*Position Cluster Threshold* (Required, default: 1)
+* Number of positions that trigger cluster detection near any price level
+* When rebuying, the bot checks if this many positions already exist near the selling price
 * Range: 1 to (Max Positions - 1)
-* Higher values = wider high price area, more conservative rebuy strategy
-* *Recommendation*: Start with 1-2 for conservative trading
+* The bot creates a buffer zone around the selling price using ±profit margin percentage
+* Example: With 5% profit margin and threshold of 2, if 2+ positions exist between $95-$105 when selling at $100, skip rebuy
+* Higher values = allows more positions at same price level before avoiding rebuy
+* *Recommendation*: Use 1-2 to maintain wide distribution, 3-4 for more concentration tolerance
 
 *Profit as Crypto* (Toggle)
 * When enabled, a portion of each sell keeps the cryptocurrency instead of converting all to USDT

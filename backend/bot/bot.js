@@ -271,7 +271,7 @@ class MemoryBot {
 
   async shouldAvoidRebuyingInExistingPositionArea(sellingPrice) {
     // Determines if we should avoid rebuying at the given selling price
-    // by checking if we already have a cluster of positions in that price area.
+    // by checking if we already have a cluster of positions near that price.
     // This prevents over-concentration of positions in a single price range,
     // which could reduce profit potential and increase risk.
     
@@ -294,48 +294,30 @@ class MemoryBot {
       return false
     }
 
-    // Sort purchases by price (descending order - highest first)
-    const sortedPurchases = purchases.sort((a, b) => b.price - a.price)
+    // Create a buffer zone around the selling price using the profit margin
+    // This defines the area where we consider positions to be "clustered" together
+    const lowerBound = sellingPrice * (1 - this.config.profitMargin / 100)
+    const upperBound = sellingPrice * (1 + this.config.profitMargin / 100)
 
-    // Identify the top N positions (where N = positionsToRebuy)
-    // These represent the densest position cluster in our portfolio
-    const topPositions = sortedPurchases.slice(0, this.config.positionsToRebuy)
-
-    // Get the price range boundaries of this position cluster
-    const maxPositionPrice = topPositions[0].price
-    const minPositionPrice = topPositions[topPositions.length - 1].price
-
-    // Get the current drop threshold
-    const currentThreshold = this.getCurrentThreshold()
-
-    // Calculate the lower bound: positions could have been bought below the minimum position price
-    // We extend the area downward by the drop threshold percentage
-    const lowerBound = minPositionPrice * (1 - currentThreshold / 100)
-
-    // Calculate the upper bound: this is where these positions would profitably sell
-    // It's either the target sell price for the highest position, or the max working price
-    const sellTargetPrice =
-      maxPositionPrice * (1 + this.config.profitMargin / 100)
-    const upperBound = Math.max(
-      sellTargetPrice,
-      this.config.maxWorkingPrice || 0
+    // Count how many positions fall within this price area
+    // If we have positionsToRebuy or more positions in this zone, it indicates
+    // over-concentration and we should avoid adding another position here
+    const positionsInArea = purchases.filter(
+      (p) => p.price >= lowerBound && p.price <= upperBound
     )
 
-    // Check if the selling price falls within the position cluster area [lowerBound, upperBound]
-    // If yes, we already have a sufficient concentration of positions in this price range,
-    // so we should avoid rebuying to maintain better price distribution and preserve capital
-    // for opportunities at different price levels
-    const hasPositionsInArea =
-      sellingPrice >= lowerBound && sellingPrice <= upperBound
+    // Avoid rebuying if we already have enough positions clustered near this price
+    // This maintains better price distribution across the portfolio
+    const shouldAvoid = positionsInArea.length >= this.config.positionsToRebuy
 
-    // if (hasPositionsInArea) {
+    // if (shouldAvoid) {
     // this.log(
-    //   `⚠️ Selling at ${sellingPrice} is within existing position area [${jsRound(lowerBound)}, ${jsRound(upperBound)}]. Not rebuying to preserve funds for better opportunities.`
+    //   `⚠️ Found ${positionsInArea.length} positions near ${sellingPrice} (zone: ${jsRound(lowerBound)}-${jsRound(upperBound)}). Not rebuying to maintain better distribution.`
     //     .yellow
     // )
     // }
 
-    return hasPositionsInArea
+    return shouldAvoid
   }
 
   async sellNow(

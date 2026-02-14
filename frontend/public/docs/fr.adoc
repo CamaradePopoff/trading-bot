@@ -218,12 +218,14 @@ Pour toutes les plateformes :
 * Formule : `Investissement Maximum / Positions Maximales`
 * Exemple : 1000 USDT / 10 positions = 100 USDT par position
 
-*Positions Hautes* (Requis, par défaut : 1)
-* Nombre de positions aux prix les plus élevés analysées pour déterminer la zone de prix élevés
-* Utilisé pour éviter de racheter lors de la vente à des prix gonflés
+*Seuil de Cluster de Positions* (Requis, par défaut : 1)
+* Nombre de positions qui déclenche la détection de cluster près de n'importe quel niveau de prix
+* Lors du rachat, le bot vérifie si autant de positions existent déjà près du prix de vente
 * Plage : 1 à (Positions Maximales - 1)
-* Valeurs plus élevées = zone de prix élevés plus large, stratégie de rachat plus conservatrice
-* *Recommandation* : Commencez avec 1-2 pour un trading conservateur
+* Le bot crée une zone tampon autour du prix de vente en utilisant ±pourcentage de marge bénéficiaire
+* Exemple : Avec 5% de marge et seuil de 2, si 2+ positions existent entre 95$-105$ lors d'une vente à 100$, ne pas racheter
+* Valeurs plus élevées = autorise plus de positions au même niveau de prix avant d'éviter le rachat
+* *Recommandation* : Utilisez 1-2 pour maintenir une large distribution, 3-4 pour plus de tolérance à la concentration
 
 *Bénéfices en Crypto* (Interrupteur)
 * Lorsqu'activé, une partie de chaque vente conserve la cryptomonnaie au lieu de tout convertir en USDT
