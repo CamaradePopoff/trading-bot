@@ -274,7 +274,7 @@ class MemoryBot {
     // by checking if we already have a cluster of positions near that price.
     // This prevents over-concentration of positions in a single price range,
     // which could reduce profit potential and increase risk.
-    
+
     // Get current unsold purchases for this bot
     const purchases = await this.transactionService.getBotPurchases(
       this.id,
