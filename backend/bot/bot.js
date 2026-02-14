@@ -269,7 +269,7 @@ class MemoryBot {
     })
   }
 
-  async shouldAvoidRebuyingInHighPriceArea(sellingPrice) {
+  async shouldAvoidRebuyingInExistingPositionArea(sellingPrice) {
     // Get current unsold purchases for this bot
     const purchases = await this.transactionService.getBotPurchases(
       this.id,
@@ -284,7 +284,7 @@ class MemoryBot {
     }
 
     if (purchases.length < this.config.positionsToRebuy) {
-      // Not enough purchases to form a high price area
+      // Not enough purchases to form a position cluster
       return false
     }
 
@@ -292,38 +292,39 @@ class MemoryBot {
     const sortedPurchases = purchases.sort((a, b) => b.price - a.price)
 
     // Take the top N purchases where N = positionsToRebuy
-    const highPriceArea = sortedPurchases.slice(0, this.config.positionsToRebuy)
+    const topPositions = sortedPurchases.slice(0, this.config.positionsToRebuy)
 
-    // Get min and max prices of this area
-    const maxPurchasePrice = highPriceArea[0].price
-    const minPrice = highPriceArea[highPriceArea.length - 1].price
+    // Get min and max prices of this position cluster
+    const maxPositionPrice = topPositions[0].price
+    const minPositionPrice = topPositions[topPositions.length - 1].price
 
     // Get the current threshold
     const currentThreshold = this.getCurrentThreshold()
 
     // Calculate the lower bound: min - threshold
-    const lowerBound = minPrice * (1 - currentThreshold / 100)
+    const lowerBound = minPositionPrice * (1 - currentThreshold / 100)
 
-    // Calculate the upper bound: max(maxPurchasePrice + profitMargin, maxWorkingPrice)
+    // Calculate the upper bound: max(maxPositionPrice + profitMargin, maxWorkingPrice)
     const sellTargetPrice =
-      maxPurchasePrice * (1 + this.config.profitMargin / 100)
+      maxPositionPrice * (1 + this.config.profitMargin / 100)
     const upperBound = Math.max(
       sellTargetPrice,
       this.config.maxWorkingPrice || 0
     )
 
     // Check if selling price is within [lowerBound, upperBound]
-    const isInHighPriceArea =
+    // If yes, we already have positions in this area, so avoid rebuying
+    const hasPositionsInArea =
       sellingPrice >= lowerBound && sellingPrice <= upperBound
 
-    // if (isInHighPriceArea) {
+    // if (hasPositionsInArea) {
     // this.log(
-    //   `⚠️ Selling at ${sellingPrice} is within high price area [${jsRound(lowerBound)}, ${jsRound(upperBound)}]. Not rebuying to preserve funds.`
+    //   `⚠️ Selling at ${sellingPrice} is within existing position area [${jsRound(lowerBound)}, ${jsRound(upperBound)}]. Not rebuying to preserve funds.`
     //     .yellow
     // )
     // }
 
-    return isInHighPriceArea
+    return hasPositionsInArea
   }
 
   async sellNow(
@@ -1135,20 +1136,22 @@ class MemoryBot {
             // Check if we should rebuy after selling
             let shouldRebuy = false
             if (soldOne) {
-              // Check if we're not in the high price area
-              const inHighPriceArea =
-                await this.shouldAvoidRebuyingInHighPriceArea(
+              // Check if we're not in an area where we already have positions
+              const inPositionArea =
+                await this.shouldAvoidRebuyingInExistingPositionArea(
                   this.lastSoldPrice
                 )
-              shouldRebuy = !inHighPriceArea
+              shouldRebuy = !inPositionArea
             }
 
-            // Check if current price is in high price area (prevents buying at high prices even on drops)
-            let shouldAvoidBuyingInHighArea = false
+            // Check if current price is in an area where we already have positions
+            let shouldAvoidBuyingInPositionArea = false
             if (hasDropped && !soldOne) {
-              // When price drops but we haven't sold, check if current price is in high area
-              shouldAvoidBuyingInHighArea =
-                await this.shouldAvoidRebuyingInHighPriceArea(this.currentPrice)
+              // When price drops but we haven't sold, check if current price is in an existing position area
+              shouldAvoidBuyingInPositionArea =
+                await this.shouldAvoidRebuyingInExistingPositionArea(
+                  this.currentPrice
+                )
             }
 
             // Check appropriate stop flag based on buying scenario
@@ -1158,7 +1161,7 @@ class MemoryBot {
 
             if (
               (this.cycles === 0 ||
-                (hasDropped && !shouldAvoidBuyingInHighArea) ||
+                (hasDropped && !shouldAvoidBuyingInPositionArea) ||
                 shouldRebuy) &&
               this.freePositions > 0 &&
               !shouldStopBuying &&
@@ -1167,8 +1170,8 @@ class MemoryBot {
             ) {
               // Buy condition:
               // - The bot has just started
-              //     OR the price has dropped by the configured threshold from last sold price (and not in high price area)
-              //     OR we just sold a position and the sell price is NOT in the high price area
+              //     OR the price has dropped by the configured threshold from last sold price (and not in an existing position area)
+              //     OR we just sold a position and the sell price is NOT in an existing position area
               // - AND there is still at least a free position to buy
               // - AND we are not stopping buying
               // - AND the current price is above the minimum working price (if defined)
