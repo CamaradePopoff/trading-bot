@@ -31,10 +31,10 @@ for dir in "$BASE_DIR"/*/; do
         echo "  - No migrations found, skipping..."
       fi
       
-      cd .. || exit
+      cd .. || continue
     fi
     
-    cd - > /dev/null || exit
+    cd - > /dev/null || continue
     
     echo "  ✓ $project updated"
   fi
