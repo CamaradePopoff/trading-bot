@@ -179,7 +179,8 @@ class MemoryBot {
     this.totalProfitCrypto = botState.totalProfitCrypto || 0
     this.totalTransactions = botState.totalTransactions
     this.cycles = botState.cycles
-    this.stopBuying = botState.stopBuying
+    this.stopBuyingOnDrop = botState.stopBuyingOnDrop || false
+    this.stopBuyingOnRebuy = botState.stopBuyingOnRebuy || false
     this.positionBoost = botState.positionBoost || 0
     this.usdtBoost = botState.usdtBoost
     this.currentThresholdIndex = botState.currentThresholdIndex || 0
