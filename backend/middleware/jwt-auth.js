@@ -77,7 +77,7 @@ async function authenticate(req, res) {
  * @param {string} expiresIn - Token expiration (default: '1h')
  * @returns {string} JWT token
  */
-function generateToken(user, expiresIn = '1h') {
+function generateToken(user, expiresIn = process.env.JWT_EXPIRATION || '1h') {
   const payload = {
     id: user._id || user.id,
     username: user.username,
