@@ -55,7 +55,7 @@ module.exports = function (io, logger) {
       await user.save()
 
       // Generate JWT token
-      const token = generateToken(user, '1h')
+      const token = generateToken(user, '2h')
 
       // Return user and token (exclude sensitive fields)
       logger.info('Authentication success for %s', user.username)
