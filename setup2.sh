@@ -1,7 +1,7 @@
 # !/bin/bash
 
 # Update and upgrade system packages
-sudo apt update && sudo apt upgrade -y
+sudo apt update && sudo apt upgrade -y && apt install net-tools -y
 
 # Clone repos
 mkdir -p kubot && cd kubot
