@@ -1,0 +1,31 @@
+{
+  "name": "kubot-proxy",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "private",
+  "scripts": {
+    "start": "nodemon api/index.js",
+    "lint": "eslint . --fix",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "hyper-express": "^6.17.4",
+    "morgan": "^1.10.0",
+    "nodemon": "^3.1.9"
+  },
+  "devDependencies": {
+    "eslint": "^8.43.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "prettier": "^3.2.4",
+    "prettier-config-standard": "^7.0.0"
+  },
+  "engines": {
+    "node": ">=22.13.x"
+  }
+}

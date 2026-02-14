@@ -1,0 +1,29 @@
+{
+  "name": "kubot",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "lint": "cd backend && npm run lint && cd ../frontend && npm run lint && cd ../proxy && npm run lint",
+    "audit:frontend": "cd admin/scripts/audit && sh npm-audit.sh ../../../frontend frontend",
+    "audit:backend": "cd admin/scripts/audit && sh npm-audit.sh ../../../backend backend",
+    "audit:all": "npm run audit:frontend false && npm run audit:backend false && npm run audit-report",
+    "audit-report": "cd admin/scripts/audit && node npm-audit-multi.js"
+  },
+  "devDependencies": {
+    "eslint": "^8.43.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "prettier": "^3.2.4",
+    "prettier-config-standard": "^7.0.0"
+  },
+  "engines": {
+    "node": ">=22.13.x"
+  },
+  "workspaces": [
+    "backend",
+    "frontend"
+  ]
+}

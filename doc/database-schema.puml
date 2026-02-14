@@ -1,0 +1,144 @@
+@startuml database-schema
+
+hide empty members
+
+skinparam class {
+  BackgroundColor LightYellow
+  BorderColor Black
+  ArrowColor Black
+}
+
+class Bot {
+  _id: ObjectId
+  createdAt: String
+  userId: ObjectId
+  config: String
+  stopBuying: Boolean
+  openingPrice: Number
+  currentPrice: Number
+  hasStarted: Boolean
+  isPaused: Boolean
+  cycles: Number
+  freePositions: Number
+  lastHighestPrice: Number
+  lastSoldPrice: Number
+  totalProfit: Number
+  totalProfitCrypto: Number
+  totalTransactions: Number
+  positionBoost: Number
+  usdtBoost: Number
+  currentThresholdIndex: Number
+  activeEmergencyPositions: Number
+}
+
+class CryptoProfit {
+  _id: ObjectId
+  date: String
+  userId: ObjectId
+  exchange: String
+  symbol: String
+  amount: Number
+  simulation: Boolean
+}
+
+class DailyProfit {
+  _id: ObjectId
+  date: String
+  userId: ObjectId
+  exchange: String
+  symbol: String
+  profit: Number
+  profitSimulated: Number
+}
+
+class Exchange {
+  _id: ObjectId
+  createdAt: String
+  userId: ObjectId
+  name: String
+  apiKey: String
+  apiSecret: String
+  apiPassphrase: String
+  favorites: String[]
+}
+
+class ManualTransaction {
+  _id: ObjectId
+  createdAt: String
+  userId: ObjectId
+  currency: String
+  amount: Number
+  price: Number
+  fee: Number
+  received: Number
+  paid: Number
+}
+
+class Purchase {
+  _id: ObjectId
+  createdAt: String
+  userId: ObjectId
+  botId: ObjectId
+  associatedSelling: ObjectId
+  currency: String
+  amount: Number
+  price: Number
+  paid: Number
+  fee: Number
+  profitMargin: Number
+  targetPrice: Number
+  isForced: Boolean
+  isEmergency: Boolean
+  isPaused: Boolean
+  isSold: Boolean
+}
+
+class Selling {
+  _id: ObjectId
+  createdAt: String
+  userId: ObjectId
+  botId: ObjectId
+  associatedPurchase: ObjectId
+  currency: String
+  amount: Number
+  price: Number
+  fee: Number
+  buyPrice: Number
+  profitMargin: Number
+  profit: Number
+  isForced: Boolean
+  isEmergency: Boolean
+  profitAsCrypto: Number
+}
+
+class TotalProfit {
+  _id: ObjectId
+  userId: ObjectId
+  exchange: String
+  profit: Number
+  profitSimulated: Number
+}
+
+class User {
+  _id: ObjectId
+  createdAt: String
+  username: String
+  password: String
+  permissions: String[]
+  lastConnection: String
+}
+
+Bot --> User : userId
+CryptoProfit --> User : userId
+DailyProfit --> User : userId
+Exchange --> User : userId
+ManualTransaction --> User : userId
+Purchase --> User : userId
+Purchase --> Bot : botId
+Purchase --> Selling : associatedSelling
+Selling --> User : userId
+Selling --> Bot : botId
+Selling --> Purchase : associatedPurchase
+TotalProfit --> User : userId
+
+@enduml

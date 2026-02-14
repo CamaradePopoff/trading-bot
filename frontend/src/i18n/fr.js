@@ -1,0 +1,314 @@
+export default {
+  common: {
+    ':': ' :',
+    all: 'Tout',
+    amount: 'Quantité',
+    anyPrice: "N'importe quel prix",
+    at: 'à',
+    areYouSure: 'Êtes-vous sûr ?',
+    bought: 'Acheté',
+    buying: 'Achat',
+    class: 'Classe',
+    confirmation: 'Confirmation',
+    created: 'Création :',
+    date: 'Date',
+    exchange: 'Plateforme',
+    fee: 'Commission',
+    from: 'de',
+    help: 'Aide',
+    margin: 'Marge :',
+    minIncrement: 'Incrément minimum',
+    minSize: 'Achat minimum',
+    noData: 'Aucune donnée',
+    noDate: 'Aucune date sélectionnée',
+    noName: 'Sans nom',
+    pair: 'Paire',
+    price: 'Prix',
+    profit: 'Profit',
+    purchase: 'Achat | Achats',
+    selling: 'Vente | Ventes',
+    simulated: 'Simulé',
+    simulation: 'Simulation',
+    sold: 'Vendu',
+    status: 'Statut',
+    success: 'Succès',
+    to: 'à',
+    today: "Aujourd'hui",
+    total: 'Total',
+    totalProfit: 'Profit total',
+    transactions: 'Transactions',
+    unsold: 'Invendu',
+    welcomeTo: 'Bienvenue sur',
+    welcomeToSubtitle: 'Mon Crypto Trading Bot'
+  },
+  menus: {
+    home: 'Accueil',
+    balances: 'Soldes',
+    bots: 'Bots',
+    cryptos: 'Cryptos',
+    trading: 'Marché',
+    favorites: 'Favoris',
+    news: 'Actualités',
+    logs: 'Journaux',
+    account: 'Compte',
+    logout: 'Déconnexion',
+    admin: {
+      users: 'Utilisateurs',
+      bots: 'Bots',
+      userCard: {
+        username: 'Utilisateur',
+        lastConnection: 'Dernière connexion',
+        neverConnected: 'Jamais connecté',
+        permissions: 'Permissions',
+        exchanges: 'Plateformes',
+        noExchanges: 'Aucune plateforme configurée',
+        normalBots: 'bot | bots',
+        simulationBots: 'simul. | simul.',
+        realBots: 'Bots réels',
+        simulationBotsShort: 'Bots simulés',
+        totalRealProfit: 'Profit réel total',
+        totalSimulatedProfit: 'Profit simulé total'
+      }
+    }
+  },
+  buttons: {    add: 'Ajouter',    all: 'Tout',
+    buy: 'Acheter',
+    cancel: 'Annuler',
+    close: 'Fermer',
+    confirm: 'Confirmer',
+    delete: 'Supprimer',
+    edit: 'Modifier',
+    logs: 'Logs',
+    next: 'Suivant',
+    pause: 'Pause',
+    previous: 'Précédent',
+    refresh: 'Actualiser',
+    register: "S'inscrire",
+    resume: 'Reprise',
+    save: 'Enregistrer',
+    sell: 'Vendre',
+    start: 'Démarrer',
+    submit: 'Soumettre',
+    transaction:
+      'Aucune transaction | Voir {count} transaction | Voir {count} transactions'
+  },
+  components: {
+    bot: {
+      configuration: 'Configuration',
+      currency: 'Devise :',
+      marketFee: 'Commission :',
+      openingPrice: "Prix d'ouverture :",
+      investment: 'Investissement :',
+      positions: 'Positions :',
+      positionPrice: 'Prix de position :',
+      buy: 'Acheter',
+      sell: 'Vendre',
+      buyingRange: "Plage d'achat :",
+      notStarted: 'Non démarré',
+      paused: 'En pause',
+      running: 'En marche',
+      freePositions: 'Positions libres :',
+      cycles: 'Cycles :',
+      nextPurchase: 'Prochain achat',
+      nextSelling: 'Prochaine vente',
+      transactions: 'Transactions',
+      order: 'ordre | ordres',
+      usdUnsold: '{asset} investis :',
+      cryptoBought: 'Crypto achetée :',
+      unrealized: 'Non réalisé :',
+      deletionConfirmation: 'Êtes-vous sûr de vouloir supprimer ce bot ?',
+      editConfigTitle: 'Modifier la configuration du bot',      convertProfitToCrypto: 'Convertir le profit en crypto',
+      stopBuying: 'Arrêter d\'acheter',
+      enableBuying: 'Activer l\'achat',
+      reuseProfit: 'Réinvestir le profit',
+      showChart: 'Afficher le graphique',
+      hideChart: 'Masquer le graphique',
+      noNextSelling: 'Aucune prochaine vente',
+      noNextSellingShort: 'Aucune',
+      sellNow: 'Vendre maintenant',
+      sellAllPositive: 'Vendre toutes les positions positives maintenant',
+      buyNow: 'Acheter maintenant',
+      buyCustomAmount: 'Acheter un montant personnalisé',
+      configSaved: 'Configuration enregistrée',
+      saveFailed: 'Erreur lors de l\'enregistrement de la configuration',
+      sellFailed: 'Erreur lors de la vente',
+      buyFailed: 'Erreur lors de l\'achat'
+    },
+    botCard: {
+      currentPrice: 'Prix actuel',
+      investment: 'Investissement :'
+    },
+    botConfig: {
+      botLabel: 'Nom (optionnel)',
+      botInterval: 'Intervalle (s)',
+      currencySettingsLabel: 'Paramètres de devise',
+      marketFee: 'Commission (%)',
+      maxInvestment: 'Investissement maximum ({asset})',
+      maxPositions: 'Nombre maximum de positions',
+      positionPrice: 'Prix de position ({asset})',
+      minDecrease: 'Baisse min. (%)',
+      priceDropThreshold: 'Seuil de baisse du prix (%)',
+      singleThreshold: 'Seuil constant',
+      thresholdArray: 'Profil de seuils',
+      priceDropThresholds: 'Seuils de baisse du prix (%)',
+      thresholdsHint: 'Ex: 1.0, 1.0, 1.5, 1.5, 2.0 (séparés par des virgules)',
+      profitMargin: 'Marge bénéficiaire (%)',
+      maxIncrease: 'Hausse max. (%)',
+      positionsToRebuy: 'Positions hautes',
+      minWorkingPrice: "Prix d'achat minimum",
+      maxWorkingPrice: "Prix d'achat maximum",
+      profitAsCrypto: 'Profit en crypto',
+      dropBehaviorLabel: 'Comportement à la baisse',
+      riseBehaviorLabel: 'Comportement à la hausse',
+      workingRangeLabel: 'Plage de travail (optionnel)',
+      reinvestLabel: 'Réinvestissement (optionnel)',
+      previewLabel: 'Aperçu',
+      reinvestProfitToMaxPositions: 'Nouveau nombre max. de positions',
+      reinvestProfit: 'Augmenter le prix des positions',
+      unlockEmergencyPosition: 'Positions d\'urgence (optionnel)',
+      emergencyUnlockThreshold: 'Seuil de baisse (%)',
+      emergencyUnlockPositions: 'Nombre de positions',
+      cryptoAlert1:
+        'Les paramètres actuels et le prix actuel de la crypto ({price}) ne permettent pas un profit en crypto.',
+      cryptoAlert2:
+        'Le profit en crypto actuel serait de {profit}, mais que le profit minimum réalisable est de {min}.'
+    },
+    botPositionSlider: {
+      showDropPercentage: 'Afficher le pourcentage de baisse',
+      hideDropPercentage: 'Masquer le pourcentage de baisse'
+    },
+    register: {
+      newUser: 'Nouvel utilisateur'
+    },
+    tradingBalances: {
+      title: 'Soldes',
+      loading: 'Chargement des soldes de trading...'
+    },
+    transactionList: {
+      currentProfitMargin: 'Marge bénéficiaire actuelle (%)',
+      currentSellingPrice: 'Prix de vente actuel',
+      newProfitMargin: 'Nouvelle marge bénéficiaire (%)',
+      newSellingPrice: 'Nouveau prix de vente',
+      targetPrice: 'Prix cible',
+      crypto: 'Crypto',
+      actions: 'Actions',
+      profitMargin: 'Marge bénéficiaire :',
+      targetPriceColon: 'Prix cible :',
+      profit: 'Profit :',
+      cryptoProfit: 'Profit en crypto :',
+      confirmNegativeSelling:
+        'Êtes-vous sûr de vouloir vendre avec un profit négatif ?',
+      setNewMargin: 'Définir une nouvelle marge bénéficiaire'
+    },
+    userInfo: {
+      username: "Nom d'utilisateur",
+      password: 'Mot de passe',
+      confirmPassword: 'Confirmer le mot de passe'
+    },
+    exchange: {
+      apiKey: 'Clé API',
+      apiSecret: 'Secret API',
+      apiPassphrase: 'Phrase secrète API (optionnel)',
+    },
+    botConfigManager: {
+      title: 'Gestionnaire de config.',
+      export: 'Exporter',
+      import: 'Importer',
+      downloadJson: 'Télécharger JSON',
+      uploadJson: 'Charger JSON',
+      selectAll: 'Toutes',
+      deselectAll: 'Aucune',
+      noBotsSelected: 'Veuillez sélectionner au moins une configuration de bot à exporter',
+      noImportSelected: 'Veuillez sélectionner au moins une configuration à importer',
+      importSelected: 'Importer la sélection'
+    }
+  },
+  pages: {
+    app: {
+      deleteSimulationsTitle:
+        'Vous êtes sur le point de supprimer tout l\'historique des simulations.',
+      deleteSimulationsHistory: 'Supprimer l\'historique des profits de simulation',
+      soundOn: 'Son activé',
+      soundOff: 'Son désactivé',
+      filterType: 'Filtrer par type',
+      filterSimulation: 'Filtrer simulation'
+    },
+    account: {
+      personalInfo: 'Informations personnelles',
+      exchanges: "Plateformes d'échange",
+      ipWhitelistInfo: "Important : Veuillez ajouter l'adresse IP suivante à la liste blanche dans les paramètres de sécurité API de votre plateforme d'échange : {ip}",
+      botManagement: 'Gestion des bots',
+      importExportDescription: 'Importer et exporter les configurations de bots'
+    },
+    home: {
+      noBots: "vous n'avez aucun bot !",
+      botsTitle: 'Bots actuels',
+      botsTitleSimulation: 'Bots de simulation actuels',
+      profitsTitle: 'Profits quotidiens en {asset}',
+      profitsTitleSimulation: 'Profits quotidiens simulés en {asset}',
+      breakdownByCurrency: 'Ventilation par devise'
+    },
+    balances: {
+      avaiable: 'Disponible :',
+      minBuy: 'Achat minimum :',
+      increment: 'Incrément :',
+      buy: 'Acheter :',
+      sell: 'Vendre :',
+      totalValue: 'Valeur totale :'
+    },
+    bots: {
+      runningOnly: 'Actif',
+      compact: 'Compact',
+      table: 'Tableau',
+      grid: 'Grille',
+      search: 'Rechercher des bots',
+      toggleCharts: 'Afficher/masquer tous les graphiques',
+      pauseAllBots: 'Mettre en pause tous les bots visibles',
+      resumeAllBots: 'Reprendre tous les bots visibles',
+      stopBuyingAllBots: 'Arrêter les achats sur tous les bots visibles',
+      resumeBuyingAllBots: 'Reprendre les achats sur tous les bots visibles',
+      addBot: 'Ajouter un bot',
+      viewBtcChart: 'Voir le graphique BTC/USDT',
+      filterAll: 'Tous les bots',
+      filterRealOnly: 'Bots réels uniquement',
+      filterSimulatedOnly: 'Bots simulés uniquement',
+      filterShortAll: 'Tous',
+      filterShortReal: 'Réels',
+      filterShortSimulated: 'Sim',
+      hiddenSimulatedProfits: 'Des bots simulés cachés ont des positions rentables',
+      hiddenRealProfits: 'Des bots réels cachés ont des positions rentables'
+    },
+    admin: {
+      bots: {
+        selectUser: 'Sélectionner un utilisateur',
+        selectExchange: 'Sélectionner une plateforme',
+        bots: 'bot | bots',
+        symbol: 'Symbole',
+        status: 'Statut',
+        investment: 'Investissement',
+        profit: 'Profit',
+        simulation: 'Simulation',
+        notStarted: 'Non démarré',
+        paused: 'En pause',
+        running: 'En cours',
+        noBots: 'Aucun bot trouvé pour cet utilisateur et cette plateforme',
+        selectUserFirst: 'Veuillez sélectionner un utilisateur pour voir ses bots'      },
+      logs: {
+        botLogs: 'Logs du bot: {botId}'      }
+    },
+    cryptos: {
+      deleteHistoryTitle:
+        "Vous êtes sur le point de supprimer tout l'historique des cryptomonnaies pour {crypto}.",
+      deleteProfitHistory: "Supprimer l'historique des profits"
+    },    trading: {
+      filterTransactions: 'Filtrer par devise...'
+    },    topPairs: {
+      volume: 'Volume :'
+    },
+    news: {
+      caseSensitive: 'Sensible à la casse',
+      entireWord: 'Mot entier',
+      search: 'Rechercher dans les actualités'
+    }
+  }
+}

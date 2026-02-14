@@ -1,0 +1,6 @@
+tmp/
+logs
+backend/migrations/*.js
+node_modules/
+dist/
+.env

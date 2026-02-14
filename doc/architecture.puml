@@ -1,0 +1,43 @@
+@startuml architecture
+
+frame "Ionos (UK)" {
+  rectangle "Nginx server" as nginx
+  rectangle "Bot REST API for KuCoin\n(NodeJS)" as kucoinApi
+  rectangle "Bot REST API for Binance\n(NodeJS)" as binanceApi
+  rectangle "Bot REST API for MEXC\n(NodeJS)" as mexcApi
+}
+frame "Vercel (FR)" as V1 {
+  rectangle "Bot Frontend\n(VueJS)" as app
+}
+frame "Vercel (FR)" as V2 {
+  rectangle "Bot Proxy\nserver\n(NodeJS)" as proxy
+}
+frame "MongoDB Atlas (FR)" {
+  database "Bot\ndatabase" as db
+}
+
+frame KuCoin {
+  rectangle "REST API" as kucoin
+}
+frame Binance {
+  rectangle "REST API" as binance
+}
+frame MEXC {
+  rectangle "REST API" as mexc
+}
+
+actor User
+User <-up-> app
+binanceApi <-up-> db
+kucoinApi <-up-> db
+mexcApi <-up-> db
+kucoinApi <-right-> proxy
+proxy <--> kucoin
+kucoinApi <-up-> kucoin
+binanceApi <-up-> binance
+mexcApi <-up-> mexc
+app <-up-> nginx
+nginx <-up-> kucoinApi : Port 3000
+nginx <-up-> binanceApi : Port 3002
+nginx <-up-> mexcApi : Port 3004
+@enduml

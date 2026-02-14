@@ -1,0 +1,11 @@
+# Migration files
+migrations/
+
+# Logs
+logs/
+
+# Backups
+backups/
+
+# Node modules
+node_modules/
