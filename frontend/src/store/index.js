@@ -539,9 +539,9 @@ export const useMainStore = defineStore('main', {
         this.isGloballyStoppingBuying = false
         return
       }
-      // Check if all filtered bots have stopBuying = true
-      const allStopped = filteredBots.every(bot => bot.stopBuying)
-      const allResumed = filteredBots.every(bot => !bot.stopBuying)
+      // Check if all filtered bots have both stopBuyingOnDrop and stopBuyingOnRebuy = true
+      const allStopped = filteredBots.every(bot => bot.stopBuyingOnDrop && bot.stopBuyingOnRebuy)
+      const allResumed = filteredBots.every(bot => !bot.stopBuyingOnDrop && !bot.stopBuyingOnRebuy)
       // Only set isGloballyStoppingBuying if all bots are in the same state
       if (allStopped) {
         this.isGloballyStoppingBuying = true

@@ -256,8 +256,9 @@ module.exports = function (io, logger) {
       for (const leanBot of botsToProcess) {
         try {
           const bot = getBot(leanBot._id.toString())
-          if (bot && !bot.stopBuying) {
-            await bot.stopBuyingPositions()
+          if (bot && (!bot.stopBuyingOnDrop || !bot.stopBuyingOnRebuy)) {
+            await bot.stopBuyingOnDropPositions()
+            await bot.stopBuyingOnRebuyPositions()
             results.stopped++
           }
         } catch (error) {
@@ -296,8 +297,9 @@ module.exports = function (io, logger) {
       for (const leanBot of botsToProcess) {
         try {
           const bot = getBot(leanBot._id.toString())
-          if (bot && bot.stopBuying) {
-            await bot.goBuyingPositions()
+          if (bot && (bot.stopBuyingOnDrop || bot.stopBuyingOnRebuy)) {
+            await bot.goBuyingOnDropPositions()
+            await bot.goBuyingOnRebuyPositions()
             results.resumed++
           }
         } catch (error) {
@@ -328,7 +330,9 @@ module.exports = function (io, logger) {
       return res.status(404).json({ message: `Bot ${id} not found` })
     }
     const bot = getBot(dbBot._id.toString())
-    dbBot = await bot.stopBuyingPositions()
+    // For backward compatibility, stop both types of buying
+    await bot.stopBuyingOnDropPositions()
+    dbBot = await bot.stopBuyingOnRebuyPositions()
     res.status(200).json(dbBot)
   })
 
@@ -339,7 +343,53 @@ module.exports = function (io, logger) {
       return res.status(404).json({ message: `Bot ${id} not found` })
     }
     const bot = getBot(dbBot._id.toString())
-    dbBot = await bot.goBuyingPositions()
+    // For backward compatibility, resume both types of buying
+    await bot.goBuyingOnDropPositions()
+    dbBot = await bot.goBuyingOnRebuyPositions()
+    res.status(200).json(dbBot)
+  })
+
+  router.post('/:id/stop-buy-on-drop', async (req, res) => {
+    const id = req.params.id
+    let dbBot = await botService.getBotById(id)
+    if (!dbBot) {
+      return res.status(404).json({ message: `Bot ${id} not found` })
+    }
+    const bot = getBot(dbBot._id.toString())
+    dbBot = await bot.stopBuyingOnDropPositions()
+    res.status(200).json(dbBot)
+  })
+
+  router.post('/:id/go-buy-on-drop', async (req, res) => {
+    const id = req.params.id
+    let dbBot = await botService.getBotById(id)
+    if (!dbBot) {
+      return res.status(404).json({ message: `Bot ${id} not found` })
+    }
+    const bot = getBot(dbBot._id.toString())
+    dbBot = await bot.goBuyingOnDropPositions()
+    res.status(200).json(dbBot)
+  })
+
+  router.post('/:id/stop-buy-on-rebuy', async (req, res) => {
+    const id = req.params.id
+    let dbBot = await botService.getBotById(id)
+    if (!dbBot) {
+      return res.status(404).json({ message: `Bot ${id} not found` })
+    }
+    const bot = getBot(dbBot._id.toString())
+    dbBot = await bot.stopBuyingOnRebuyPositions()
+    res.status(200).json(dbBot)
+  })
+
+  router.post('/:id/go-buy-on-rebuy', async (req, res) => {
+    const id = req.params.id
+    let dbBot = await botService.getBotById(id)
+    if (!dbBot) {
+      return res.status(404).json({ message: `Bot ${id} not found` })
+    }
+    const bot = getBot(dbBot._id.toString())
+    dbBot = await bot.goBuyingOnRebuyPositions()
     res.status(200).json(dbBot)
   })
 

@@ -29,7 +29,8 @@ const schema = new Schema(
       reuseProfit: { type: Boolean, default: false },
       simulation: { type: Boolean, required: true }
     },
-    stopBuying: { type: Boolean, default: false },
+    stopBuyingOnDrop: { type: Boolean, default: false },
+    stopBuyingOnRebuy: { type: Boolean, default: false },
     openingPrice: { type: Number, required: true },
     currentPrice: { type: Number },
     hasStarted: { type: Boolean, default: false },

@@ -139,10 +139,16 @@
                   v-if="mdAndUp"
                 >{{ $t('components.bot.configuration') }}</span>
                 <v-spacer v-if="mdAndUp" />
-                <v-icon class="mr-1">
+                <v-icon
+                  class="mr-1"
+                  :size="mdAndUp ? 'small' : 'x-small'"
+                >
                   mdi-update
                 </v-icon>
-                <span class="mr-3">{{ bot.config.botInterval }}s</span>
+                <span
+                  class="mr-3"
+                  :class="mdAndUp ? '' : 'text-caption'"
+                >{{ bot.config.botInterval }}s</span>
                 <v-spacer v-if="!mdAndUp" />
                 <v-tooltip
                   location="bottom"
@@ -150,7 +156,7 @@
                 >
                   <template #activator="{ props: tooltipProps }">
                     <v-btn
-                      size="small"
+                      :size="mdAndUp ? 'small' : 'x-small'"
                       variant="outlined"
                       :color="bot.config.convertProfitToCrypto ? 'primary' : 'error'"
                       class="mr-2"
@@ -170,19 +176,19 @@
                 >
                   <template #activator="{ props: tooltipProps }">
                     <v-btn
-                      size="small"
+                      :size="mdAndUp ? 'small' : 'x-small'"
                       variant="outlined"
-                      :color="bot.stopBuying ? 'error' : 'primary'"
+                      :color="bot.stopBuyingOnDrop ? 'error' : 'primary'"
                       class="mr-2"
                       v-bind="tooltipProps"
-                      @click="toggleStopBuying"
+                      @click="toggleStopBuyingOnDrop"
                     >
                       <v-icon size="large">
-                        {{ bot.stopBuying ? 'mdi-currency-usd-off' : 'mdi-currency-usd' }}
+                        {{ bot.stopBuyingOnDrop ? 'mdi-download-off' : 'mdi-download' }}
                       </v-icon>
                     </v-btn>
                   </template>
-                  {{ bot.stopBuying ? $t('components.bot.enableBuying') : $t('components.bot.stopBuying') }}
+                  {{ bot.stopBuyingOnDrop ? $t('components.bot.enableBuyingOnDrop') : $t('components.bot.stopBuyingOnDrop') }}
                 </v-tooltip>
                 <v-tooltip
                   location="bottom"
@@ -190,7 +196,27 @@
                 >
                   <template #activator="{ props: tooltipProps }">
                     <v-btn
-                      size="small"
+                      :size="mdAndUp ? 'small' : 'x-small'"
+                      variant="outlined"
+                      :color="bot.stopBuyingOnRebuy ? 'error' : 'primary'"
+                      class="mr-2"
+                      v-bind="tooltipProps"
+                      @click="toggleStopBuyingOnRebuy"
+                    >
+                      <v-icon size="large">
+                        {{ bot.stopBuyingOnRebuy ? 'mdi-upload-off' : 'mdi-upload' }}
+                      </v-icon>
+                    </v-btn>
+                  </template>
+                  {{ bot.stopBuyingOnRebuy ? $t('components.bot.enableBuyingOnRebuy') : $t('components.bot.stopBuyingOnRebuy') }}
+                </v-tooltip>
+                <v-tooltip
+                  location="bottom"
+                  content-class="text-caption"
+                >
+                  <template #activator="{ props: tooltipProps }">
+                    <v-btn
+                      :size="mdAndUp ? 'small' : 'x-small'"
                       variant="outlined"
                       :color="bot.config.reuseProfit ? 'primary' : 'error'"
                       class="mr-2"
@@ -210,7 +236,7 @@
                 >
                   <template #activator="{ props: tooltipProps }">
                     <v-btn
-                      size="small"
+                      :size="mdAndUp ? 'small' : 'x-small'"
                       variant="outlined"
                       color="primary"
                       v-bind="tooltipProps"
@@ -1046,8 +1072,14 @@ const toggleProfitReuse = () => {
   })
 }
 
-const toggleStopBuying = () => {
-  botService.toggleStopBuying(bot.value._id, !bot.value.stopBuying).then((res) => {
+const toggleStopBuyingOnDrop = () => {
+  botService.toggleStopBuyingOnDrop(bot.value._id, !bot.value.stopBuyingOnDrop).then((res) => {
+    bot.value = res
+  })
+}
+
+const toggleStopBuyingOnRebuy = () => {
+  botService.toggleStopBuyingOnRebuy(bot.value._id, !bot.value.stopBuyingOnRebuy).then((res) => {
     bot.value = res
   })
 }

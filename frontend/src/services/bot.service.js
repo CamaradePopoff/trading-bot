@@ -62,6 +62,14 @@ function toggleStopBuying(id, toggle) {
   return Api.sendRequestPOST(`bots/${id}/${toggle ? 'stop' : 'go'}-buy`)
 }
 
+function toggleStopBuyingOnDrop(id, toggle) {
+  return Api.sendRequestPOST(`bots/${id}/${toggle ? 'stop' : 'go'}-buy-on-drop`)
+}
+
+function toggleStopBuyingOnRebuy(id, toggle) {
+  return Api.sendRequestPOST(`bots/${id}/${toggle ? 'stop' : 'go'}-buy-on-rebuy`)
+}
+
 function toggleCryptoConvert(id, toggle) {
   return Api.sendRequestPOST(
     `bots/${id}/${toggle ? 'stop' : 'go'}-crypto-convert`
@@ -128,6 +136,8 @@ export default {
   buyNow,
   updateConfig,
   toggleStopBuying,
+  toggleStopBuyingOnDrop,
+  toggleStopBuyingOnRebuy,
   toggleCryptoConvert,
   toggleProfitReuse,
   getLogs,

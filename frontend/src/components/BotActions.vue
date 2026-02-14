@@ -151,16 +151,36 @@
               v-bind="tooltipProps"
               size="x-small"
               variant="outlined"
-              :color="bot.stopBuying ? 'error' : 'primary'"
+              :color="bot.stopBuyingOnDrop ? 'error' : 'primary'"
               class="mr-1"
-              @click.stop="toggleStopBuying"
+              @click.stop="toggleStopBuyingOnDrop"
             >
               <v-icon size="large">
-                {{ bot.stopBuying ? 'mdi-currency-usd-off' : 'mdi-currency-usd' }}
+                {{ bot.stopBuyingOnDrop ? 'mdi-download-off' : 'mdi-download' }}
               </v-icon>
             </v-btn>
           </template>
-          {{ bot.stopBuying ? $t('components.bot.enableBuying') : $t('components.bot.stopBuying') }}
+          {{ bot.stopBuyingOnDrop ? $t('components.bot.enableBuyingOnDrop') : $t('components.bot.stopBuyingOnDrop') }}
+        </v-tooltip>
+        <v-tooltip
+          location="bottom"
+          content-class="text-caption"
+        >
+          <template #activator="{ props: tooltipProps }">
+            <v-btn
+              v-bind="tooltipProps"
+              size="x-small"
+              variant="outlined"
+              :color="bot.stopBuyingOnRebuy ? 'error' : 'primary'"
+              class="mr-1"
+              @click.stop="toggleStopBuyingOnRebuy"
+            >
+              <v-icon size="large">
+                {{ bot.stopBuyingOnRebuy ? 'mdi-upload-off' : 'mdi-upload' }}
+              </v-icon>
+            </v-btn>
+          </template>
+          {{ bot.stopBuyingOnRebuy ? $t('components.bot.enableBuyingOnRebuy') : $t('components.bot.stopBuyingOnRebuy') }}
         </v-tooltip>
         <v-tooltip
           location="bottom"
@@ -305,8 +325,12 @@ const toggleCryptoConvert = () => {
   botService.toggleCryptoConvert(props.bot._id, props.bot.config.convertProfitToCrypto)
 }
 
-const toggleStopBuying = () => {
-  botService.toggleStopBuying(props.bot._id, !props.bot.stopBuying)
+const toggleStopBuyingOnDrop = () => {
+  botService.toggleStopBuyingOnDrop(props.bot._id, !props.bot.stopBuyingOnDrop)
+}
+
+const toggleStopBuyingOnRebuy = () => {
+  botService.toggleStopBuyingOnRebuy(props.bot._id, !props.bot.stopBuyingOnRebuy)
 }
 
 const startBot = () => {

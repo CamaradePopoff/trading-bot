@@ -34,7 +34,8 @@ class MemoryBot {
     this.totalProfit = 0
     this.totalProfitCrypto = 0
     this.totalTransactions = 0
-    this.stopBuying = false
+    this.stopBuyingOnDrop = false
+    this.stopBuyingOnRebuy = false
     this.positionBoost = 0
     this.usdtBoost = 0
     this.currentPrice = null
@@ -797,24 +798,46 @@ class MemoryBot {
     })
   }
 
-  async stopBuyingPositions() {
+  async stopBuyingOnDropPositions() {
     return this.queueOperation(async () => {
-      this.stopBuying = true
+      this.stopBuyingOnDrop = true
       const saved = await this.botService.updateBotData(this.id, {
-        stopBuying: true
+        stopBuyingOnDrop: true
       })
-      this.log('🛑 [CONFIG] Buying stopped.'.green.inverse)
+      this.log('🛑 [CONFIG] Buying on drop stopped.'.green.inverse)
       return saved
     })
   }
 
-  async goBuyingPositions() {
+  async goBuyingOnDropPositions() {
     return this.queueOperation(async () => {
-      this.stopBuying = false
+      this.stopBuyingOnDrop = false
       const saved = await this.botService.updateBotData(this.id, {
-        stopBuying: false
+        stopBuyingOnDrop: false
       })
-      this.log('✅ [CONFIG] Buying resumed.'.green.inverse)
+      this.log('✅ [CONFIG] Buying on drop resumed.'.green.inverse)
+      return saved
+    })
+  }
+
+  async stopBuyingOnRebuyPositions() {
+    return this.queueOperation(async () => {
+      this.stopBuyingOnRebuy = true
+      const saved = await this.botService.updateBotData(this.id, {
+        stopBuyingOnRebuy: true
+      })
+      this.log('🛑 [CONFIG] Buying on rebuy stopped.'.green.inverse)
+      return saved
+    })
+  }
+
+  async goBuyingOnRebuyPositions() {
+    return this.queueOperation(async () => {
+      this.stopBuyingOnRebuy = false
+      const saved = await this.botService.updateBotData(this.id, {
+        stopBuyingOnRebuy: false
+      })
+      this.log('✅ [CONFIG] Buying on rebuy resumed.'.green.inverse)
       return saved
     })
   }
@@ -1127,12 +1150,17 @@ class MemoryBot {
                 await this.shouldAvoidRebuyingInHighPriceArea(this.currentPrice)
             }
 
+            // Check appropriate stop flag based on buying scenario
+            const shouldStopBuying = shouldRebuy
+              ? this.stopBuyingOnRebuy
+              : this.stopBuyingOnDrop
+
             if (
               (this.cycles === 0 ||
                 (hasDropped && !shouldAvoidBuyingInHighArea) ||
                 shouldRebuy) &&
               this.freePositions > 0 &&
-              !this.stopBuying &&
+              !shouldStopBuying &&
               this.currentPrice >= (this.config.minWorkingPrice || -Infinity) &&
               this.currentPrice <= (this.config.maxWorkingPrice || Infinity)
             ) {
@@ -1151,7 +1179,7 @@ class MemoryBot {
               this.soldEmergency = false
             } else if (
               (emergencyPositionUnlocked || this.soldEmergency) &&
-              !this.stopBuying &&
+              !this.stopBuyingOnDrop &&
               this.currentPrice >= (this.config.minWorkingPrice || -Infinity) &&
               this.currentPrice <= (this.config.maxWorkingPrice || Infinity)
             ) {
@@ -1198,7 +1226,8 @@ class MemoryBot {
           stateChanges.totalProfit = this.totalProfit
           stateChanges.totalProfitCrypto = this.totalProfitCrypto || 0
           stateChanges.totalTransactions = this.totalTransactions
-          stateChanges.stopBuying = this.stopBuying
+          stateChanges.stopBuyingOnDrop = this.stopBuyingOnDrop
+          stateChanges.stopBuyingOnRebuy = this.stopBuyingOnRebuy
           stateChanges.currentPrice = this.currentPrice
           stateChanges.positionBoost = this.positionBoost
           stateChanges.usdtBoost = this.usdtBoost

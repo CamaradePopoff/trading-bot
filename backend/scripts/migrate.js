@@ -3,8 +3,13 @@ const { spawn } = require('child_process')
 const command = process.argv[2] || 'up'
 const args = process.argv.slice(3)
 
-const migrateMongo = spawn('npx', ['migrate-mongo', command, ...args], {
-  stdio: 'pipe'
+// Use npx.cmd on Windows, npx on Unix-like systems
+const isWindows = process.platform === 'win32'
+const npxCommand = isWindows ? 'npx.cmd' : 'npx'
+
+const migrateMongo = spawn(npxCommand, ['migrate-mongo', command, ...args], {
+  stdio: 'pipe',
+  shell: isWindows
 })
 
 let output = ''
