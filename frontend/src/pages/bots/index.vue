@@ -113,8 +113,10 @@
             :color="main.isGloballyPaused ? 'primary' : 'warning'"
             class="mt-3 mr-2"
             :size="mdAndUp ? 'large' : 'small'"
+            :disabled="!someBotsSelected"
+            :style="{ opacity: someBotsSelected ? 1 : 0.3, cursor: someBotsSelected ? 'pointer' : 'not-allowed' }"
             v-bind="tooltipProps"
-            @click="toggleGlobalPause"
+            @click="someBotsSelected && toggleGlobalPause()"
           >
             {{ main.isGloballyPaused ? 'mdi-play-box-outline' : 'mdi-pause-box-outline' }}
           </v-icon>
@@ -130,8 +132,10 @@
             :color="main.isGloballyStoppingBuyingOnDrop ? 'primary' : 'error'"
             class="mt-3 mr-2"
             :size="mdAndUp ? 'large' : 'small'"
+            :disabled="!someBotsSelected"
+            :style="{ opacity: someBotsSelected ? 1 : 0.3, cursor: someBotsSelected ? 'pointer' : 'not-allowed' }"
             v-bind="tooltipProps"
-            @click="toggleGlobalStopBuyingOnDrop"
+            @click="someBotsSelected && toggleGlobalStopBuyingOnDrop()"
           >
             {{ main.isGloballyStoppingBuyingOnDrop ? 'mdi-download' : 'mdi-download-off' }}
           </v-icon>
@@ -147,8 +151,10 @@
             :color="main.isGloballyStoppingBuyingOnRebuy ? 'primary' : 'error'"
             class="mt-3 mr-2"
             :size="mdAndUp ? 'large' : 'small'"
+            :disabled="!someBotsSelected"
+            :style="{ opacity: someBotsSelected ? 1 : 0.3, cursor: someBotsSelected ? 'pointer' : 'not-allowed' }"
             v-bind="tooltipProps"
-            @click="toggleGlobalStopBuyingOnRebuy"
+            @click="someBotsSelected && toggleGlobalStopBuyingOnRebuy()"
           >
             {{ main.isGloballyStoppingBuyingOnRebuy ? 'mdi-upload' : 'mdi-upload-off' }}
           </v-icon>
