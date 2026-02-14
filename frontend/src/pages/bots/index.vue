@@ -84,18 +84,12 @@
               >
                 {{ simulationFilter === 'simulated' ? 'mdi-filter' : 'mdi-filter-outline' }}
               </v-icon>
-              <span class="text-body-1 mr-4">{{ filteredBots.length }}</span>
+              <span class="text-body-1 mr-2">{{ filteredBots.length }}</span>
             </div>
           </template>
           {{ $t(`pages.bots.filter${simulationFilter === 'all' ? 'All' : simulationFilter === 'real' ? 'RealOnly' : 'SimulatedOnly'}`) }}
         </v-tooltip>
-        <v-switch
-          v-model="main.compactDisplay"
-          :label="$t('pages.bots.compact')"
-          class="mr-2"
-          color="primary"
-          :disabled="main.tableDisplay"
-        />
+
         <v-tooltip location="bottom">
           <template #activator="{ props: tooltipProps }">
             <v-btn
@@ -103,7 +97,7 @@
               :icon="main.tableDisplay ? 'mdi-land-rows-horizontal' : 'mdi-view-grid-outline'"
               variant="text"
               color="primary"
-              class="ml-1 mt-1"
+              style="margin-top: 2px;"
               @click="main.tableDisplay = !main.tableDisplay"
             />
           </template>
@@ -197,13 +191,14 @@
         {{ $t('pages.bots.addBot') }}
       </v-tooltip>
       <v-tooltip
+        v-if="mdAndUp"
         location="bottom"
         content-class="text-caption"
       >
         <template #activator="{ props: tooltipProps }">
           <v-btn
             :color="main.btcDrawer ? 'primary' : 'primaryDark'"
-            class="mt-3 mr-3"
+            class="mt-3 mr-1"
             :size="mdAndUp ? 'small' : 'x-small'"
             variant="outlined"
             v-bind="tooltipProps"
@@ -214,6 +209,21 @@
         </template>
         {{ $t('pages.bots.viewBtcChart') }}
       </v-tooltip>
+      <div
+        v-if="mdAndUp"
+        class="d-flex flex-wrap mr-2"
+      >
+        <v-checkbox
+          :model-value="allBotsSelected"
+          :indeterminate="someBotsSelected && !allBotsSelected"
+          color="primary"
+          size="small"
+          hide-details
+          style="margin: -28px 1px 0 0;"
+          @update:model-value="toggleSelectAll"
+        />
+      </div>
+
       <div
         v-if="!mdAndUp"
         class="d-flex flex-wrap"
@@ -240,6 +250,7 @@
         <div
           v-if="main.bots.some((bot) => bot.config.simulation)"
           class="d-flex align-start mt-2"
+          style="padding-top: 3px;"
         >
           <v-icon
             :color="simulationFilter === 'all' ? 'white' : 'warning'"
@@ -286,15 +297,6 @@
             <span class="text-primary mr-2">{{ hasHiddenRealProfits.length }}</span>
           </v-tooltip>
         </div>
-        <v-switch
-          v-model="main.compactDisplay"
-          :label="$t('pages.bots.compact')"
-          color="primary"
-          class="ml-1"
-          density="compact"
-          :disabled="main.tableDisplay"
-        />
-
         <v-tooltip location="bottom">
           <template #activator="{ props: tooltipProps }">
             <v-btn
@@ -303,11 +305,41 @@
               size="small"
               variant="text"
               color="primary"
+              style="margin-top: 1px;"
               @click="main.tableDisplay = !main.tableDisplay"
             />
           </template>
           {{ main.tableDisplay ? $t('pages.bots.table') : $t('pages.bots.grid') }}
         </v-tooltip>
+        <v-tooltip
+          location="bottom"
+          content-class="text-caption"
+        >
+          <template #activator="{ props: tooltipProps }">
+            <v-btn
+              :color="main.btcDrawer ? 'primary' : 'primaryDark'"
+              class="mt-3 mr-1"
+              :size="mdAndUp ? 'small' : 'x-small'"
+              variant="outlined"
+              v-bind="tooltipProps"
+              @click="main.btcDrawer = !main.btcDrawer"
+            >
+              BTC
+            </v-btn>
+          </template>
+          {{ $t('pages.bots.viewBtcChart') }}
+        </v-tooltip>
+        <v-spacer />
+        <v-checkbox
+          class="mr-2"
+          :model-value="allBotsSelected"
+          :indeterminate="someBotsSelected && !allBotsSelected"
+          color="primary"
+          size="small"
+          hide-details
+          style="margin: -18px 0 0 0;"
+          @update:model-value="toggleSelectAll"
+        />
       </div>
     </PageHeader>
 
@@ -344,6 +376,9 @@
                   v-for="bot in filteredBots"
                   :key="bot._id"
                   :bot="bot"
+                  :selected="selectedBots.has(bot._id)"
+                  @select="selectBotRow"
+                  @unselect="unselectBotRow"
                 />
               </tbody>
             </table>
@@ -364,7 +399,6 @@
             >
               <BotCard
                 :bot="bot"
-                :compact="main.compactDisplay"
                 @select-bot="selectBot"
               />
             </v-col>
@@ -404,6 +438,16 @@ const route = useRoute()
 const selectedBot = ref()
 const interval = ref()
 const simulationFilter = ref('all') // 'all', 'real', 'simulated'
+const selectedBots = ref(new Set()) // Track selected bot IDs
+
+const allBotsSelected = computed(() => {
+  if (filteredBots.value.length === 0) return false
+  return filteredBots.value.every(bot => selectedBots.value.has(bot._id))
+})
+
+const someBotsSelected = computed(() => {
+  return selectedBots.value.size > 0
+})
 
 const filteredBots = computed(() => {
   const s = main.botFilter || ''
@@ -482,8 +526,11 @@ watch(
 )
 
 watch(
-  () => filteredBots.value,
-  (newFilteredBots) => {
+  () => [main.botFilter, simulationFilter.value, main.showRunningBotsOnly],
+  () => {
+    // Clear selections only when filter criteria actually change
+    selectedBots.value = new Set()
+    const newFilteredBots = filteredBots.value
     main.updateFilteredGlobalPauseState(newFilteredBots)
     main.updateFilteredGlobalStoppingBuyingState(newFilteredBots)
   }
@@ -502,6 +549,26 @@ onMounted(async () => {
 
 onUnmounted(() => clearInterval(interval.value))
 
+const selectBotRow = (bot) => {
+  selectedBots.value = new Set([...selectedBots.value, bot._id])
+}
+
+const unselectBotRow = (bot) => {
+  const newSet = new Set(selectedBots.value)
+  newSet.delete(bot._id)
+  selectedBots.value = newSet
+}
+
+const toggleSelectAll = (value) => {
+  if (value) {
+    // Select all filtered bots
+    selectedBots.value = new Set(filteredBots.value.map(bot => bot._id))
+  } else {
+    // Deselect all bots
+    selectedBots.value = new Set()
+  }
+}
+
 const selectBot = (bot) => {
   selectedBot.value = bot
   router.push({ path: '/bots', query: { id: bot._id } })
@@ -515,15 +582,22 @@ const toggleAllCharts = () => {
   main.showAllCharts = !main.showAllCharts
 }
 
+// Get intersection of filtered bots and selected bots
+const getSelectedFilteredBots = () => {
+  return filteredBots.value.filter(bot => selectedBots.value.has(bot._id))
+}
+
 const toggleGlobalPause = async () => {
   try {
+    const botsToUpdate = getSelectedFilteredBots()
+    if (botsToUpdate.length === 0) return
     if (main.isGloballyPaused) {
-      await main.resumeFilteredBots(filteredBots.value)
+      await main.resumeFilteredBots(botsToUpdate)
     } else {
-      await main.pauseFilteredBots(filteredBots.value)
+      await main.pauseFilteredBots(botsToUpdate)
     }
     await main.getBots()
-    main.updateFilteredGlobalPauseState(filteredBots.value)
+    main.updateFilteredGlobalPauseState(botsToUpdate)
   } catch (error) {
     console.error('Error toggling global pause:', error)
   }
@@ -531,13 +605,15 @@ const toggleGlobalPause = async () => {
 
 const toggleGlobalStopBuyingOnDrop = async () => {
   try {
+    const botsToUpdate = getSelectedFilteredBots()
+    if (botsToUpdate.length === 0) return
     if (main.isGloballyStoppingBuyingOnDrop) {
-      await main.goBuyingOnDropFilteredBots(filteredBots.value)
+      await main.goBuyingOnDropFilteredBots(botsToUpdate)
     } else {
-      await main.stopBuyingOnDropFilteredBots(filteredBots.value)
+      await main.stopBuyingOnDropFilteredBots(botsToUpdate)
     }
     await main.getBots()
-    main.updateFilteredGlobalStoppingBuyingState(filteredBots.value)
+    main.updateFilteredGlobalStoppingBuyingState(botsToUpdate)
   } catch (error) {
     console.error('Error toggling global stop buying on drop:', error)
   }
@@ -545,13 +621,15 @@ const toggleGlobalStopBuyingOnDrop = async () => {
 
 const toggleGlobalStopBuyingOnRebuy = async () => {
   try {
+    const botsToUpdate = getSelectedFilteredBots()
+    if (botsToUpdate.length === 0) return
     if (main.isGloballyStoppingBuyingOnRebuy) {
-      await main.goBuyingOnRebuyFilteredBots(filteredBots.value)
+      await main.goBuyingOnRebuyFilteredBots(botsToUpdate)
     } else {
-      await main.stopBuyingOnRebuyFilteredBots(filteredBots.value)
+      await main.stopBuyingOnRebuyFilteredBots(botsToUpdate)
     }
     await main.getBots()
-    main.updateFilteredGlobalStoppingBuyingState(filteredBots.value)
+    main.updateFilteredGlobalStoppingBuyingState(botsToUpdate)
   } catch (error) {
     console.error('Error toggling global stop buying on rebuy:', error)
   }

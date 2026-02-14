@@ -1,6 +1,6 @@
 <template>
   <tr 
-    :class="props.bot.config.simulation ? 'bg-simulationDark' : 'bg-blue-grey-darken-4'"
+    :class="[props.bot.config.simulation ? 'bg-simulationDark' : 'bg-blue-grey-darken-4', mdAndUp ? '' : 'text-caption']"
     class="bot-row"
   >
     <td v-if="mdAndUp">
@@ -107,7 +107,7 @@
         </template>
       </div>
     </td>
-    <td width="22%">
+    <td :width="mdAndUp ? '22%' : '18%'">
       <div :style="mdAndUp ? 'margin: 0 0 -22px 0' : 'margin: 0 0 -22px 4px'">
         <BotCursor
           :bot="props.bot"
@@ -143,10 +143,11 @@
       </v-tooltip>
     </td>
     <td
-      style="text-align: center;"
+      :style="{ textAlign: 'center', width: mdAndUp ? '68px' : '50px' }"
     >
       <v-icon
-        size="medium"
+        style="margin-top: -4px;"
+        :size="mdAndUp ? 20 : 16"
         color="primary"
         class="clickable mx-1"
         @click.stop="showConfigDialog = true"
@@ -154,13 +155,24 @@
         mdi-cog-outline
       </v-icon>
       <v-icon
-        size="medium"
+        style="margin-top: -4px;"
+        :size="mdAndUp ? 20 : 16"
         color="primary"
         class="clickable mr-1"
         @click.stop="selectBot(props.bot)"
       >
         mdi-location-enter
       </v-icon>
+    </td>
+    <td style="text-align: center; width: 34px;">
+      <v-checkbox
+        v-model="isSelected"
+        style="margin: 0 0 0 3px;"
+        color="primary"
+        density="compact"
+        hide-details
+        @update:model-value="handleCheckboxChange"
+      />
     </td>
   </tr>
 
@@ -233,6 +245,7 @@ const { mdAndUp } = useDisplay()
 const main = useMainStore()
 const { t } = useI18n()
 
+const isSelected = ref(false)
 const showConfirmNegativeSellingDialog = ref(false)
 const isBusy = ref(false)
 const showChart = ref(false)
@@ -249,8 +262,18 @@ const props = defineProps({
   compact: {
     type: Boolean,
     default: false
+  },
+  selected: {
+    type: Boolean,
+    default: false
   }
 })
+
+const emit = defineEmits(['select', 'unselect'])
+
+watch(() => props.selected, (newVal) => {
+  isSelected.value = newVal
+}, { immediate: true })
 
 const nextSellingTransaction = computed(() => {
   return main.nextSellingWithProfit(props.bot)
@@ -303,6 +326,14 @@ const buyNow = async (usd = null) => {
 
 const selectBot = (bot) => {
   router.push({ path: '/bots', query: { id: bot._id } })
+}
+
+const handleCheckboxChange = () => {
+  if (isSelected.value) {
+    emit('select', props.bot)
+  } else {
+    emit('unselect', props.bot)
+  }
 }
 
 const saveConfig = () => {

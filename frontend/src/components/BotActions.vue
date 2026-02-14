@@ -21,8 +21,7 @@
         </v-icon>
       </template>
       <div
-        class="ml-2"
-        :class="compact ? 'text-h8' : 'text-h6'"
+        class="ml-2 text-h8"
         style="white-space: nowrap; max-width: 120px; overflow: hidden;"
       >
         <span :class="bot.config.simulation ? 'text-simulation' : ''">{{ bot.config.label || `(${$t('common.noName')})` }}</span>
@@ -292,10 +291,6 @@ const props = defineProps({
   bot: {
     type: Object,
     required: true
-  },
-  compact: {
-    type: Boolean,
-    default: false
   },
   showChart: {
     type: Boolean,

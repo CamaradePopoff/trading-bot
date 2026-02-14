@@ -138,7 +138,7 @@ export const useMainStore = defineStore('main', {
     cryptoProfits: null,
     totalInvestment: 0,
     showRunningBotsOnly: false,
-    compactDisplay: true,
+
     tableDisplay: false,
     showAllCharts: false,
     menuDrawer: true,
@@ -342,7 +342,7 @@ export const useMainStore = defineStore('main', {
       this.bots = []
       this.totalInvestment = 0
       this.showRunningBotsOnly = false
-      this.compactDisplay = true
+
       this.tableDisplay = false
       this.menuDrawer = true
       this.transactionsDrawer = true

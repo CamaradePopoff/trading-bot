@@ -18,8 +18,7 @@
           alt=""
         >
         <div
-          class="ml-2"
-          :class="props.compact ? 'text-h8' : 'text-h6'"
+          class="ml-2 text-h8"
         >
           <span :class="props.bot.config.simulation ? 'text-simulation' : ''">{{ props.bot.config.label || `(${$t('common.noName')})` }}</span>
         </div>
@@ -71,7 +70,6 @@
 
       <BotActions
         :bot="props.bot"
-        :compact="compact"
         :show-chart="showChart"
         @toggle-chart="showChart = !showChart"
       />
@@ -110,7 +108,7 @@
         </div>
       </div>
       
-      <v-card-text :style="{ height: props.compact ? (showChart ? '260px' : '127px') : '260px' }">
+      <v-card-text :style="{ height: showChart ? '260px' : '127px' }">
         <v-container
           v-if="!showChart"
           class="ma-0 pa-0"
@@ -119,68 +117,8 @@
             dense
           >
             <v-col
-              v-if="!props.compact"
-              cols="6"
-            >
-              <div class="mb-2 text-primary">
-                <h2>{{ props.bot.config.symbol.replace(new RegExp(`-?${main.exchangeAsset}$`), '') }}</h2>
-              </div>
-              <h4 class="mb-0">
-                {{ $t('components.bot.positions') }}
-                <span :class="props.bot.freePositions > 0 ? 'text-purchase' : 'text-error'">{{ props.bot.freePositions }}</span>/<span>
-                  {{ props.bot.config.maxPositions + (props.bot.positionBoost || 0) }}
-                </span>
-              </h4>
-            </v-col>
-            <v-col
-              v-if="!props.compact"
-              cols="6"
-              align="right"
-            >
-              <h2 class="mb-2">
-                <span class="text-purchase">{{ currentDropThreshold }}%</span>
-                - <span class="text-selling">{{ props.bot.config.profitMargin }}%</span>
-              </h2>
-              <h4 class="mb-0">
-                {{ main.usdtRound(props.bot.config.maxInvestment / props.bot.config.maxPositions) }}
-                <span
-                  v-if="bot.config.reuseProfit && bot.usdtBoost"
-                  class="text-purchase"
-                >+ {{ main.usdtRound(bot.usdtBoost) }}</span> {{ main.exchangeAsset }}
-              </h4>
-            </v-col>
-            <v-col
-              v-if="!props.compact"
               cols="12"
-              class="mb-4"
-              align="center"
-            >
-              <h2
-                class="d-flex justify-center"
-                :class="bot.config.simulation ? 'text-simulation font-weight-light' : 'text-primary'"
-              >
-                <div>{{ main.usdtRound(bot.totalProfit) }} {{ main.exchangeAsset }}</div>
-                <template v-if="bot.totalProfitCrypto">
-                  <v-spacer />
-                  <div :class="bot.config.simulation ? 'text-simulation font-weight-light' : 'text-primary'">
-                    <v-tooltip
-                      location="bottom"
-                      class="text-body-2"
-                    >
-                      {{ main.usdtRound(bot.totalProfitCrypto * bot.currentPrice) }} {{ main.exchangeAsset }}
-                      <template #activator="{ props: pps2 }">
-                        <span v-bind="pps2">
-                          {{ main.jsRound(bot.totalProfitCrypto) }}&nbsp;{{ bot.config.symbol.replace(new RegExp(`-?${main.exchangeAsset}$`), '') }}
-                        </span>
-                      </template>
-                    </v-tooltip>
-                  </div>
-                </template>
-              </h2>
-            </v-col>
-            <v-col
-              cols="12"
-              :class="props.compact ? 'pt-4' : ''"
+              :class="'pt-4'"
             >
               <BotCursor
                 v-if="nextSellingTransaction"
@@ -207,20 +145,6 @@
                 :next-selling-transaction="nextSellingTransaction"
                 style="margin-top:-24px;"
               />
-            </v-col>
-            <v-col
-              v-if="!props.compact"
-              cols="12"
-              align="center"
-            >
-              <div
-                v-if="bot.config.minWorkingPrice || bot.config.maxWorkingPrice"
-                class="d-flex text-body-1 mx-2"
-              >
-                <span class="font-weight-bold text-purchase">{{ bot.config.minWorkingPrice || $t('common.anyPrice') }}</span>
-                <v-spacer />
-                <span class="font-weight-bold text-purchase">{{ bot.config.maxWorkingPrice || $t('common.anyPrice') }}</span>
-              </div>
             </v-col>
           </v-row>
         </v-container>
@@ -262,10 +186,6 @@ const props = defineProps({
   bot: {
     type: Object,
     required: true
-  },
-  compact: {
-    type: Boolean,
-    default: false
   }
 })
 
@@ -283,23 +203,6 @@ onMounted(() => {
   botTradingActionsRef.value?.initializeBuyUsd(
     main.usdtRound(props.bot.config.maxInvestment / props.bot.config.maxPositions)
   )
-})
-
-const currentDropThreshold = computed(() => {
-  // Support both legacy single threshold and new threshold array
-  if (
-    props.bot.config.priceDropThresholds &&
-    Array.isArray(props.bot.config.priceDropThresholds)
-    && props.bot.config.priceDropThresholds.length > 0
-  ) {
-    const index = Math.min(
-      props.bot.currentThresholdIndex || 0,
-      props.bot.config.priceDropThresholds.length - 1
-    )
-    return props.bot.config.priceDropThresholds[index]
-  }
-  // Legacy: use single priceDropThreshold
-  return props.bot.config.priceDropThreshold
 })
 
 const botNews = (symbol) => {
