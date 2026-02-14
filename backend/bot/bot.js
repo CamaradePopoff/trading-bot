@@ -1179,6 +1179,16 @@ class MemoryBot {
               await this.buyNow(false, soldOne, null, false)
               this.soldEmergency = false
             } else if (
+              shouldRebuy &&
+              this.stopBuyingOnRebuy &&
+              this.freePositions > 0
+            ) {
+              // When stopBuyingOnRebuy is enabled and we skip the rebuy,
+              // still update lastHighestPrice to current price so the next
+              // drop threshold is calculated correctly from the current level
+              this.lastHighestPrice = this.currentPrice
+              this.soldEmergency = false
+            } else if (
               (emergencyPositionUnlocked || this.soldEmergency) &&
               !this.stopBuyingOnDrop &&
               this.currentPrice >= (this.config.minWorkingPrice || -Infinity) &&
