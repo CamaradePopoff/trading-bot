@@ -382,7 +382,7 @@
             id="btc-chart"
             :style="{ 
               height: `${main.btcChartHeight}px`,
-              zIndex: 99999,
+              zIndex: 100,
               overflowY: 'hidden',
               width: `calc(100% - ${(main.menuDrawer ? 180 : 0) + (main.transactionsDrawer ? 260 : 0)}px)`,
               position: 'absolute',

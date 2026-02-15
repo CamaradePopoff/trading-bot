@@ -238,7 +238,7 @@
             padding: '0',
             width: '600px',
             height: '400px',
-            'z-index': 10
+            'z-index': 1000
           }"
         >
           <TradingView
