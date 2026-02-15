@@ -876,8 +876,9 @@ const logout = () => {
 .chart-resize-handle {
   position: absolute;
   top: 0;
-  left: 0;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
   height: 40px;
   cursor: ns-resize;
   z-index: 10;
