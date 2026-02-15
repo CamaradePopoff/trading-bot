@@ -132,7 +132,7 @@ const getSimpleTableAsString = (scope) => {
 const sendSlackMessage = () => {
   if (!process.env.PUBLISH_TO_SLACK) return
 
-  const slackWebhookUrl = 'https://hooks.slack.com/services/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'
+  const slackWebhookUrl = 'https://hooks.slack.com/services/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'
 
   const allTableText = getSimpleTableAsString('all')
   const prodTableText = getSimpleTableAsString('prod')
