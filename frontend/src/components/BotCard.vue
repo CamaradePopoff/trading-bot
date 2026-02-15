@@ -100,7 +100,7 @@
           class="bg-grey-darken-3 px-2 py-1"
         >
           <MiniChart
-            :chart-key="props.bot._id"
+            :chart-key="`${props.bot.config.exchange}:${props.bot.config.symbol}`"
             :price="props.bot.currentPrice"
             :height="50"
             :max-points="180"

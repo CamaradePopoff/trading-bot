@@ -350,10 +350,14 @@ export const useMainStore = defineStore('main', {
       this.selectedTradingPair = null
       this.botFilter = null
       this.adminMode = false
-      this.miniChartCache = {}
+      // Keep miniChartCache - it persists across users and sessions
       this.btcDrawer= false
+      // Save exchange and miniChartCache before clearing localStorage
+      const savedExchange = this.exchange
+      const savedMiniChartCache = JSON.stringify(this.miniChartCache)
       localStorage.clear()
-      localStorage.setItem('exchange', this.exchange)
+      localStorage.setItem('exchange', savedExchange)
+      localStorage.setItem(miniChartCacheKey, savedMiniChartCache)
       document.location.href = '/'
     },
     async getExchanges() {

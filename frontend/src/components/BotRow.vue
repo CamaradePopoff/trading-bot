@@ -44,7 +44,7 @@
       style="text-align: center;"
     >
       <MiniChart
-        :chart-key="props.bot._id"
+        :chart-key="`${props.bot.config.exchange}:${props.bot.config.symbol}`"
         :price="props.bot.currentPrice"
         :height="28"
         :max-points="180"
