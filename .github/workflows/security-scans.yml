@@ -1,0 +1,122 @@
+name: "[CHECK] security scans"
+on:
+  # Allow the workflow to be triggered manually:
+  workflow_dispatch:
+  # Allow the workflow to be called by another workflow:
+  workflow_call:
+  # Also run the workflow every Sunday at 00:00 UTC:
+  schedule:
+    - cron: '0 0 * * 0'
+
+jobs:
+  trivy-scan:
+    runs-on: ubuntu-latest
+    env:
+      PUBLISH_SCAN_REPORT: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create output directories
+        run: mkdir -p scans/trivy
+
+      - name: Run Trivy vulnerability scanner on backend
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: './backend'
+          format: 'json'
+          output: 'scans/trivy/trivy-scan-backend.json'
+
+      - name: Run Trivy vulnerability scanner on frontend
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: './frontend'
+          format: 'json'
+          output: 'scans/trivy/trivy-scan-frontend.json'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Merge Trivy scan reports
+        run: |
+          cd admin && npm install
+          node scripts/manage/merge-vulnerability-scans.js ../scans/trivy latest "NPM dependencies"
+
+      - name: Save Trivy scan results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trivy-scan-results
+          path: scans/trivy/
+          retention-days: 1
+
+  semgrep-scan:
+    runs-on: ubuntu-latest
+    env:
+      PUBLISH_SCAN_REPORT: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create output directories
+        run: mkdir -p scans/semgrep
+
+      - name: Install Semgrep
+        run: pip install semgrep
+
+      - name: Run Semgrep scan on backend
+        run: |
+          semgrep --config=auto --json --output=scans/semgrep/semgrep-scan-backend.json ./backend
+        continue-on-error: true
+
+      - name: Run Semgrep scan on frontend
+        run: |
+          semgrep --config=auto --json --output=scans/semgrep/semgrep-scan-frontend.json ./frontend
+        continue-on-error: true
+
+      - name: Merge Semgrep scan reports
+        run: |
+          cd admin && npm install
+          node scripts/manage/merge-vulnerability-scans.js ../scans/semgrep latest "Source code"
+
+      - name: Save Semgrep scan results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: semgrep-scan-results
+          path: scans/semgrep/
+          retention-days: 1
+
+  upload-reports:
+    runs-on: ubuntu-latest
+    needs: [trivy-scan, semgrep-scan]
+    if: always()
+    steps:
+      - name: Download Trivy scan results
+        uses: actions/download-artifact@v4
+        with:
+          name: trivy-scan-results
+          path: scans/trivy/
+        continue-on-error: true
+
+      - name: Download Semgrep scan results
+        uses: actions/download-artifact@v4
+        with:
+          name: semgrep-scan-results
+          path: scans/semgrep/
+        continue-on-error: true
+
+      - name: Upload all security scan reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-scan-reports
+          path: |
+            scans/trivy/*.json
+            scans/trivy/*.html
+            scans/semgrep/*.json
+            scans/semgrep/*.html
+          retention-days: 30

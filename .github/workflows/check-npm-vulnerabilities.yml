@@ -1,0 +1,28 @@
+name: "[CHECK] npm vulnerabilities"
+on:
+  # Allow the workflow to be triggered manually:
+  workflow_dispatch:
+  # Allow the workflow to be called by another workflow:
+  workflow_call:
+  # Also run the workflow every Sunday at 00:00 UTC:
+  schedule:
+    - cron: '0 0 * * 0'
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      PUBLISH_TO_SLACK: true
+    strategy:
+      matrix:
+        node-version: [22.x]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.x'
+      - name: Install dependencies
+        run: npm ci --no-audit --loglevel=error --no-fund --no-progress && cd ./admin && npm ci --no-audit --loglevel=error --no-fund --no-progress
+      - name: Check for vulnerabilities
+        run: npm run audit:all
