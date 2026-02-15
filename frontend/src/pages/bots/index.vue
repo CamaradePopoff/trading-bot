@@ -234,7 +234,7 @@
         v-if="!mdAndUp"
         class="d-flex flex-wrap"
       >
-        <div style="width: calc(100%)">
+        <div style="width: 100%">
           <v-text-field
             v-model="main.botFilter"
             :label="$t('pages.bots.search')"
@@ -360,7 +360,7 @@
 
     <div
       class="d-flex justify-center"
-      :style="{ marginTop: '-20px', height: main.btcDrawer ? 'calc(100dvh - 64px - 74px - 40px - 350px)' : undefined, overflowY: main.btcDrawer ? 'auto' : undefined }"
+      :style="{ marginTop: '-20px', height: main.btcDrawer ? `calc(100dvh - 64px - 74px - 40px - ${main.btcChartHeight}px)` : undefined, overflowY: main.btcDrawer ? 'auto' : undefined }"
     >
       <v-container
         fluid

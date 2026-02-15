@@ -147,6 +147,7 @@ export const useMainStore = defineStore('main', {
     currentPrices: {},
     miniChartCache: loadMiniChartCache(),
     btcDrawer: false,
+    btcChartHeight: parseInt(localStorage.getItem('btcChartHeight')) || 350,
     bots: [],
     selectedTradingPair: null,
     botFilter: null,

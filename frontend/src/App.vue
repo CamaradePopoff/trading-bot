@@ -381,14 +381,21 @@
             v-show="main.btcDrawer && route.path === '/bots' && !route.query.id"
             id="btc-chart"
             :style="{ 
-              height: '350px', 
-              overflowY: 'hidden', 
-              width: `calc(100% - ${(main.menuDrawer ? 180 : 0) + (main.transactionsDrawer ? 260 : 0)}px)`, 
-              position: 'absolute', 
+              height: `${main.btcChartHeight}px`,
+              zIndex: 99999,
+              overflowY: 'hidden',
+              width: `calc(100% - ${(main.menuDrawer ? 180 : 0) + (main.transactionsDrawer ? 260 : 0)}px)`,
+              position: 'absolute',
               bottom: '39px',
-              transition: 'width 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+              transition: isResizingChart ? 'none' : 'width 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
             }"
           >
+            <div
+              class="chart-resize-handle"
+              @mousedown="startChartResize"
+            >
+              <div class="chart-resize-handle-bar" />
+            </div>
             <TradingView
               v-if="main.user && main.lang && main.exchangeAsset"
               :key="main.lang"
@@ -567,6 +574,12 @@ const filterSimulationTransactions = ref(null)
 const tokenTimeRemaining = ref('')
 const isTokenTimeLow = ref(false)
 
+// BTC chart resize functionality
+const isResizingChart = ref(false)
+const resizeStartY = ref(0)
+const resizeStartHeight = ref(0)
+const animationFrameId = ref(null)
+
 // Decode JWT token and calculate remaining time
 const updateTokenExpiration = () => {
   if (!main.token) {
@@ -703,7 +716,63 @@ onMounted(() => {
 
 onUnmounted(()=>{
   if (appInterval.value) clearInterval(appInterval.value)
+  if (animationFrameId.value) cancelAnimationFrame(animationFrameId.value)
+  document.removeEventListener('mousemove', handleChartResize, true)
+  document.removeEventListener('mouseup', stopChartResize, true)
 })
+
+const startChartResize = (event) => {
+  isResizingChart.value = true
+  resizeStartY.value = event.clientY
+  resizeStartHeight.value = main.btcChartHeight
+  document.body.style.cursor = 'ns-resize'
+  document.body.style.userSelect = 'none'
+  document.addEventListener('mousemove', handleChartResize, { capture: true, passive: false })
+  document.addEventListener('mouseup', stopChartResize, { capture: true, passive: false })
+  event.preventDefault()
+  event.stopPropagation()
+}
+
+const handleChartResize = (event) => {
+  if (!isResizingChart.value) return
+  
+  event.preventDefault()
+  event.stopPropagation()
+  
+  // Cancel any pending animation frame
+  if (animationFrameId.value) {
+    cancelAnimationFrame(animationFrameId.value)
+  }
+  
+  // Use requestAnimationFrame for smooth updates
+  animationFrameId.value = requestAnimationFrame(() => {
+    const deltaY = resizeStartY.value - event.clientY
+    const newHeight = Math.max(200, Math.min(800, resizeStartHeight.value + deltaY))
+    main.btcChartHeight = newHeight
+    animationFrameId.value = null
+  })
+}
+
+const stopChartResize = (event) => {
+  if (!isResizingChart.value) return
+  
+  event.preventDefault()
+  event.stopPropagation()
+  
+  isResizingChart.value = false
+  document.body.style.cursor = ''
+  document.body.style.userSelect = ''
+  
+  // Cancel any pending animation frame
+  if (animationFrameId.value) {
+    cancelAnimationFrame(animationFrameId.value)
+    animationFrameId.value = null
+  }
+  
+  localStorage.setItem('btcChartHeight', main.btcChartHeight.toString())
+  document.removeEventListener('mousemove', handleChartResize, true)
+  document.removeEventListener('mouseup', stopChartResize, true)
+}
 
 const deleteSimulations = () => {
   userService.deleteSimulatedProfits().then(() => {
@@ -802,5 +871,33 @@ const logout = () => {
 
 .blink-text {
   animation: blink-text 1s ease-in-out infinite;
+}
+
+.chart-resize-handle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  cursor: ns-resize;
+  z-index: 10;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 4px;
+  user-select: none;
+}
+
+.chart-resize-handle:hover .chart-resize-handle-bar {
+  background-color: rgb(var(--v-theme-primary));
+}
+
+.chart-resize-handle-bar {
+  width: 80px;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  transition: background-color 0.2s;
+  pointer-events: none;
 }
 </style>
