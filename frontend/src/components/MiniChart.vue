@@ -55,12 +55,11 @@ const setCachedPoints = (points) => {
   }
 }
 
-const updateSeriesColor = () => {
-  if (!series || dataPoints.length < 2) return
-  const startIndex = Math.max(0, dataPoints.length - props.maxPoints)
-  const first = dataPoints[startIndex].value
-  const last = dataPoints[dataPoints.length - 1].value
-  const isUp = last >= first
+const updateSeriesColor = (points = dataPoints) => {
+  if (!series || points.length < 2) return
+  const first = points[0].value
+  const last = points[points.length - 1].value
+  const isUp = last > first
   series.applyOptions({
     color: isUp ? '#26a69a' : '#ef5350'
   })
@@ -82,8 +81,9 @@ const pushPoint = (value) => {
       series.update({ time, value })
     }
   }
-  updateSeriesColor()
-  setCachedPoints(dataPoints.slice(-props.maxPoints))
+  const cachedPoints = dataPoints.slice(-props.maxPoints)
+  updateSeriesColor(cachedPoints)
+  setCachedPoints(cachedPoints)
 }
 
 const buildChart = () => {
@@ -126,7 +126,7 @@ const buildChart = () => {
   if (cachedPoints.length > 0) {
     dataPoints.splice(0, dataPoints.length, ...cachedPoints)
     series.setData(dataPoints)
-    updateSeriesColor()
+    updateSeriesColor(cachedPoints)
   }
 }
 
