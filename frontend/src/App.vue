@@ -393,6 +393,7 @@
             <div
               class="chart-resize-handle"
               @mousedown="startChartResize"
+              @touchstart="startChartResize"
             >
               <div class="chart-resize-handle-bar" />
             </div>
@@ -524,6 +525,7 @@
       <Login v-else />
     </template>
   </v-app>
+
   <v-snackbar
     v-model="snackbarShow"
     :color="main.snackbar && main.snackbar.color ? main.snackbar.color : 'primary'"
@@ -719,16 +721,24 @@ onUnmounted(()=>{
   if (animationFrameId.value) cancelAnimationFrame(animationFrameId.value)
   document.removeEventListener('mousemove', handleChartResize, true)
   document.removeEventListener('mouseup', stopChartResize, true)
+  document.removeEventListener('touchmove', handleChartResize, true)
+  document.removeEventListener('touchend', stopChartResize, true)
 })
+
+const getClientY = (event) => {
+  return event.touches ? event.touches[0].clientY : event.clientY
+}
 
 const startChartResize = (event) => {
   isResizingChart.value = true
-  resizeStartY.value = event.clientY
+  resizeStartY.value = getClientY(event)
   resizeStartHeight.value = main.btcChartHeight
   document.body.style.cursor = 'ns-resize'
   document.body.style.userSelect = 'none'
   document.addEventListener('mousemove', handleChartResize, { capture: true, passive: false })
   document.addEventListener('mouseup', stopChartResize, { capture: true, passive: false })
+  document.addEventListener('touchmove', handleChartResize, { capture: true, passive: false })
+  document.addEventListener('touchend', stopChartResize, { capture: true, passive: false })
   event.preventDefault()
   event.stopPropagation()
 }
@@ -746,7 +756,7 @@ const handleChartResize = (event) => {
   
   // Use requestAnimationFrame for smooth updates
   animationFrameId.value = requestAnimationFrame(() => {
-    const deltaY = resizeStartY.value - event.clientY
+    const deltaY = resizeStartY.value - getClientY(event)
     const newHeight = Math.max(200, Math.min(800, resizeStartHeight.value + deltaY))
     main.btcChartHeight = newHeight
     animationFrameId.value = null
@@ -772,6 +782,8 @@ const stopChartResize = (event) => {
   localStorage.setItem('btcChartHeight', main.btcChartHeight.toString())
   document.removeEventListener('mousemove', handleChartResize, true)
   document.removeEventListener('mouseup', stopChartResize, true)
+  document.removeEventListener('touchmove', handleChartResize, true)
+  document.removeEventListener('touchend', stopChartResize, true)
 }
 
 const deleteSimulations = () => {
