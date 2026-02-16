@@ -156,6 +156,44 @@ async function getCurrentPrice(user, symbol) {
   }
 }
 
+// Get historical candles/klines for a symbol
+// interval: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 1w (standardized format)
+async function getCandles(
+  user,
+  symbol,
+  interval = '3m',
+  startTime = null,
+  endTime = null
+) {
+  // MEXC uses the same format as Binance, no conversion needed
+  // MEXC API: GET /api/v3/klines (similar to Binance)
+  const params = { symbol, interval, limit: 100 }
+  if (startTime) params.startTime = startTime * 1000 // MEXC uses milliseconds
+  if (endTime) params.endTime = endTime * 1000
+
+  const endpoint = '/api/v3/klines'
+
+  try {
+    const response = await makeRequest(user, endpoint, 'GET', params, false)
+
+    if (response && Array.isArray(response)) {
+      // Convert to standard OHLC format
+      return response.map((candle) => ({
+        time: Math.floor(candle[0] / 1000), // Convert to seconds
+        open: parseFloat(candle[1]),
+        high: parseFloat(candle[2]),
+        low: parseFloat(candle[3]),
+        close: parseFloat(candle[4]),
+        volume: parseFloat(candle[5])
+      }))
+    }
+    return []
+  } catch (error) {
+    logger.error(`Error fetching candles for ${symbol}: ${error.message}`)
+    return []
+  }
+}
+
 async function getMinimumSize(user, symbol) {
   const endpoint = '/api/v3/exchangeInfo'
   const params = { symbol }
@@ -414,6 +452,7 @@ module.exports = {
   getTradingPairs,
   getCryptoBalance,
   getCurrentPrice,
+  getCandles,
   getMinimumSize,
   placeOrder,
   buyCrypto,

@@ -71,6 +71,50 @@ async function getCurrentPrice(user, symbol) {
   return data && data.price ? parseFloat(data.price) : null
 }
 
+// Get historical candles/klines for a symbol
+// interval: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 1w (standardized format)
+async function getCandles(
+  user,
+  symbol,
+  interval = '3m',
+  startTime = null,
+  endTime = null
+) {
+  // Binance uses the same format, no conversion needed
+  // Binance API: GET /api/v3/klines
+  // Returns: [[timestamp, open, high, low, close, volume, closeTime, quoteVolume, trades, ...], ...]
+  const params = new URLSearchParams({ symbol, interval })
+  if (startTime) params.append('startTime', startTime * 1000) // Binance uses milliseconds
+  if (endTime) params.append('endTime', endTime * 1000)
+  params.append('limit', '100')
+
+  try {
+    const response = await fetch(
+      `${exchangeBaseURL}/api/v3/klines?${params.toString()}`
+    )
+    const data = await response.json()
+
+    if (response.ok && Array.isArray(data)) {
+      // Convert to standard OHLC format
+      return data.map((candle) => ({
+        time: Math.floor(candle[0] / 1000), // Convert to seconds
+        open: parseFloat(candle[1]),
+        high: parseFloat(candle[2]),
+        low: parseFloat(candle[3]),
+        close: parseFloat(candle[4]),
+        volume: parseFloat(candle[5])
+      }))
+    }
+    logger.error(
+      `Error fetching candles for ${symbol}: ${JSON.stringify(data)}`
+    )
+    return []
+  } catch (error) {
+    logger.error(`Error fetching candles for ${symbol}: ${error.message}`)
+    return []
+  }
+}
+
 async function placeOrder(
   user,
   symbol,
@@ -504,6 +548,7 @@ module.exports = {
   jsRound,
   getTickers,
   getCurrentPrice,
+  getCandles,
   placeOrder,
   getTradingPairs,
   getTradingPairFee,

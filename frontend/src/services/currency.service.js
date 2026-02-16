@@ -12,6 +12,13 @@ function getSymbolPrice(symbol) {
   return Api.sendRequestGET(`ccy/${symbol}/price`)
 }
 
+function getCandles(symbol, type = '3m', startAt = null, endAt = null) {
+  const params = new URLSearchParams({ type })
+  if (startAt) params.append('startAt', startAt)
+  if (endAt) params.append('endAt', endAt)
+  return Api.sendRequestGET(`ccy/${symbol}/candles?${params.toString()}`)
+}
+
 function getBatchPrices(symbols) {
   return Api.sendRequestPOST('ccy/prices/batch', { symbols })
 }
@@ -44,6 +51,7 @@ export default {
   getTopPairs,
   getSymbolFees,
   getSymbolPrice,
+  getCandles,
   getBatchPrices,
   getCurrentPrices,
   getTradingPairs,

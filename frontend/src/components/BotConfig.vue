@@ -79,10 +79,11 @@
               cols="12"
               style="height: 300px;"
             >
-              <TradingView
+              <LightweightTradingView
                 :key="localForm.symbol"
                 :pair="localForm.symbol"
-                :lang="main.lang"
+                :current-price="currentPrice"
+                :purchase-prices="futurePurchasePrices"
                 :exchange="main.exchange"
               />
             </v-col>
@@ -539,6 +540,7 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import currencyService from '@services/currency.service'
 import { useMainStore } from '@/store'
 import { useDisplay } from 'vuetify'
+import LightweightTradingView from '@components/LightweightTradingView.vue'
 
 const main = useMainStore()
 const { mdAndUp } = useDisplay()
@@ -797,6 +799,53 @@ const projectedNextSellingTransaction = computed(() => {
   transaction = { ...props.nextSellingTransaction }
   transaction.targetPrice = transaction.targetPrice / (1 + transaction.profitMargin) * (1 + localForm.value.profitMargin / 100)
   return transaction
+})
+
+const futurePurchasePrices = computed(() => {
+  if (!currentPrice.value || !localForm.value.maxPositions) return []
+  
+  // Use the selling transaction price as base (like BotDropProfileTable does)
+  // This is where we would start buying from, not the current market price
+  const basePrice = projectedNextSellingTransaction.value?.price || currentPrice.value
+  
+  const prices = []
+  const useThresholdArray = localForm.value.priceDropThresholds && 
+    Array.isArray(localForm.value.priceDropThresholds) && 
+    localForm.value.priceDropThresholds.length > 0
+  
+  if (useThresholdArray) {
+    // Use threshold array - each purchase is cumulative drop from base price
+    let cumulativeThreshold = 0
+    for (let i = 0; i < Math.min(localForm.value.maxPositions, 10); i++) {
+      const thresholdIndex = Math.min(i, localForm.value.priceDropThresholds.length - 1)
+      cumulativeThreshold += localForm.value.priceDropThresholds[thresholdIndex]
+      const price = basePrice * (1 - cumulativeThreshold / 100)
+      
+      if (price >= (localForm.value.minWorkingPrice || 0)) {
+        prices.push({
+          price: price,
+          label: `-${main.jsRound(cumulativeThreshold)}% (${main.jsRound(price)})`,
+          color: '#01bc8d'
+        })
+      }
+    }
+  } else if (localForm.value.priceDropThreshold) {
+    // Use single threshold - each purchase is cumulative drop
+    for (let i = 1; i <= Math.min(localForm.value.maxPositions, 10); i++) {
+      const dropPercent = i * localForm.value.priceDropThreshold
+      const price = basePrice * (1 - dropPercent / 100)
+      
+      if (price >= (localForm.value.minWorkingPrice || 0)) {
+        prices.push({
+          price: price,
+          label: `-${main.jsRound(dropPercent)}% (${main.jsRound(price)})`,
+          color: '#01bc8d'
+        })
+      }
+    }
+  }
+  
+  return prices
 })  
 
 const updateSymbolData = () => {

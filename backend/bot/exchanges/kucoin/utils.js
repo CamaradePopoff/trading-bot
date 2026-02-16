@@ -208,6 +208,62 @@ async function getCurrentPrice(user, symbol) {
   return null
 }
 
+// Get historical candles/klines for a symbol
+// type: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 1w (standardized format)
+async function getCandles(
+  user,
+  symbol,
+  type = '3m',
+  startAt = null,
+  endAt = null
+) {
+  // Convert standard interval format to KuCoin format
+  const intervalMap = {
+    '1m': '1min',
+    '3m': '3min',
+    '5m': '5min',
+    '15m': '15min',
+    '30m': '30min',
+    '1h': '1hour',
+    '2h': '2hour',
+    '4h': '4hour',
+    '6h': '6hour',
+    '8h': '8hour',
+    '12h': '12hour',
+    '1d': '1day',
+    '1w': '1week'
+  }
+  const kucoinInterval = intervalMap[type] || type
+
+  // KuCoin API: GET /api/v1/market/candles
+  // Returns: [[time, open, close, high, low, volume, turnover], ...]
+  const params = new URLSearchParams({ symbol, type: kucoinInterval })
+  if (startAt) params.append('startAt', startAt)
+  if (endAt) params.append('endAt', endAt)
+
+  const endpoint = `/api/v1/market/candles?${params.toString()}`
+
+  try {
+    const response = await makeRequest(user, endpoint, 'GET')
+    if (response && response.data) {
+      // Convert to standard OHLC format
+      return response.data.map((candle) => ({
+        time: parseInt(candle[0]), // Unix timestamp
+        open: parseFloat(candle[1]),
+        close: parseFloat(candle[2]),
+        high: parseFloat(candle[3]),
+        low: parseFloat(candle[4]),
+        volume: parseFloat(candle[5]),
+        turnover: parseFloat(candle[6])
+      }))
+    }
+    return []
+  } catch (error) {
+    logger.error(`Error fetching candles for ${symbol}: ${error.message}`)
+    return []
+  }
+}
+
 // Place an order (buy/sell)
 // For sell orders with convertProfitToCrypto, use funds parameter to specify USDT amount
 async function placeOrder(user, symbol, side, type, price, size, funds = null) {
@@ -520,6 +576,7 @@ module.exports = {
   jsRound,
   getTickers,
   getCurrentPrice,
+  getCandles,
   placeOrder,
   getTradingPairs,
   getTradingPairFee,

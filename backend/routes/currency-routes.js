@@ -4,6 +4,7 @@ const {
   getTradingPairs,
   getTradingPairFee,
   getCurrentPrice,
+  getCandles,
   getNews,
   buyCrypto,
   sellCrypto,
@@ -34,6 +35,18 @@ module.exports = function (io, logger) {
   router.get('/:symbol/price', async (req, res) => {
     const price = await getCurrentPrice(req.user, req.params.symbol)
     res.status(200).json(price)
+  })
+
+  router.get('/:symbol/candles', async (req, res) => {
+    const { type, startAt, endAt } = req.query
+    const candles = await getCandles(
+      req.user,
+      req.params.symbol,
+      type || '3m',
+      startAt ? parseInt(startAt) : null,
+      endAt ? parseInt(endAt) : null
+    )
+    res.status(200).json(candles)
   })
 
   router.post('/prices/batch', async (req, res) => {
