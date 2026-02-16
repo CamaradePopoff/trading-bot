@@ -14,7 +14,7 @@
       v-else
       class="px-2"
     >
-      <span :class="bot.config.simulation ? 'text-simulation' : ''">{{ bot.config.label || `(${$t('common.noName')})` }}</span>
+      <span :class="bot.config.simulation ? 'text-simulation' : ''">{{ bot.config.label || `(${bot.config.symbol})` }}</span>
     </td>
 
     <td

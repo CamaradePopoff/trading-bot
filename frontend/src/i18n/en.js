@@ -21,7 +21,6 @@ export default {
     minSize: 'Minimum buy',
     noData: 'No data',
     noDate: 'No date selected',
-    noName: 'No name',
     pair: 'Pair',
     price: 'Price',
     profit: 'Profit',

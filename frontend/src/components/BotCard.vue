@@ -20,7 +20,7 @@
         <div
           class="ml-2 text-h8"
         >
-          <span :class="props.bot.config.simulation ? 'text-simulation' : ''">{{ props.bot.config.label || `(${$t('common.noName')})` }}</span>
+          <span :class="props.bot.config.simulation ? 'text-simulation' : ''">{{ props.bot.config.label || `(${props.bot.config.symbol})` }}</span>
         </div>
         <v-spacer />
         <div

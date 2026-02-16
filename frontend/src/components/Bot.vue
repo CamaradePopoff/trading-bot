@@ -55,7 +55,7 @@
             <span
               class="ml-2"
               :class="bot.config.simulation ? 'text-simulation' : ''"
-            >{{ bot.config.label || `(${$t('common.noName')})` }}</span>
+            >{{ bot.config.label || `(${bot.config.symbol})` }}</span>
           </div>
           <v-tooltip
             v-if="main.bots && main.bots.length > 1"

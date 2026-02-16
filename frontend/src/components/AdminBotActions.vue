@@ -25,7 +25,7 @@
         :class="compact ? 'text-h8' : 'text-h6'"
         style="white-space: nowrap; max-width: 120px; overflow: hidden;"
       >
-        <span :class="bot.config.simulation ? 'text-simulation' : ''">{{ bot.config.label || `(${$t('common.noName')})` }}</span>
+        <span :class="bot.config.simulation ? 'text-simulation' : ''">{{ bot.config.label || `(${bot.config.symbol})` }}</span>
       </div>
       <v-spacer />
     </template>
