@@ -3,7 +3,15 @@
     ref="containerRef"
     class="mini-chart"
     :style="{ height: `${props.height}px` }"
-  />
+  >
+    <div
+      v-if="tooltipVisible"
+      class="chart-tooltip"
+      :style="{ left: tooltipX + 'px', top: tooltipY + 'px' }"
+    >
+      {{ main.jsRound(tooltipPrice * 1) }}
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -36,6 +44,10 @@ let chart = null
 let series = null
 let resizeObserver = null
 const dataPoints = []
+const tooltipVisible = ref(false)
+const tooltipX = ref(0)
+const tooltipY = ref(0)
+const tooltipPrice = ref('')
 
 const getCachedPoints = () => {
   return main.miniChartCache[props.chartKey] || []
@@ -55,10 +67,36 @@ const setCachedPoints = (points) => {
   }
 }
 
-const updateSeriesColor = (points = dataPoints) => {
-  if (!series || points.length < 2) return
-  const first = points[0].value
-  const last = points[points.length - 1].value
+const updateSeriesColor = () => {
+  if (!series || !chart || dataPoints.length < 2) return
+  
+  // Get visible time range
+  const timeScale = chart.timeScale()
+  const visibleRange = timeScale.getVisibleRange()
+  
+  if (!visibleRange) {
+    // No visible range, use all points
+    const first = dataPoints[0].value
+    const last = dataPoints[dataPoints.length - 1].value
+    const isUp = last > first
+    series.applyOptions({
+      color: isUp ? '#26a69a' : '#ef5350'
+    })
+    return
+  }
+  
+  // Filter points to only visible ones
+  const visiblePoints = dataPoints.filter(
+    p => p.time >= visibleRange.from && p.time <= visibleRange.to
+  )
+  
+  if (visiblePoints.length < 2) {
+    // Not enough visible points, keep current color
+    return
+  }
+  
+  const first = visiblePoints[0].value
+  const last = visiblePoints[visiblePoints.length - 1].value
   const isUp = last > first
   series.applyOptions({
     color: isUp ? '#26a69a' : '#ef5350'
@@ -82,7 +120,7 @@ const pushPoint = (value) => {
     }
   }
   const cachedPoints = dataPoints.slice(-props.maxPoints)
-  updateSeriesColor(cachedPoints)
+  updateSeriesColor()
   setCachedPoints(cachedPoints)
 }
 
@@ -109,8 +147,18 @@ const buildChart = () => {
       borderVisible: false
     },
     crosshair: {
-      vertLine: { visible: false },
-      horzLine: { visible: false }
+      vertLine: { 
+        visible: true,
+        color: '#9e9e9e',
+        width: 1,
+        style: 1
+      },
+      horzLine: { 
+        visible: true,
+        color: '#9e9e9e',
+        width: 1,
+        style: 1
+      }
     },
     handleScroll: false,
     handleScale: false
@@ -123,10 +171,34 @@ const buildChart = () => {
     lastValueVisible: false
   })
 
+  // Subscribe to crosshair move for tooltip
+  chart.subscribeCrosshairMove((param) => {
+    if (!param.time || !param.point || !series) {
+      tooltipVisible.value = false
+      return
+    }
+
+    const seriesData = param.seriesData.get(series)
+    if (!seriesData) {
+      tooltipVisible.value = false
+      return
+    }
+
+    tooltipVisible.value = true
+    tooltipX.value = param.point.x
+    tooltipY.value = 0
+    tooltipPrice.value = seriesData.value.toFixed(8)
+  })
+
+  // Subscribe to visible time range changes to update color
+  chart.timeScale().subscribeVisibleTimeRangeChange(() => {
+    updateSeriesColor()
+  })
+
   if (cachedPoints.length > 0) {
     dataPoints.splice(0, dataPoints.length, ...cachedPoints)
     series.setData(dataPoints)
-    updateSeriesColor(cachedPoints)
+    updateSeriesColor()
   }
 }
 
@@ -173,6 +245,21 @@ onUnmounted(() => {
 .mini-chart {
   width: 100%;
   height: 100%;
+  position: relative;
+}
+
+.chart-tooltip {
+  position: absolute;
+  padding: 4px 8px;
+  background: #111;
+  color: #fff;
+  border-radius: 4px;
+  font-size: 11px;
+  pointer-events: none;
+  z-index: 100;
+  white-space: nowrap;
+  transform: translate(-50%, -100%);
+  margin-top: -4px;
 }
 
 .mini-chart :deep(.tv-logo),
