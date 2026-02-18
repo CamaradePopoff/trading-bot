@@ -523,8 +523,7 @@ class MemoryBot {
           `💲 Sold ${amount} ${this.cryptoName} at ${price} ${this.getExchangeAsset()} (total: ${received} ${this.getExchangeAsset()} - fee ${fee} ${this.getExchangeAsset()}) for a profit of ${usdProfit} ${this.getExchangeAsset()}.`
             .red
         )
-        this.transactionService.saveSelling(purchase, {
-          // Do not await
+        await this.transactionService.saveSelling(purchase, {
           createdAt: new Date().toISOString(),
           userId: this.user._id,
           botId: this.id,
