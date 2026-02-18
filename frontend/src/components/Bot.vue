@@ -243,7 +243,7 @@
                       @click="editConfig"
                     >
                       <v-icon size="large">
-                        mdi-pencil
+                        mdi-cog-outline
                       </v-icon>
                     </v-btn>
                   </template>
