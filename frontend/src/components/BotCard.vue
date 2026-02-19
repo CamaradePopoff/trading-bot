@@ -164,23 +164,28 @@
 
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue'
-import botService from '@services/bot.service'
-import { useRouter } from 'vue-router'
 import { useDisplay } from 'vuetify'
 import { useMainStore } from '@/store'
+import { useBotTrading } from '@/composables/useBotTrading'
+import { useSymbolUtils } from '@/composables/useSymbolUtils'
 import BotDropProfileTable from '@components/BotDropProfileTable.vue'
 import BotPositionSlider from '@components/BotPositionSlider.vue'
 import BotActions from '@components/BotActions.vue'
 import BotTradingActions from '@components/BotTradingActions.vue'
 
-const router = useRouter()
 const { mdAndUp } = useDisplay()
 const main = useMainStore()
+const { getNewsCount, goToNews } = useSymbolUtils()
 
-const showConfirmNegativeSellingDialog = ref(false)
-const isBusy = ref(false)
 const showChart = ref(false)
 const botTradingActionsRef = ref()
+
+const {
+  isBusy,
+  showConfirmNegativeSellingDialog,
+  sellNow: performSellNow,
+  buyNow: performBuyNow
+} = useBotTrading()
 
 const props = defineProps({
   bot: {
@@ -206,14 +211,10 @@ onMounted(() => {
 })
 
 const botNews = (symbol) => {
-  const pattern = `\\b${symbol.replace(new RegExp(`-?${main.exchangeAsset}$`), '')}\\b`
-  const regex = new RegExp(pattern, 'g')
-  return main.news.filter(n => regex.test(n.annTitle)).length
+  return getNewsCount(symbol)
 }
 
-const goToNews = (symbol) => {
-  router.push(`/news?search=${symbol.replace(new RegExp(`-?${main.exchangeAsset}$`), '')}&caseSensitive=true&entireWord=true`)
-}
+// goToNews is now from useSymbolUtils composable
 
 const checkSelling = () => {
   if (nextSellingTransaction.value.profit < 0) {
@@ -225,24 +226,10 @@ const checkSelling = () => {
 
 const sellNow = async () => {
   if (!nextSellingTransaction.value) return
-  isBusy.value = true
-  try {
-    await botService.sellNow(props.bot._id, nextSellingTransaction.value._id)
-  } catch (err) {
-    main.$patch({ snackbar: { show: true, color: 'error', text: err.message || 'Sell failed' } })
-  } finally {
-    isBusy.value = false
-  }
+  await performSellNow(props.bot._id, nextSellingTransaction.value._id)
 }
 
 const buyNow = async (usd = null) => {
-  isBusy.value = true
-  try {
-    await botService.buyNow(props.bot._id, usd)
-  } catch (err) {
-    main.$patch({ snackbar: { show: true, color: 'error', text: err.message || 'Buy failed' } })
-  } finally {
-    isBusy.value = false
-  }
+  await performBuyNow(props.bot._id, usd)
 }
 </script>

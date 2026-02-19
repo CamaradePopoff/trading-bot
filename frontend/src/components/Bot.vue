@@ -882,6 +882,9 @@ import { useI18n } from 'vue-i18n'
 import botService from '@services/bot.service'
 import transactionService from '@services/transaction.service'
 import { useMainStore } from '@/store'
+import { useBotPrices } from '@/composables/useBotPrices'
+import { useSnackbar } from '@/composables/useSnackbar'
+import { useSymbolUtils } from '@/composables/useSymbolUtils'
 import BotPositionSlider from './BotPositionSlider.vue'
 
 const main = useMainStore()
@@ -889,6 +892,8 @@ const { mdAndUp } = useDisplay()
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
+const { showSuccess, showError } = useSnackbar()
+const { getNewsCount, goToNews } = useSymbolUtils()
 
 const bot = ref()
 const componentKey = ref(0) // to force re-rendering of the TradingView chart when the pair changes
@@ -939,37 +944,14 @@ const cycles = computed(() => {
 })
 
 const botNews = computed(() => (symbol) => {
-  const pattern = `\\b${symbol.replace(new RegExp(`-?${main.exchangeAsset}$`), '')}\\b`
-  const flags = 'gi'
-  const regex = new RegExp(pattern, flags)
-  return main.news.filter(n => regex.test(n.annTitle)).length
+  return getNewsCount(symbol)
 })
 
-const currentDropThreshold = computed(() => {
-  if (!bot.value) return 0
-  // Support both legacy single threshold and new threshold array
-  if (
-    bot.value.config.priceDropThresholds &&
-    Array.isArray(bot.value.config.priceDropThresholds)
-    && bot.value.config.priceDropThresholds.length > 0
-  ) {
-    const index = Math.min(
-      bot.value.currentThresholdIndex || 0,
-      bot.value.config.priceDropThresholds.length - 1
-    )
-    return bot.value.config.priceDropThresholds[index]
-  }
-  // Legacy: use single priceDropThreshold
-  return bot.value.config.priceDropThreshold
-})
+const { currentDropThreshold, nextPurchasePrice } = useBotPrices(bot)
 
 const nextSellingTransaction = computed(() =>{
   return main.botTransactions(route.query.id).filter((t) => t.targetPrice && !t.isSold && !t.isPaused)
     .sort((a, b) => a.targetPrice - b.targetPrice)[0]
-})
-
-const nextPurchasePrice = computed(() => {
-  return bot.value.lastHighestPrice * (1 - currentDropThreshold.value / 100)
 })
 
 const filteredTransactions = computed(() => main.botTransactions(route.query.id).filter((t) => transactionFilter.value === null
@@ -1106,9 +1088,9 @@ const saveConfig = () => {
   showConfigEditionDialog.value = false
   botService.updateConfig(bot.value._id, editedConfig.value).then((response) => {
     bot.value = response
-    main.$patch({ snackbar: { show: true, color: 'success', text: t('components.bot.configSaved'), timeout: 5000 } })
+    showSuccess(t('components.bot.configSaved'), 5000)
   }).catch((err) => {
-    main.$patch({ snackbar: { show: true, color: 'error', text: err.message || t('components.bot.saveFailed') } })
+    showError(err.message || t('components.bot.saveFailed'))
   })
 }
 
@@ -1118,9 +1100,7 @@ const buyNow = (usd = null) => {
   })
 }
 
-const goToNews = (symbol) => {
-  router.push(`/news?search=${symbol.replace(new RegExp(`-?${main.exchangeAsset}$`), '')}&caseSensitive=true&entireWord=true`)
-}
+// goToNews is now from useSymbolUtils composable
 
 const getLogs = () => {
   botService.getLogs(bot.value._id).then((res) => {

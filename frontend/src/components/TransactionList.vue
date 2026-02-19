@@ -502,9 +502,11 @@ import { useMainStore } from '@/store'
 import botService from '@services/bot.service'
 import transactionService from '@services/transaction.service'
 import { useDisplay } from 'vuetify'
+import { useSnackbar } from '@/composables/useSnackbar'
 
 const { mdAndUp } = useDisplay()
 const main = useMainStore()
+const { showError } = useSnackbar()
 const selectedRows = ref([])
 
 const props = defineProps({
@@ -627,7 +629,7 @@ const sellNow = async () => {
     main.getBalances()
     main.getTotalProfits()
   } catch (err) {
-    main.$patch({ snackbar: { show: true, color: 'error', text: err.message || 'Sell failed' } })
+    showError(err.message || 'Sell failed')
   }
 }
 

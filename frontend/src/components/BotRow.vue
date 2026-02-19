@@ -110,12 +110,32 @@
     <td :width="mdAndUp ? '22%' : '18%'">
       <div :style="mdAndUp ? 'margin: 0 0 -22px 0' : 'margin: 0 0 -22px 4px'">
         <BotCursor
+          v-if="nextPurchasePrice && nextSellingTransaction?.targetPrice"
           :bot="props.bot"
           dense
           hide-thumb
           :hide-details="!mdAndUp"
           :next-selling-transaction="nextSellingTransaction"
         />
+        <div
+          v-else
+          :class="mdAndUp ? 'text-body-2 ml-2' : 'text-caption ml-1'"
+          style="margin-top: -9px;"
+        >
+          <span>
+            {{ $t('components.bot.nextPurchase') }}
+            <v-icon
+              v-if="props.bot.freePositions <= 0"
+              color="error"
+              :size="mdAndUp ? 'default' : 'small'"
+            >
+              mdi-cancel
+            </v-icon>
+          </span>
+          <span class="font-weight-bold">
+            {{ main.jsRound(nextPurchasePrice) }}
+          </span>
+        </div>
       </div>
     </td>
     <td
@@ -231,10 +251,11 @@
 <script setup>
 import { ref, watch, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import botService from '@services/bot.service'
 import { useRouter } from 'vue-router'
 import { useMainStore } from '@/store'
 import { useDisplay } from 'vuetify'
+import { useBotPrices } from '@/composables/useBotPrices'
+import { useBotTrading } from '@/composables/useBotTrading'
 import BotPositionSlider from '@components/BotPositionSlider.vue'
 import BotActions from '@components/BotActions.vue'
 import BotConfig from '@components/BotConfig.vue'
@@ -246,13 +267,19 @@ const main = useMainStore()
 const { t } = useI18n()
 
 const isSelected = ref(false)
-const showConfirmNegativeSellingDialog = ref(false)
-const isBusy = ref(false)
 const showChart = ref(false)
 const buyUsd = ref(0)
 const showConfigDialog = ref(false)
 const editedConfig = ref()
 const isValidConfig = ref(true)
+
+const {
+  isBusy,
+  showConfirmNegativeSellingDialog,
+  sellNow: performSellNow,
+  buyNow: performBuyNow,
+  updateConfig: performUpdateConfig
+} = useBotTrading({ getTranslation: t })
 
 const props = defineProps({
   bot: {
@@ -275,9 +302,13 @@ watch(() => props.selected, (newVal) => {
   isSelected.value = newVal
 }, { immediate: true })
 
+const bot = computed(() => props.bot)
+
 const nextSellingTransaction = computed(() => {
   return main.nextSellingWithProfit(props.bot)
 })
+
+const { nextPurchasePrice } = useBotPrices(bot)
 
 watch(showConfigDialog, (newVal) => {
   if (newVal) {
@@ -303,25 +334,11 @@ const checkSelling = () => {
 
 const sellNow = async () => {
   if (!nextSellingTransaction.value) return
-  isBusy.value = true
-  try {
-    await botService.sellNow(props.bot._id, nextSellingTransaction.value._id)
-  } catch (err) {
-    main.$patch({ snackbar: { show: true, color: 'error', text: err.message || t('components.bot.sellFailed') } })
-  } finally {
-    isBusy.value = false
-  }
+  await performSellNow(props.bot._id, nextSellingTransaction.value._id)
 }
 
 const buyNow = async (usd = null) => {
-  isBusy.value = true
-  try {
-    await botService.buyNow(props.bot._id, usd)
-  } catch (err) {
-    main.$patch({ snackbar: { show: true, color: 'error', text: err.message || t('components.bot.buyFailed') } })
-  } finally {
-    isBusy.value = false
-  }
+  await performBuyNow(props.bot._id, usd)
 }
 
 const selectBot = (bot) => {
@@ -336,16 +353,13 @@ const handleCheckboxChange = () => {
   }
 }
 
-const saveConfig = () => {
+const saveConfig = async () => {
   showConfigDialog.value = false
-  botService.updateConfig(props.bot._id, editedConfig.value).then((response) => {
-    // Emit an update event so parent can refresh if needed
-    if (response) {
-      main.$patch({ snackbar: { show: true, color: 'success', text: t('components.bot.configSaved') } })
-    }
-  }).catch((err) => {
-    main.$patch({ snackbar: { show: true, color: 'error', text: err.message || t('components.bot.saveFailed') } })
-  })
+  try {
+    await performUpdateConfig(props.bot._id, editedConfig.value)
+  } catch {
+    // Error already handled by composable
+  }
 }
 </script>
 
