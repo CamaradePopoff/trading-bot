@@ -29,7 +29,7 @@ function parseSemgrepFlaws(json) {
       cweTitle = 'N/A'
     const cweRaw = result.extra?.metadata?.cwe && result.extra.metadata.cwe[0]
     if (cweRaw) {
-      const match = cweRaw.match(/^CWE-(\d+):\s*(.*)$/)
+      const match = cweRaw.match(/^(CWE-\d+):\s*(.*)$/)
       if (match) {
         cweId = match[1]
         cweTitle = match[2]
