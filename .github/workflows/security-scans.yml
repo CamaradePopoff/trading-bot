@@ -61,7 +61,7 @@ jobs:
       - name: Merge Trivy scan reports
         run: |
           cd admin && npm ci
-          node scripts/manage/merge-vulnerability-scans.js ../scans/trivy latest "NPM dependencies"
+          node scripts/manage/merge-vulnerability-scans.js ../scans/trivy latest
 
       - name: Save Trivy scan results
         uses: actions/upload-artifact@v4
@@ -109,7 +109,7 @@ jobs:
       - name: Merge Semgrep scan reports
         run: |
           cd admin && npm ci
-          node scripts/manage/merge-flaw-scans.js ../scans/semgrep latest "Source code"
+          node scripts/manage/merge-flaw-scans.js ../scans/semgrep latest
 
       - name: Save Semgrep scan results
         uses: actions/upload-artifact@v4

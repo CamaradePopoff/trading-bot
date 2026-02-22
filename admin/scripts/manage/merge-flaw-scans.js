@@ -9,12 +9,11 @@ if (process.argv.length < 5) {
 
 const folder = process.argv[2]
 const version = process.argv[3]
-const label = process.argv[4]
 const folderPath = path.resolve(folder)
 
 const summaryTableId = 'flaw_summary_table'
 const detailsSectionId = 'flaw_details_section'
-const docTitle = () => `SAST report for ${label} version ${version}`
+const docTitle = () => `SAST report for version ${version}`
 const sevOrder = ['Very High', 'High', 'Medium', 'Low']
 
 function safeAnchor(id) {
@@ -64,11 +63,6 @@ function parseSemgrepFlaws(json) {
   return flaws
 }
 
-function parseSonarFlaws(json) {
-  // To be implemented when you provide SonarQube format
-  return []
-}
-
 function formatSectionTitle(filename) {
   const base = filename.replace(/^.+-scan-/, '').replace(/\.json$/i, '')
   const match = base.match(/^(.*?)-(v?[\d.]+)$/)
@@ -87,7 +81,7 @@ function countSeverity(flaws) {
   return counts
 }
 
-function sendSummaryToSlack(summarySections, label) {
+function sendSummaryToSlack(summarySections) {
   if (!process.env.SLACK_WEBHOOK) return
   const slackWebhookUrl = process.env.SLACK_WEBHOOK
   const severities = ['Very High', 'High', 'Medium', 'Low']
@@ -158,7 +152,7 @@ function sendSummaryToSlack(summarySections, label) {
         type: 'header',
         text: {
           type: 'plain_text',
-          text: `SAST Flaw Report - ${label}`,
+          text: docTitle(),
           emoji: true
         }
       },
@@ -400,5 +394,5 @@ fs.writeFileSync(outputFile, html, 'utf-8')
 console.log(`Scan report generated: ${outputFile}`)
 
 if (process.env.PUBLISH_SCAN_REPORT === 'true') {
-  sendSummaryToSlack(summarySections, label)
+  sendSummaryToSlack(summarySections)
 }
