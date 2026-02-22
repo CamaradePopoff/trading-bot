@@ -2,8 +2,8 @@ import fs from 'fs'
 import path from 'path'
 import https from 'https'
 
-if (process.argv.length < 5) {
-  console.error('Usage: node script.js <folder> <version> <label>')
+if (process.argv.length < 4) {
+  console.error('Usage: node script.js <folder> <version>')
   process.exit(1)
 }
 

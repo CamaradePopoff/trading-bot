@@ -10,8 +10,8 @@
     "licenses:frontend": "node scripts/manage/license-checks.js ../frontend frontend",
     "licenses:proxy": "node scripts/manage/license-checks.js ../proxy proxy",
     "licenses:all": "npm run licenses:admin && npm run licenses:backend && npm run licenses:frontend && npm run licenses:proxy",
-    "merge-scans": "node scripts/manage/merge-vulnerability-scans.js",
-    "merge-flaws": "node scripts/manage/merge-flaw-scans.js"
+    "merge-sca": "node scripts/manage/merge-vulnerability-scans.js",
+    "merge-sast": "node scripts/manage/merge-flaw-scans.js"
   },
   "engines": {
     "node": ">=22.13.x"
