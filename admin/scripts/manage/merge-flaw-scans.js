@@ -393,6 +393,9 @@ const outputFile = `${folderPath}/scan-report-${version}.html`
 fs.writeFileSync(outputFile, html, 'utf-8')
 console.log(`Scan report generated: ${outputFile}`)
 
+console.log(`process.env.PUBLISH_SCAN_REPORT: ${process.env.PUBLISH_SCAN_REPORT}`)
+console.log(`process.env.SLACK_WEBHOOK: ${process.env.SLACK_WEBHOOK}`)
+
 if (process.env.PUBLISH_SCAN_REPORT === 'true') {
   sendSummaryToSlack()
 }
