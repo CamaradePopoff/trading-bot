@@ -8,12 +8,13 @@
     "deploy": "node scripts/deploy.js",
     "audit:frontend": "cd admin/scripts/audit && sh npm-audit.sh ../../../frontend frontend",
     "audit:backend": "cd admin/scripts/audit && sh npm-audit.sh ../../../backend backend",
-    "audit:all": "npm run audit:frontend false && npm run audit:backend false && npm run audit-report",
+    "audit:admin": "cd admin/scripts/audit && sh npm-audit.sh ../../../admin admin",
+    "audit:all": "npm run audit:frontend false && npm run audit:backend false && npm run audit:admin false && npm run audit-report",
     "audit-report": "cd admin/scripts/audit && node npm-audit-multi.js"
   },
   "devDependencies": {
     "dotenv": "^17.3.1",
-    "eslint": "^9.39.3",
+    "eslint": "^10.0.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-prettier": "^5.5.5",

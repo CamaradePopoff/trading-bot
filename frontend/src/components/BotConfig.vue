@@ -786,7 +786,6 @@ const projectedBot = computed(() => {
 
 const projectedNextSellingTransaction = computed(() => {
   if (!localForm.value.symbol) return null
-  let transaction = null
   if (!props.nextSellingTransaction) {
     return {
       targetPrice: currentPrice.value * (1 + localForm.value.profitMargin / 100),
@@ -794,7 +793,7 @@ const projectedNextSellingTransaction = computed(() => {
       profitMargin: localForm.value.profitMargin / 100
     }
   }
-  transaction = { ...props.nextSellingTransaction }
+  const transaction = { ...props.nextSellingTransaction }
   transaction.targetPrice = transaction.targetPrice / (1 + transaction.profitMargin) * (1 + localForm.value.profitMargin / 100)
   return transaction
 })  
