@@ -8,7 +8,7 @@
     "merge-scans": "node scripts/manage/merge-vulnerability-scans.js"
   },
   "engines": {
-    "node": ">=22.x"
+    "node": ">=24.13.x"
   },
   "dependencies": {
     "console-table-printer": "^2.15.0",

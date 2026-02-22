@@ -25,8 +25,8 @@ curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bas
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 source ~/.bashrc
-nvm install 22
-nvm use 22
+nvm install 24
+nvm use 24
 
 # Setup Nginx
 sudo apt install nginx -y
