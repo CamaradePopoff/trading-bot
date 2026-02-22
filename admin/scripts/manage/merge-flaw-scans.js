@@ -1,3 +1,29 @@
+function parseSemgrepFlaws(json) {
+  const flaws = []
+  const results = json.results || []
+
+  for (const result of results) {
+    const cwe = (result.extra?.metadata?.cwe && result.extra.metadata.cwe[0]) || 'N/A'
+    const description = result.extra?.message || result.check_id || 'No description'
+    const file = result.path || 'Unknown'
+    const line = result.start?.line ? result.start.line.toString() : '0'
+    // Map Semgrep severity to Veracode/Excel style
+    let severity = 'Medium'
+    if (result.extra?.severity === 'ERROR') severity = 'High'
+    else if (result.extra?.severity === 'WARNING') severity = 'Medium'
+    else if (result.extra?.severity === 'INFO') severity = 'Low'
+
+    flaws.push({
+      cwe,
+      description,
+      file,
+      line,
+      severity,
+      scanner: 'Semgrep'
+    })
+  }
+  return flaws
+}
 import fs from 'fs'
 import path from 'path'
 
@@ -222,6 +248,9 @@ const veracodeFiles = fs
 const sonarFiles = fs
   .readdirSync(folderPath)
   .filter((f) => f.startsWith('sonar-scan-') && f.endsWith('.json'))
+const semgrepFiles = fs
+  .readdirSync(folderPath)
+  .filter((f) => f.startsWith('semgrep-scan-') && f.endsWith('.json'))
 
 const summarySections = []
 const detailSections = []
@@ -240,12 +269,33 @@ for (const file of veracodeFiles) {
   if (!results[sectionTitle]) {
     results[sectionTitle] = {
       flaws: [],
-      flawCounts: { veracode: {}, sonar: {} }
+      flawCounts: { veracode: {}, sonar: {}, semgrep: {} }
     }
   }
 
   results[sectionTitle].flaws.push(...flaws)
   results[sectionTitle].flawCounts.veracode = countSeverity(flaws)
+}
+
+// Process Semgrep files
+for (const file of semgrepFiles) {
+  console.log(`Processing ${file}`)
+  const filePath = path.join(folderPath, file)
+  const content = fs.readFileSync(filePath, 'utf8')
+  const sectionTitle = formatSectionTitle(file)
+  const json = JSON.parse(content)
+
+  const flaws = parseSemgrepFlaws(json)
+
+  if (!results[sectionTitle]) {
+    results[sectionTitle] = {
+      flaws: [],
+      flawCounts: { veracode: {}, sonar: {}, semgrep: {} }
+    }
+  }
+
+  results[sectionTitle].flaws.push(...flaws)
+  results[sectionTitle].flawCounts.semgrep = countSeverity(flaws)
 }
 
 // Process SonarQube files (when format provided)
@@ -357,8 +407,86 @@ if (process.env.PUBLISH_SCAN_REPORT === 'true') {
   const outputFileTable = `${folderPath}/scan-summary-${version}.html`
   fs.writeFileSync(
     outputFileTable,
-    generateCombinedSummaryTable(summarySections, true),
-    'utf-8'
-  )
-  console.log(`Summary table generated: ${outputFileTable}`)
-}
+    function generateCombinedSummaryTable(summarySections, hideTotals = false) {
+      const severities = ['Very High', 'High', 'Medium', 'Low']
+      const totals = {
+        veracode: { 'Very High': 0, High: 0, Medium: 0, Low: 0 },
+        sonar: { 'Very High': 0, High: 0, Medium: 0, Low: 0 },
+        semgrep: { 'Very High': 0, High: 0, Medium: 0, Low: 0 }
+      }
+
+      let html = '<table border="1" cellspacing="0" cellpadding="4">'
+
+      // Header 1
+      html += '<thead><tr><th style="vertical-align: middle;">Component</th>'
+      for (const sev of severities) {
+        html += `<th class="center" colspan="3">${sev}</th>`
+      }
+      html += '<th>Total</th></tr></thead>'
+
+      // Header 2
+      html += '<thead><tr><th></th>'
+      severities.forEach(() => {
+        html += '<th class="center">Veracode</th><th class="center">SonarQube</th><th class="center">Semgrep</th>'
+      })
+      html += '<th></th></tr></thead><tbody>'
+
+      // Rows
+      for (const sec of summarySections) {
+        html += '<tr>'
+        html += `<td><a href="#${sec.detailId}">${sec.title}</a></td>`
+
+        let rowTotal = 0
+        for (const sev of severities) {
+          const veracodeValue = sec.flawCounts.veracode?.[sev] || 0
+          const sonarValue = sec.flawCounts.sonar?.[sev] || 0
+          const semgrepValue = sec.flawCounts.semgrep?.[sev] || 0
+
+          if (totals.veracode[sev] !== undefined)
+            totals.veracode[sev] += veracodeValue
+          if (totals.sonar[sev] !== undefined) totals.sonar[sev] += sonarValue
+          if (totals.semgrep[sev] !== undefined) totals.semgrep[sev] += semgrepValue
+
+          rowTotal += veracodeValue + sonarValue + semgrepValue
+
+          if (veracodeValue === sonarValue && sonarValue === semgrepValue && veracodeValue === 0) {
+            html += '<td class="center" colspan="3" style="width: 15%">0</td>'
+          } else if (veracodeValue === sonarValue && sonarValue === semgrepValue) {
+            html += `<td class="center" colspan="3" style="width: 15%">${semgrepValue}</td>`
+          } else {
+            html += `<td class="center" style="width: 5%">${veracodeValue}</td><td class="center" style="width: 5%">${sonarValue}</td><td class="center" style="width: 5%">${semgrepValue}</td>`
+          }
+        }
+
+        html += `<td class="center"><strong>${rowTotal}</strong></td>`
+        html += '</tr>'
+      }
+
+      html += '</tbody></table>'
+
+      if (hideTotals) return html
+
+      // Add the summary row ready to paste in the online Excel file Security_Vulnerability_Status
+      html += '<h3>Summary Data for Excel:</h3>'
+      html +=
+        '<table border="1" cellspacing="0" cellpadding="4" style="font-size: 11pt; font-family: Calibri;">'
+      html += '<thead><tr>'
+      html +=
+        '<th>Team</th><th>Application</th><th>Version</th><th>Analysis Type</th><th>Last scan date</th><th>Scan tool</th>'
+      html += '<th colspan="4">Veracode</th><th colspan="4">SonarQube</th><th colspan="4">Semgrep</th>'
+      html += '</tr></thead>'
+      html += '<thead><tr><th></th><th></th><th></th><th></th><th></th><th></th>'
+      html += '<th>Very high</th><th>High</th><th>Medium</th><th>Low</th>'
+      html += '<th>Very high</th><th>High</th><th>Medium</th><th>Low</th>'
+      html += '<th>Very high</th><th>High</th><th>Medium</th><th>Low</th>'
+      html += '</tr></thead><tbody>'
+      html += '<tr>'
+      html += `<td>Impress</td><td>${label}</td><td>${version}</td><td>SAST</td><td>${new Date().toISOString().split('T')[0]}</td><td>Veracode + SonarQube + Semgrep</td>`
+      html += `<td>${totals.veracode['Very High']}</td><td>${totals.veracode.High}</td><td>${totals.veracode.Medium}</td><td>${totals.veracode.Low}</td>`
+      html += `<td>${totals.sonar['Very High']}</td><td>${totals.sonar.High}</td><td>${totals.sonar.Medium}</td><td>${totals.sonar.Low}</td>`
+      html += `<td>${totals.semgrep['Very High']}</td><td>${totals.semgrep.High}</td><td>${totals.semgrep.Medium}</td><td>${totals.semgrep.Low}</td>`
+      html += '</tr>'
+      html += '</tbody></table>'
+
+      return html
+    }
