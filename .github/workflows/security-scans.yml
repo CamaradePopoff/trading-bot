@@ -37,6 +37,22 @@ jobs:
           format: 'json'
           output: 'scans/trivy/trivy-scan-frontend.json'
 
+      - name: Run Trivy vulnerability scanner on admin
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: './admin'
+          format: 'json'
+          output: 'scans/trivy/trivy-scan-admin.json'
+
+      - name: Run Trivy vulnerability scanner on proxy
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: './proxy'
+          format: 'json'
+          output: 'scans/trivy/trivy-scan-proxy.json'
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
