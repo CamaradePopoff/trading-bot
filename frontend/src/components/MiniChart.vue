@@ -16,7 +16,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from 'vue'
-import { createChart } from 'lightweight-charts'
+import { createChart, LineSeries } from 'lightweight-charts'
 import { useMainStore } from '@/store'
 
 const props = defineProps({
@@ -164,7 +164,7 @@ const buildChart = () => {
     handleScale: false
   })
 
-  series = chart.addLineSeries({
+  series = chart.addSeries(LineSeries, {
     color: '#26a69a',
     lineWidth: 2,
     priceLineVisible: false,
@@ -187,7 +187,13 @@ const buildChart = () => {
     tooltipVisible.value = true
     tooltipX.value = param.point.x
     tooltipY.value = 0
-    tooltipPrice.value = seriesData.value.toFixed(8)
+    const value = typeof seriesData.value === 'number' ? seriesData.value : null
+    if (value === null) {
+      tooltipVisible.value = false
+      return
+    }
+
+    tooltipPrice.value = value.toFixed(8)
   })
 
   // Subscribe to visible time range changes to update color
