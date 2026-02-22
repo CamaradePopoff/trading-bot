@@ -1,6 +1,7 @@
 const { spawnSync } = require('node:child_process')
 const path = require('node:path')
 const dotenv = require('dotenv')
+const { Client } = require('ssh2')
 
 const ROOT_DIR = path.resolve(__dirname, '..')
 const FRONTEND_DIR = path.join(ROOT_DIR, 'frontend')
@@ -35,36 +36,80 @@ function run(command, args, options = {}) {
   }
 }
 
-function commandExists(command) {
-  const check = spawnSync(command, ['--version'], {
-    stdio: 'ignore',
-    shell: false
+function parseSshTarget(target) {
+  const [userPart, hostPart] = target.includes('@') ? target.split('@') : [process.env.SSH_USER || 'root', target]
+  const [host, portPart] = hostPart.includes(':') ? hostPart.split(':') : [hostPart, process.env.SSH_PORT]
+  const port = Number(portPart || 22)
+
+  if (!host || Number.isNaN(port)) {
+    throw new Error('[deploy] Invalid SSH_HOST format. Use user@host or user@host:port')
+  }
+
+  return {
+    host,
+    username: userPart,
+    port
+  }
+}
+
+function runRemoteCommand() {
+  const target = parseSshTarget(SSH_HOST)
+
+  return new Promise((resolve, reject) => {
+    const client = new Client()
+
+    client
+      .on('ready', () => {
+        client.exec(REMOTE_COMMAND, (error, stream) => {
+          if (error) {
+            client.end()
+            reject(error)
+            return
+          }
+
+          stream.on('close', (code) => {
+            client.end()
+            if (code === 0) {
+              resolve()
+              return
+            }
+
+            reject(new Error(`[deploy] Remote command exited with code ${code}`))
+          })
+
+          stream.on('data', (data) => {
+            process.stdout.write(data)
+          })
+
+          stream.stderr.on('data', (data) => {
+            process.stderr.write(data)
+          })
+        })
+      })
+      .on('error', (error) => {
+        reject(error)
+      })
+      .connect({
+        host: target.host,
+        port: target.port,
+        username: target.username,
+        password: SSH_PASSWORD,
+        readyTimeout: 20000
+      })
   })
-  return !check.error
 }
 
-if (IS_WINDOWS) {
-  run('cmd.exe', ['/d', '/s', '/c', 'npm run deploy'], { cwd: FRONTEND_DIR })
-} else {
-  run('npm', ['run', 'deploy'], { cwd: FRONTEND_DIR })
+async function main() {
+  if (IS_WINDOWS) {
+    run('cmd.exe', ['/d', '/s', '/c', 'npm run deploy'], { cwd: FRONTEND_DIR })
+  } else {
+    run('npm', ['run', 'deploy'], { cwd: FRONTEND_DIR })
+  }
+
+  await runRemoteCommand()
 }
 
-if (commandExists('sshpass')) {
-  run('sshpass', [
-    '-p',
-    SSH_PASSWORD,
-    'ssh',
-    '-o',
-    'StrictHostKeyChecking=accept-new',
-    SSH_HOST,
-    REMOTE_COMMAND
-  ])
-} else {
-  console.warn('[deploy] sshpass not found, falling back to interactive ssh password prompt.')
-  run('ssh', [
-    '-o',
-    'StrictHostKeyChecking=accept-new',
-    SSH_HOST,
-    REMOTE_COMMAND
-  ])
-}
+main().catch((error) => {
+  console.error('[deploy] Deployment failed:', error.message)
+  process.exit(1)
+})
