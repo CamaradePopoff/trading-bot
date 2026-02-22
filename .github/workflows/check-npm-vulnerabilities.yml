@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PUBLISH_TO_SLACK: true
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     strategy:
       matrix:
         node-version: [22.x]

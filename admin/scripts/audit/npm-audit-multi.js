@@ -140,9 +140,6 @@ const getSimpleTableAsString = (scope) => {
 const sendSlackMessage = () => {
   if (!process.env.PUBLISH_TO_SLACK) return
 
-  const slackWebhookUrl =
-    'https://hooks.slack.com/services/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'
-
   const allTableText = getSimpleTableAsString('all')
   const prodTableText = getSimpleTableAsString('prod')
 
@@ -211,7 +208,7 @@ const sendSlackMessage = () => {
     }
   }
 
-  const req = https.request(slackWebhookUrl, options, (res) => {
+  const req = https.request(process.env.SLACK_WEBHOOK, options, (res) => {
     let data = ''
     res.on('data', (chunk) => {
       data += chunk
