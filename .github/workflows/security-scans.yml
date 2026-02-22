@@ -74,7 +74,7 @@ jobs:
   semgrep-scan:
     runs-on: ubuntu-latest
     env:
-      PUBLISH_TO_SLACK: true
+      PUBLISH_SCAN_REPORT: true
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     steps:
       - name: Set up Node.js
