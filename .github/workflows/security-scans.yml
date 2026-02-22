@@ -15,6 +15,11 @@ jobs:
       PUBLISH_SCAN_REPORT: true
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -53,11 +58,6 @@ jobs:
           format: 'json'
           output: 'scans/trivy/trivy-scan-proxy.json'
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
       - name: Merge Trivy scan reports
         run: |
           cd admin && npm ci
@@ -77,6 +77,11 @@ jobs:
       PUBLISH_TO_SLACK: true
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
       - name: Checkout code
         uses: actions/checkout@v4
 

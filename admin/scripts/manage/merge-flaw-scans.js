@@ -81,7 +81,7 @@ function countSeverity(flaws) {
   return counts
 }
 
-function sendSummaryToSlack(summarySections) {
+function sendSummaryToSlack() {
   if (!process.env.SLACK_WEBHOOK) return
   const slackWebhookUrl = process.env.SLACK_WEBHOOK
   const severities = ['Very High', 'High', 'Medium', 'Low']
@@ -394,5 +394,5 @@ fs.writeFileSync(outputFile, html, 'utf-8')
 console.log(`Scan report generated: ${outputFile}`)
 
 if (process.env.PUBLISH_SCAN_REPORT === 'true') {
-  sendSummaryToSlack(summarySections)
+  sendSummaryToSlack()
 }
