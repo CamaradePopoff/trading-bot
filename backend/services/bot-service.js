@@ -224,7 +224,7 @@ module.exports = function (io, logger) {
   const updateBotData = async (botId, update) => {
     const dbBot = await Bot.findById(botId).exec()
     if (!dbBot) return null
-    return await Bot.findByIdAndUpdate(botId, update, { new: true }).exec()
+    return await Bot.findByIdAndUpdate(botId, update, { returnDocument: 'after' }).exec()
   }
 
   const deleteBot = async (botId) => {
