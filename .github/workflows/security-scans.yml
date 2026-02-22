@@ -74,7 +74,8 @@ jobs:
   semgrep-scan:
     runs-on: ubuntu-latest
     env:
-      PUBLISH_SCAN_REPORT: true
+      PUBLISH_TO_SLACK: true
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
