@@ -17,12 +17,7 @@ module.exports = [
       node: true,
       es2021: true
     },
-    extends: [
-      'eslint:recommended',
-      'plugin:import/recommended',
-      'plugin:promise/recommended',
-      'prettier'
-    ],
+    extends: ['eslint:recommended', 'prettier'],
     plugins: ['prettier'],
     parserOptions: {
       ecmaVersion: 'latest',
@@ -34,10 +29,7 @@ module.exports = [
       'no-async-promise-executor': 0,
       'no-param-reassign': 'error',
       'no-control-regex': 0,
-      'no-unused-vars': 0,
-      'promise/always-return': 0,
-      'promise/catch-or-return': 0,
-      'promise/no-nesting': 0
+      'no-unused-vars': 0
     }
   })
 ]

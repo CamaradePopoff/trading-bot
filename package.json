@@ -3,13 +3,18 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "i": "npm i && cd backend && npm i && cd ../frontend && npm i && cd ../admin && npm i",
+    "i": "npm i && cd backend && npm i && cd ../frontend && npm i && cd ../proxy && npm i && cd ../admin && npm i",
     "lint": "cd backend && npm run lint && cd ../frontend && npm run lint && cd ../proxy && npm run lint && cd ../admin && npm run lint",
     "deploy": "node scripts/deploy.js",
-    "audit:frontend": "cd admin/scripts/audit && sh npm-audit.sh ../../../frontend frontend",
+    "deploy:front": "node scripts/deploy.js front",
+    "deploy:back": "node scripts/deploy.js back",
+    "deploy:proxy": "node scripts/deploy.js proxy",
+    "deploy:all": "node scripts/deploy.js all",
     "audit:backend": "cd admin/scripts/audit && sh npm-audit.sh ../../../backend backend",
+    "audit:frontend": "cd admin/scripts/audit && sh npm-audit.sh ../../../frontend frontend",
+    "audit:proxy": "cd admin/scripts/audit && sh npm-audit.sh ../../../proxy proxy",
     "audit:admin": "cd admin/scripts/audit && sh npm-audit.sh ../../../admin admin",
-    "audit:all": "npm run audit:frontend false && npm run audit:backend false && npm run audit:admin false && npm run audit-report",
+    "audit:all": "npm run audit:frontend false && npm run audit:backend false && npm run audit:admin false && npm run audit:proxy false && npm run audit-report",
     "audit-report": "cd admin/scripts/audit && node npm-audit-multi.js"
   },
   "devDependencies": {

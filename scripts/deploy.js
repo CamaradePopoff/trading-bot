@@ -5,10 +5,11 @@ const { Client } = require('ssh2')
 
 const ROOT_DIR = path.resolve(__dirname, '..')
 const FRONTEND_DIR = path.join(ROOT_DIR, 'frontend')
+const PROXY_DIR = path.join(ROOT_DIR, 'proxy')
 const IS_WINDOWS = process.platform === 'win32'
 const ENV_FILE = path.join(ROOT_DIR, '.env')
 const REMOTE_COMMAND = '. ./pull.sh && . ./restart.sh'
-const VALID_MODES = new Set(['front', 'back', 'all'])
+const VALID_MODES = new Set(['front', 'back', 'proxy', 'all'])
 
 dotenv.config({ path: ENV_FILE })
 
@@ -49,7 +50,9 @@ function getDeployMode() {
   const mode = (cliArg || npmArg || 'all').toLowerCase()
 
   if (!VALID_MODES.has(mode)) {
-    console.error(`[deploy] Invalid mode "${mode}". Use: front, back, or all.`)
+    console.error(
+      `[deploy] Invalid mode "${mode}". Use: front, back, proxy, or all.`
+    )
     process.exit(1)
   }
 
@@ -101,6 +104,14 @@ function runFrontendDeploy() {
     run('cmd.exe', ['/d', '/s', '/c', 'npm run deploy'], { cwd: FRONTEND_DIR })
   } else {
     run('npm', ['run', 'deploy'], { cwd: FRONTEND_DIR })
+  }
+}
+
+function runProxyDeploy() {
+  if (IS_WINDOWS) {
+    run('cmd.exe', ['/d', '/s', '/c', 'npm run deploy'], { cwd: PROXY_DIR })
+  } else {
+    run('npm', ['run', 'deploy'], { cwd: PROXY_DIR })
   }
 }
 
@@ -181,6 +192,10 @@ async function main() {
   if (mode === 'back' || mode === 'all') {
     ensureSshCredentials()
     await runRemoteCommand()
+  }
+
+  if (mode === 'proxy' || mode === 'all') {
+    runProxyDeploy()
   }
 }
 

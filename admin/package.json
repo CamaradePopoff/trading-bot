@@ -8,7 +8,8 @@
     "licenses:admin": "node scripts/manage/license-checks.js . admin",
     "licenses:backend": "node scripts/manage/license-checks.js ../backend backend",
     "licenses:frontend": "node scripts/manage/license-checks.js ../frontend frontend",
-    "licenses:all": "npm run licenses:admin && npm run licenses:backend && npm run licenses:frontend",
+    "licenses:proxy": "node scripts/manage/license-checks.js ../proxy proxy",
+    "licenses:all": "npm run licenses:admin && npm run licenses:backend && npm run licenses:frontend && npm run licenses:proxy",
     "merge-scans": "node scripts/manage/merge-vulnerability-scans.js"
   },
   "engines": {
