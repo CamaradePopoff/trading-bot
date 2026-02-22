@@ -26,14 +26,12 @@ module.exports = [
     },
     extends: [
       'eslint:recommended',
-      'plugin:import/recommended',
-      'plugin:promise/recommended',
       'prettier'
     ],
     plugins: ['prettier'],
     parserOptions: {
       ecmaVersion: 'latest',
-      sourceType: 'script'
+      sourceType: 'module'
     },
     rules: {
       camelcase: 0,
@@ -42,10 +40,7 @@ module.exports = [
       'no-param-reassign': 'error',
       'no-control-regex': 0
       ,
-      'no-unused-vars': 0,
-      'promise/always-return': 0,
-      'promise/catch-or-return': 0,
-      'promise/no-nesting': 0
+      'no-unused-vars': 0
     }
   })
 ]

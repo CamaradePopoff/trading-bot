@@ -2,12 +2,14 @@ import fs from 'fs'
 import { Table } from 'console-table-printer'
 import https from 'https'
 
+const TMP_DIR = './../../tmp'
+
 const stats = fs
-  .readdirSync('./tmp')
+  .readdirSync(TMP_DIR)
   .filter((f) => f.endsWith('.json'))
   .map((file) => {
     const { total, ...counts } =
-      JSON.parse(fs.readFileSync(`./tmp/${file}`, 'utf8'))?.metadata
+      JSON.parse(fs.readFileSync(`${TMP_DIR}/${file}`, 'utf8'))?.metadata
         ?.vulnerabilities || {}
     return total !== undefined && counts !== undefined
       ? {
@@ -72,8 +74,8 @@ showTable('prod')
 
 const prodReport = tableToMarkdown(stats, 'prod')
 const allReport = tableToMarkdown(stats, 'all')
-const prodReportFile = './tmp/npm-audit-table-prod.md'
-const allReportFile = './tmp/npm-audit-table-all.md'
+const prodReportFile = `${TMP_DIR}/npm-audit-table-prod.md`
+const allReportFile = `${TMP_DIR}/npm-audit-table-all.md`
 fs.writeFileSync(allReportFile, allReport)
 fs.writeFileSync(prodReportFile, prodReport)
 
@@ -81,7 +83,15 @@ const getSimpleTableAsString = (scope) => {
   const filteredData = stats.filter((x) => x.scope === scope)
   if (filteredData.length === 0) return 'No data'
 
-  const headers = ['Item', 'Scope', 'Critical', 'High', 'Moderate', 'Low', 'Info']
+  const headers = [
+    'Item',
+    'Scope',
+    'Critical',
+    'High',
+    'Moderate',
+    'Low',
+    'Info'
+  ]
   const rows = filteredData.map((row) => [
     row.item,
     row.scope,
@@ -100,39 +110,38 @@ const getSimpleTableAsString = (scope) => {
 
   // Build table
   const lines = []
-  
+
   // Top border
   lines.push('┌' + colWidths.map((w) => '─'.repeat(w + 2)).join('┬') + '┐')
-  
+
   // Header row
   lines.push(
-    '│ ' +
-    headers.map((h, i) => h.padEnd(colWidths[i])).join(' │ ') +
-    ' │'
+    '│ ' + headers.map((h, i) => h.padEnd(colWidths[i])).join(' │ ') + ' │'
   )
-  
+
   // Header separator
   lines.push('├' + colWidths.map((w) => '─'.repeat(w + 2)).join('┼') + '┤')
-  
+
   // Data rows
   rows.forEach((row) => {
     lines.push(
       '│ ' +
-      row.map((val, i) => String(val).padEnd(colWidths[i])).join(' │ ') +
-      ' │'
+        row.map((val, i) => String(val).padEnd(colWidths[i])).join(' │ ') +
+        ' │'
     )
   })
-  
+
   // Bottom border
   lines.push('└' + colWidths.map((w) => '─'.repeat(w + 2)).join('┴') + '┘')
-  
+
   return lines.join('\n')
 }
 
 const sendSlackMessage = () => {
   if (!process.env.PUBLISH_TO_SLACK) return
 
-  const slackWebhookUrl = 'https://hooks.slack.com/services/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'
+  const slackWebhookUrl =
+    'https://hooks.slack.com/services/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'
 
   const allTableText = getSimpleTableAsString('all')
   const prodTableText = getSimpleTableAsString('prod')
@@ -151,7 +160,9 @@ const sendSlackMessage = () => {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: success ? ':white_check_mark: No critical or high vulnerabilities found!' : ':warning: Critical or high vulnerabilities detected!'
+          text: success
+            ? ':white_check_mark: No critical or high vulnerabilities found!'
+            : ':warning: Critical or high vulnerabilities detected!'
         }
       },
       {

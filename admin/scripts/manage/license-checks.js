@@ -53,7 +53,9 @@ function runLicenseCheck(scope, command, outputFile) {
         )
         return
       }
-      throw new Error(`License checker did not generate expected file: ${outputFile}`)
+      throw new Error(
+        `License checker did not generate expected file: ${outputFile}`
+      )
     }
   } catch (error) {
     const message = String(error?.message || '')

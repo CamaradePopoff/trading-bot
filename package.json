@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "i": "npm i && cd backend && npm i && cd ../frontend && npm i && cd ../admin && npm i",
-    "lint": "cd backend && npm run lint && cd ../frontend && npm run lint && cd ../proxy && npm run lint",
+    "lint": "cd backend && npm run lint && cd ../frontend && npm run lint && cd ../proxy && npm run lint && cd ../admin && npm run lint",
     "deploy": "node scripts/deploy.js",
     "audit:frontend": "cd admin/scripts/audit && sh npm-audit.sh ../../../frontend frontend",
     "audit:backend": "cd admin/scripts/audit && sh npm-audit.sh ../../../backend backend",
@@ -13,18 +13,18 @@
     "audit-report": "cd admin/scripts/audit && node npm-audit-multi.js"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^10.0.1",
     "dotenv": "^17.3.1",
-    "eslint": "^9.39.0",
+    "eslint": "^10.0.1",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-prettier": "^5.5.5",
-    "eslint-plugin-promise": "^7.2.1",
     "prettier": "^3.8.1",
     "prettier-config-standard": "^7.0.0",
     "ssh2": "^1.15.0"
   },
   "engines": {
-    "node": ">=24.13.x"
+    "node": ">=22.13.x"
   },
   "workspaces": [
     "backend",

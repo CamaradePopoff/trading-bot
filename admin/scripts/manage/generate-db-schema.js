@@ -13,6 +13,8 @@ const OUTPUT_FILE = path.join(__dirname, '../../../doc/database-schema.puml')
  * Parse a Mongoose schema field to extract type and relationship info
  */
 function parseField(fieldName, fieldDef) {
+  let normalizedFieldDef = fieldDef
+
   const field = {
     name: fieldName,
     type: 'String',
@@ -24,28 +26,31 @@ function parseField(fieldName, fieldDef) {
     default: null
   }
 
-  if (!fieldDef || typeof fieldDef !== 'object') {
+  if (!normalizedFieldDef || typeof normalizedFieldDef !== 'object') {
     return field
   }
 
   // Handle array types
-  if (Array.isArray(fieldDef)) {
+  if (Array.isArray(normalizedFieldDef)) {
     field.isArray = true
-    if (fieldDef.length > 0 && typeof fieldDef[0] === 'object') {
-      fieldDef = fieldDef[0]
+    if (
+      normalizedFieldDef.length > 0 &&
+      typeof normalizedFieldDef[0] === 'object'
+    ) {
+      normalizedFieldDef = normalizedFieldDef[0]
     } else {
       return field
     }
   }
 
   // Extract type
-  if (fieldDef.type) {
-    const typeStr = fieldDef.type.toString()
-    
+  if (normalizedFieldDef.type) {
+    const typeStr = normalizedFieldDef.type.toString()
+
     if (typeStr.includes('ObjectId')) {
       field.type = 'ObjectId'
-      field.isRef = !!fieldDef.ref
-      field.refModel = fieldDef.ref || null
+      field.isRef = !!normalizedFieldDef.ref
+      field.refModel = normalizedFieldDef.ref || null
     } else if (typeStr.includes('String')) {
       field.type = 'String'
     } else if (typeStr.includes('Number')) {
@@ -60,15 +65,17 @@ function parseField(fieldName, fieldDef) {
   }
 
   // Extract metadata
-  field.required = !!fieldDef.required
-  field.unique = !!fieldDef.unique
-  
-  if (fieldDef.enum) {
-    field.enum = Array.isArray(fieldDef.enum) ? fieldDef.enum : null
+  field.required = !!normalizedFieldDef.required
+  field.unique = !!normalizedFieldDef.unique
+
+  if (normalizedFieldDef.enum) {
+    field.enum = Array.isArray(normalizedFieldDef.enum)
+      ? normalizedFieldDef.enum
+      : null
   }
-  
-  if (fieldDef.default !== undefined) {
-    field.default = fieldDef.default
+
+  if (normalizedFieldDef.default !== undefined) {
+    field.default = normalizedFieldDef.default
   }
 
   return field
@@ -79,14 +86,14 @@ function parseField(fieldName, fieldDef) {
  */
 function extractSchemaFromFile(filePath) {
   const content = fs.readFileSync(filePath, 'utf8')
-  
+
   // Extract model name
   const modelMatch = content.match(/mongoose\.model\(['"](\w+)['"]/)
   if (!modelMatch) {
     console.warn(`Could not find model name in ${filePath}`)
     return null
   }
-  
+
   const modelName = modelMatch[1]
   const fields = []
   const relationships = []
@@ -99,38 +106,46 @@ function extractSchemaFromFile(filePath) {
   }
 
   // Parse schema fields - extract everything between first { and the closing }, before the options
-  const schemaMatch = content.match(/new Schema\s*\(\s*\{([\s\S]*?)\n\s*\},\s*\{/m)
+  const schemaMatch = content.match(
+    /new Schema\s*\(\s*\{([\s\S]*?)\n\s*\},\s*\{/m
+  )
   if (!schemaMatch) {
     console.warn(`Could not find schema definition in ${filePath}`)
     return null
   }
 
   const schemaContent = schemaMatch[1]
-  
+
   // Split into lines and process
   const lines = schemaContent.split('\n')
   let currentField = null
   let braceCount = 0
   let fieldLines = []
-  
+
   for (let line of lines) {
     const trimmed = line.trim()
     if (!trimmed || trimmed.startsWith('//')) continue
-    
+
     // Check if this starts a new field (fieldName: { or fieldName: [)
-    const fieldStart = trimmed.match(/^(\w+):\s*[\{\[]/)
-    
+    const fieldStart = trimmed.match(/^(\w+):\s*[{[]/)
+
     if (fieldStart && braceCount === 0) {
       // Process previous field if exists
       if (currentField && fieldLines.length > 0) {
         const fieldBuffer = fieldLines.join(' ')
-        processFieldBuffer(currentField, fieldBuffer, fields, relationships, modelName)
+        processFieldBuffer(
+          currentField,
+          fieldBuffer,
+          fields,
+          relationships,
+          modelName
+        )
       }
-      
+
       // Start new field
       currentField = fieldStart[1]
       fieldLines = [trimmed]
-      
+
       // Count braces/brackets
       for (let char of trimmed) {
         if (char === '{' || char === '[') braceCount++
@@ -139,18 +154,24 @@ function extractSchemaFromFile(filePath) {
     } else if (currentField) {
       // Continue current field
       fieldLines.push(trimmed)
-      
+
       // Count braces/brackets
       for (let char of trimmed) {
         if (char === '{' || char === '[') braceCount++
         if (char === '}' || char === ']') braceCount--
       }
     }
-    
+
     // If we closed the field
     if (currentField && braceCount === 0 && fieldLines.length > 0) {
       const fieldBuffer = fieldLines.join(' ')
-      processFieldBuffer(currentField, fieldBuffer, fields, relationships, modelName)
+      processFieldBuffer(
+        currentField,
+        fieldBuffer,
+        fields,
+        relationships,
+        modelName
+      )
       currentField = null
       fieldLines = []
     }
@@ -167,7 +188,13 @@ function extractSchemaFromFile(filePath) {
 /**
  * Process accumulated field buffer to extract field information
  */
-function processFieldBuffer(fieldName, buffer, fields, relationships, sourceModel) {
+function processFieldBuffer(
+  fieldName,
+  buffer,
+  fields,
+  relationships,
+  sourceModel
+) {
   const fieldInfo = {
     name: fieldName,
     type: 'String',
@@ -195,7 +222,7 @@ function processFieldBuffer(fieldName, buffer, fields, relationships, sourceMode
       if (refMatch) {
         fieldInfo.isRef = true
         fieldInfo.refModel = refMatch[1]
-        
+
         // Add relationship
         relationships.push({
           from: sourceModel,
@@ -258,40 +285,40 @@ skinparam class {
   for (const schema of schemas) {
     puml += `class ${schema.modelName} {\n`
     puml += '  _id: ObjectId\n'
-    
+
     for (const field of schema.fields) {
       // Format field name
       let fieldName = field.name
-      
+
       // Format type
       let typeStr = field.type
       if (field.isArray) {
         typeStr = `${typeStr}[]`
       }
-      
+
       puml += `  ${fieldName}: ${typeStr}\n`
     }
-    
+
     puml += '}\n\n'
   }
 
   // Generate relationships
   const processedRelationships = new Set()
-  
+
   for (const schema of schemas) {
     for (const rel of schema.relationships) {
       const relKey = `${rel.from}-${rel.to}-${rel.fieldName}`
-      
+
       // Avoid duplicate relationships
       if (processedRelationships.has(relKey)) continue
       processedRelationships.add(relKey)
-      
+
       // Find if there's a reverse relationship
-      const reverseSchema = schemas.find(s => s.modelName === rel.to)
+      const reverseSchema = schemas.find((s) => s.modelName === rel.to)
       const hasReverse = reverseSchema?.relationships.some(
-        r => r.from === rel.to && r.to === rel.from
+        (r) => r.from === rel.to && r.to === rel.from
       )
-      
+
       if (rel.type === 'many-to-one') {
         puml += `${rel.from} --> ${rel.to} : ${rel.fieldName}\n`
       } else if (rel.type === 'one-to-many') {
@@ -309,14 +336,15 @@ skinparam class {
  */
 function main() {
   console.log('🔍 Scanning Mongoose models...')
-  
+
   // Read all model files
-  const modelFiles = fs.readdirSync(MODELS_DIR)
-    .filter(file => file.endsWith('.js'))
-    .map(file => path.join(MODELS_DIR, file))
-  
+  const modelFiles = fs
+    .readdirSync(MODELS_DIR)
+    .filter((file) => file.endsWith('.js'))
+    .map((file) => path.join(MODELS_DIR, file))
+
   console.log(`📄 Found ${modelFiles.length} model files`)
-  
+
   // Extract schemas
   const schemas = []
   for (const filePath of modelFiles) {
@@ -326,22 +354,22 @@ function main() {
       schemas.push(schema)
     }
   }
-  
+
   console.log(`\n✅ Successfully parsed ${schemas.length} models`)
-  
+
   // Generate PlantUML
   console.log('🎨 Generating PlantUML diagram...')
   const puml = generatePlantUML(schemas)
-  
+
   // Ensure output directory exists
   const outputDir = path.dirname(OUTPUT_FILE)
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true })
   }
-  
+
   // Write output
   fs.writeFileSync(OUTPUT_FILE, puml, 'utf8')
-  
+
   console.log(`\n✅ Database schema diagram generated successfully!`)
   console.log(`📍 Output: ${OUTPUT_FILE}`)
   console.log('\n💡 To visualize the diagram:')
@@ -353,6 +381,5 @@ function main() {
 
 // Run the script
 main()
-
 
 export { extractSchemaFromFile, generatePlantUML }

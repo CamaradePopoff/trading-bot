@@ -65,7 +65,7 @@ function encrypt(text) {
     return iv.toString('hex') + ':' + authTag.toString('hex') + ':' + encrypted
   } catch (error) {
     console.error('Encryption error:', error.message)
-    throw new Error('Failed to encrypt data')
+    throw new Error('Failed to encrypt data', { cause: error })
   }
 }
 
@@ -102,7 +102,7 @@ function decrypt(encryptedText) {
     return decrypted
   } catch (error) {
     console.error('Decryption error:', error.message)
-    throw new Error('Failed to decrypt data')
+    throw new Error('Failed to decrypt data', { cause: error })
   }
 }
 

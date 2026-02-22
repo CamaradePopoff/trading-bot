@@ -20,6 +20,7 @@
     "hyper-express": "^6.17.3",
     "jsonwebtoken": "^9.0.3",
     "migrate-mongo": "^14.0.7",
+    "mongodb": "^7.0.0",
     "mongoose": "^9.2.1",
     "morgan": "^1.10.1",
     "node-schedule": "^2.1.1",
@@ -37,6 +38,6 @@
     "on-headers": "^1.1.0"
   },
   "engines": {
-    "node": ">=24.13.x"
+    "node": ">=22.13.x"
   }
 }

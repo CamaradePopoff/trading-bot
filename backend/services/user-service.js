@@ -311,7 +311,9 @@ module.exports = function (io, logger) {
         `Failed to decrypt exchange ${exchangeName} for user ${userId}:`,
         error.message
       )
-      throw new Error('Failed to decrypt exchange credentials')
+      throw new Error('Failed to decrypt exchange credentials', {
+        cause: error
+      })
     }
   }
 

@@ -24,8 +24,8 @@ then
 fi
 
 HERE=$(pwd)
-TMP=$HERE/tmp
-OUT=$HERE/out
+TMP=$HERE/../../tmp
+OUT=$HERE/../../out
 JSON_ALL=$TMP/$PROJECT_PREFIX-npm-audit-all.json
 JSON_PROD=$TMP/$PROJECT_PREFIX-npm-audit-prod.json
 HTML_ALL=$OUT/$PROJECT_PREFIX-npm-dependency-check-report-all.html

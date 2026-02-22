@@ -4,6 +4,7 @@
   "type": "module",
   "author": "NeoXam",
   "scripts": {
+    "lint": "npx eslint . --fix",
     "licenses:admin": "node scripts/manage/license-checks.js . admin",
     "licenses:backend": "node scripts/manage/license-checks.js ../backend backend",
     "licenses:frontend": "node scripts/manage/license-checks.js ../frontend frontend",
@@ -11,7 +12,7 @@
     "merge-scans": "node scripts/manage/merge-vulnerability-scans.js"
   },
   "engines": {
-    "node": ">=24.13.x"
+    "node": ">=22.13.x"
   },
   "dependencies": {
     "console-table-printer": "^2.15.0",

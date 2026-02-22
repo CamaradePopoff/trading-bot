@@ -40,13 +40,18 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useMainStore } from '@/store'
-import Asciidoctor from '@asciidoctor/core'
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 
 const main = useMainStore()
 const isOpen = ref(false)
 const docContent = ref('')
 const scrollContainer = ref(null)
-const asciidoctor = Asciidoctor()
+
+marked.setOptions({
+  gfm: true,
+  breaks: true
+})
 
 const manualTitle = computed(() => {
   const titles = {
@@ -59,27 +64,52 @@ const manualTitle = computed(() => {
 
 const renderedMarkdown = computed(() => {
   if (!docContent.value) return ''
-  return asciidoctor.convert(docContent.value, { 
-    backend: 'html5',
-    attributes: {
-      'toc': 'auto',
-      'numbered': true,
-      'source-highlighter': 'highlight.js'
-    }
-  })
+  return DOMPurify.sanitize(marked.parse(docContent.value))
 })
+
+const isHtmlDocument = (text) => {
+  const head = text.slice(0, 500).toLowerCase()
+  return (
+    head.includes('<!doctype html') ||
+    head.includes('<html') ||
+    head.includes('/@vite/client')
+  )
+}
+
+const tryLoadDoc = async (url) => {
+  const response = await fetch(url)
+  if (!response.ok) return null
+
+  const contentType = (response.headers.get('content-type') || '').toLowerCase()
+  const text = await response.text()
+
+  if (contentType.includes('text/html') || isHtmlDocument(text)) {
+    return null
+  }
+
+  return text
+}
 
 const openHelp = async () => {
   try {
     const lang = main.lang || 'en'
-    const response = await fetch(`/docs/${lang}.adoc`)
-    if (response.ok) {
-      docContent.value = await response.text()
-    } else {
-      // Fallback to English
-      const fallbackResponse = await fetch('/docs/en.adoc')
-      docContent.value = await fallbackResponse.text()
+
+    const docUrls = [
+      `/docs/${lang}.md`,
+      '/docs/en.md'
+    ]
+
+    let loadedContent = null
+    for (const url of docUrls) {
+      loadedContent = await tryLoadDoc(url)
+      if (loadedContent) break
     }
+
+    if (!loadedContent) {
+      throw new Error('No markdown help documentation file found.')
+    }
+
+    docContent.value = loadedContent
     isOpen.value = true
   } catch (error) {
     console.error('Failed to load help documentation:', error)
@@ -258,14 +288,26 @@ defineExpose({
   padding: 15px 20px;
   margin: 25px 0;
   background-color: #f0f7ff;
-  color: #1565c0;
-  font-style: italic;
+  color: #1f2d3d;
+  font-style: normal;
   border-radius: 4px;
 }
 
 .help-content blockquote p {
   margin-bottom: 0;
   color: inherit;
+}
+
+.help-content blockquote strong,
+.help-content blockquote p strong,
+.help-content blockquote li strong {
+  color: #0d47a1;
+}
+
+.help-content blockquote code {
+  color: #37474f;
+  background-color: #e3f2fd;
+  border-color: #bbdefb;
 }
 
 .help-content .admonitionblock {
@@ -298,6 +340,13 @@ defineExpose({
 
 .help-content .admonitionblock p {
   margin-bottom: 0;
+}
+
+.help-content .admonitionblock,
+.help-content .admonitionblock p,
+.help-content .admonitionblock li,
+.help-content .admonitionblock strong {
+  color: #eceff1;
 }
 
 /* Tables */

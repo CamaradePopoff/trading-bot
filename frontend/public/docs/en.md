@@ -1,0 +1,1039 @@
+# Trading Bot - User Manual
+
+## Introduction
+
+This automated trading bot is designed to execute systematic cryptocurrency trading strategies across multiple supported exchanges. The bot uses a dollar-cost averaging (DCA) strategy combined with profit-taking mechanisms to trade cryptocurrencies automatically.
+
+### Supported Exchanges
+
+- **Binance** - Global cryptocurrency exchange
+- **KuCoin** - Global cryptocurrency exchange with extensive altcoin selection
+- **MEXC** - Global digital asset trading platform
+
+> **NOTE:**
+> **Note**: Exchange availability may vary by region. Ensure your chosen exchange is accessible in your jurisdiction.
+
+### Key Features
+
+- **Automated Trading**: Buy and sell cryptocurrencies based on configured parameters
+- **Multi-Position Management**: Manage multiple buying positions simultaneously
+- **Profit Optimization**: Configurable profit margins and reinvestment strategies
+- **Simulation Mode**: Test strategies without real trading
+- **Real-time Monitoring**: Track bot performance and transactions live
+- **Multi-Exchange Support**: Run bots on different exchanges simultaneously
+
+## Getting Started
+
+### 1. Registration & Login
+
+1. Navigate to the application URL
+1. Select your preferred exchange from the dropdown
+1. Enter your credentials (username and password)
+1. Click **Login** to access the platform
+
+> **NOTE:**
+> **Note**: Registration may be disabled depending on deployment configuration. Contact your administrator if you need an account.
+
+### 2. Exchange API Configuration
+
+Before creating bots, you must configure API keys for your chosen exchange:
+
+1. Navigate to **Account** page
+1. Find the **Exchanges** section
+1. For your selected exchange, enter:
+
+- **API Key**: Your exchange API key
+- **API Secret**: Your exchange API secret
+- **API Passphrase**: (Optional, required for KuCoin)
+
+1. Click **Save** to store your credentials
+
+> **NOTE:**
+> **Security Note**: API keys are encrypted and stored securely. Never share your API keys with anyone.
+
+#### Exchange API Permissions Required
+
+Your API keys must have the following permissions enabled:
+- **Read** - View account balances and market data
+- **Trade** - Place buy and sell orders
+- **No Withdrawal Permission Required** - For security, withdrawal permissions should be disabled
+
+#### How to Create API Keys
+
+##### Binance
+
+1. Log in to your [Binance account](https://www.binance.com)
+1. Click on your profile icon in the top right corner
+1. Select **API Management** from the dropdown menu
+1. Click **Create API** button
+1. Choose **System Generated** API key option
+1. Enter a label for your API key (e.g., "Trading Bot")
+1. Complete the security verification (2FA, email, etc.)
+1. Once created, **copy and save both the API Key and Secret Key immediately**
+
+> **WARNING:**
+> The Secret Key is only shown once! Save it securely before closing the window.
+
+1. Click **Edit restrictions** to configure permissions:
+
+- Enable **Enable Spot & Margin Trading**
+- Disable **Enable Withdrawals** (for security)
+- Add the bot's IP address to the whitelist if required (IP shown in Account page)
+1. Click **Save** to apply the restrictions
+
+##### KuCoin
+
+1. Log in to your [KuCoin account](https://www.kucoin.com)
+1. Click on your profile icon in the top right corner
+1. Select **API Management** from the dropdown menu
+1. Click **Create API** button
+1. Enter the following information:
+
+- **API Name**: A label for your API key (e.g., "Trading Bot")
+- **API Passphrase**: Create a passphrase (you'll need this in the bot configuration)
+- **Permissions**: Select **General** (allows trading)
+1. Complete the security verification (2FA, email, etc.)
+1. Once created, **copy and save the API Key, Secret Key, and Passphrase immediately**
+
+> **WARNING:**
+> The Secret Key and Passphrase are only shown once! Save them securely before closing the window.
+
+1. Configure IP restrictions:
+
+- Add the bot's IP address to the whitelist (IP shown in Account page)
+- Click **Confirm** to save
+1. The API key status should show as **Active**
+
+> **NOTE:**
+> KuCoin requires all three values: API Key, API Secret, and API Passphrase.
+
+##### MEXC
+
+1. Log in to your [MEXC account](https://www.mexc.com)
+1. Click on your profile icon in the top right corner
+1. Select **API Management** or **API** from the menu
+1. Click **Create API Key** button
+1. Enter the following information:
+
+- **API Key Note**: A label for your API key (e.g., "Trading Bot")
+- **IP Whitelist** (Optional): Add the bot's IP address (IP shown in Account page)
+1. Complete the security verification (2FA, email, etc.)
+1. Once created, **copy and save both the Access Key and Secret Key immediately**
+
+> **WARNING:**
+> The Secret Key is only shown once! Save it securely before closing the window.
+
+1. Configure API permissions:
+
+- Enable **Spot Trading** permission
+- Disable **Withdrawals** permission (for security)
+1. Click **Confirm** to save the API key
+
+> **IMPORTANT:**
+> For all exchanges:
+>
+> ** **Never share your API keys* with anyone
+> ** **Never enable withdrawal permissions* for trading bots
+> ** **Use IP whitelisting* when possible for added security
+> ** **Store your keys securely* - consider using a password manager
+> * If you lose access to your keys, delete them from the exchange and create new ones
+
+## Bot Configuration
+
+### Creating a New Bot
+
+1. Navigate to **Bots** → **New Bot**
+1. Configure all required parameters (detailed below)
+1. Click **Create Bot** to initialize
+1. The bot will be created in a paused state
+
+### Core Configuration Parameters
+
+#### Basic Settings
+
+**Bot Label** (Optional)
+- A custom name for your bot to easily identify it
+- Example: "BTC Long-term", "ETH Swing Trade"
+
+**Bot Interval** (Required, 3-30 seconds)
+- The frequency at which the bot checks prices and executes trades
+- Default: 5 seconds
+- Lower intervals = more responsive but higher API usage
+- Higher intervals = less responsive but lower API usage
+- **Recommendation**: Use 5-10 seconds for most strategies
+
+**Trading Pair** (Required)
+- The cryptocurrency pair to trade
+- Format: `CRYPTO-USDT` (e.g., BTC-USDT, ETH-USDT)
+- Once set, **cannot be changed** for an existing bot
+
+#### Market Information (Auto-populated)
+
+**Market Fee**
+- The trading fee percentage charged by the exchange
+- Automatically calculated based on your VIP level (if applicable)
+- Used to calculate accurate profit margins
+
+**Symbol Class**
+- Trading pair classification (only on certain exchanges)
+- Affects fee structure
+
+**Minimum Size**
+- The minimum amount of cryptocurrency that can be traded
+- Set by the exchange for each trading pair
+
+**Minimum Increment**
+- The smallest price increment for the trading pair
+- Determines precision for buy/sell orders
+
+### Investment Parameters
+
+**Max Investment** (Required, minimum: 10 USDT)
+- The total amount of USDT you want to allocate to this bot
+- Example: 1000 USDT means the bot will use up to 1000 USDT for trading
+- This is divided across all positions
+
+**Max Positions** (Required, minimum: 1)
+- The maximum number of simultaneous buy positions the bot can hold
+- Example: 10 positions with 1000 USDT = 100 USDT per position
+- More positions = better averaging but smaller position sizes
+
+**Position Price** (Calculated automatically)
+- The amount allocated per position
+- Formula: `Max Investment / Max Positions`
+- Example: 1000 USDT / 10 positions = 100 USDT per position
+
+**Position Cluster Threshold** (Required, default: 1)
+- Number of positions that trigger cluster detection near any price level
+- When rebuying, the bot checks if this many positions already exist near the selling price
+- Range: 1 to (Max Positions - 1)
+- The bot creates a buffer zone around the selling price using ±profit margin percentage
+- Example: With 5% profit margin and threshold of 2, if 2+ positions exist between $95-$105 when selling at $100, skip rebuy
+- Higher values = allows more positions at same price level before avoiding rebuy
+- **Recommendation**: Use 1-2 to maintain wide distribution, 3-4 for more concentration tolerance
+
+**Profit as Crypto** (Toggle)
+- When enabled, a portion of each sell keeps the cryptocurrency instead of converting all to USDT
+- Accumulates the base cryptocurrency over time
+- Example: When selling BTC, keep some BTC instead of converting all to USDT
+- **Recommendation**: Enable if you want to accumulate the cryptocurrency long-term
+- **Warning**: Ensure minimum increment allows for small crypto amounts
+
+> **NOTE:**
+> **Important**: The "Profit as Crypto" feature calculates how much crypto to sell to achieve your target USDT profit, then sells the remaining amount and keeps the crypto difference.
+
+**Reinvest Profit to Max Positions** (Optional)
+- If set, the bot will add extra positions using accumulated profits
+- Example: Set to 15 with Max Positions of 10
+
+** Bot starts with 10 positions
+** As profits accumulate, bot can grow to 15 positions
+** Once profits are sufficient, free positions increase beyond 10
+
+- Leave empty to disable this feature
+
+**Reinvest Profit** (Toggle)
+- When enabled, USDT profits are used to increase the size of each position
+- Compounds profits by making each new buy larger
+- **Recommendation**: Enable for long-term compounding strategies
+
+### Trading Strategy Parameters
+
+#### Price Drop Behavior
+
+The bot offers two modes for configuring how it reacts to price drops:
+
+**1. Single Threshold Mode** (Constant threshold)
+- One fixed percentage applies to all positions
+- Simplest configuration
+- Example: 2% means buy when price drops 2% from the last peak
+- **Use when**: You want consistent buying behavior across all positions
+- **Recommendation**: 1-3% for volatile markets, 0.5-1% for stable markets
+
+**2. Threshold Array Mode** (Drop Profile)
+- Define different thresholds for each position
+- Allows progressive buying strategy as price drops further
+- Format: Comma-separated values (e.g., `0.2, 0.2, 0.5, 0.5, 1.0`)
+- Example with 5 positions:
+
+** Position 1: Buy when price drops 0.2%
+** Position 2: Buy when price drops an additional 0.2% (total 0.4%)
+** Position 3: Buy when price drops an additional 0.5% (total 0.9%)
+** Position 4: Buy when price drops an additional 0.5% (total 1.4%)
+** Position 5: Buy when price drops an additional 1.0% (total 2.4%)
+
+- **Use when**: You want to buy more aggressively as the price drops further
+- **Strategy Tip**: Start with small thresholds and increase them for deeper positions
+- **Note**: Number of thresholds should match or exceed your max positions
+
+**Choosing Between Modes:**
+- **Single Threshold**: Better for beginners, predictable behavior, uniform averaging
+- **Threshold Array**: Advanced strategy, can optimize entry points, better for DCA in volatile markets
+- You can switch between modes at any time by editing the bot configuration
+
+#### Emergency Positions (Optional)
+
+**Emergency Position Threshold** (Optional, 0.1-100%)
+- Unlocks additional emergency positions when all regular positions are exhausted
+- Triggers when price drops by this percentage from the last purchase price
+- Example: 5% threshold with last buy at $50,000 = Emergency buy at $47,500
+
+**Number of Emergency Positions** (Optional, default: 1)
+- Limits the maximum number of emergency positions that can be active at any given time
+- Each emergency position operates independently with its own sell/rebuy cycle
+- Example: Setting this to 3 allows up to 3 concurrent emergency positions
+
+**How it works**:
+
+** When all positions are used (freePositions = 0)
+** AND price drops by the emergency threshold from last buy
+** Bot buys one emergency position (if balance allows and limit not reached)
+** Emergency position is automatically sold and rebought as price rises
+** Creates a self-sustaining emergency trading cycle
+** If limit is reached, no more emergency positions will be bought until one sells
+
+- **Use case**: Capture opportunities during severe market dips
+- **Risk**: Uses additional capital beyond max investment (investment × emergency positions)
+- **Recommendation**: Threshold 3-10%, Positions 1-3 depending on risk tolerance and available capital
+- Leave threshold empty to disable emergency positions
+
+> **WARNING:**
+> **Important**: Emergency positions require available balance beyond your configured maximum investment. Ensure you have sufficient funds to cover potential emergency buys.
+
+**Profit Margin** (Required, 0.1-100%)
+- The percentage profit target for each position before selling
+- Example: 1.5% means sell when price rises 1.5% above the buy price (after fees)
+- Includes both buy and sell fees in calculation
+- Lower values = faster profit-taking, more transactions
+- Higher values = slower profit-taking, potentially higher profits
+- **Recommendation**: 0.8-2% depending on market volatility
+
+#### High Price Area Rebuy Avoidance
+
+The bot includes intelligent logic to prevent premature rebuying when selling positions at high prices. This feature helps preserve capital during price peaks and optimizes the rebuy strategy.
+
+**How It Works:**
+
+When you sell a position, the bot normally rebuys immediately if free positions are available. However, to avoid buying back at inflated prices, the bot analyzes your highest-priced positions:
+
+1. Takes your top N positions (based on "High Positions" setting)
+1. Identifies the price range of these highest positions
+1. Calculates a lower bound using the threshold percentage
+1. If the selling price falls within this high price area, rebuy is **skipped**
+
+**Algorithm Details:**
+```
+topPositions = Sort all purchases by price (highest first)
+              Take first N positions (N = High Positions)
+
+maxPurchasePrice = Highest purchase price
+minPrice = Lowest price among top N positions
+lowerBound = minPrice × (1 - threshold/100)
+sellTargetPrice = maxPurchasePrice × (1 + profitMargin/100)
+upperBound = max(sellTargetPrice, maxWorkingPrice)
+
+if (selling price is between lowerBound and upperBound):
+    Skip rebuy to preserve funds for better entry points
+```
+
+**Practical Example:**
+
+Configuration:
+- Max Positions: 10
+- High Positions: 3
+- Threshold: 2%
+- Profit Margin: 1.5%
+
+Current Positions:
+```
+Position 1: $52,000
+Position 2: $51,500
+Position 3: $51,000
+Position 4: $49,000
+Position 5: $48,000
+... (others at lower prices)
+```
+
+Top 3 positions (N=3):
+- Max purchase price: $52,000
+- Min price: $51,000
+- Lower bound: $51,000 × (1 - 0.02) = $49,980
+- Sell target price: $52,000 × (1 + 0.015) = $52,780
+- Max working price (if set): $53,000
+- Upper bound: max($52,780, $53,000) = $53,000
+
+High Price Area Range: $49,980 to $53,000
+
+**Scenarios:**
+- Sell at $51,500: **Skip rebuy** (within high price area)
+- Sell at $52,800: **Skip rebuy** (within high price area, between sell target and max working price)
+- Sell at $53,500: **Rebuy allowed** (above high price area)
+- Sell at $49,500: **Rebuy allowed** (below high price area)
+
+**Why This Matters:**
+
+- **Prevents Loss Amplification**: Avoids buying back immediately at high prices only to see them drop again
+- **Optimizes Capital Efficiency**: Preserves funds for better entry points at lower prices
+- **Reduces Transaction Costs**: Fewer unnecessary buy-sell cycles at peaks
+- **Improves Average Entry Price**: Waits for price corrections before rebuying
+
+**Strategy Tips:**
+
+- **Higher "High Positions"** (3-5): Wider high price area, more conservative rebuy strategy
+- **Lower "High Positions"** (1-2): Narrower high price area, more aggressive rebuying
+- **Volatile Markets**: Use lower values (1-2) to capture rebounds quickly
+- **Stable/Ranging Markets**: Use higher values (3-5) to avoid premature rebuys
+
+> **NOTE:**
+> **Note**: This feature only applies when you have at least as many positions as your "High Positions" setting. With fewer positions, normal rebuy logic applies.
+
+### Working Price Range (Optional but Recommended)
+
+**Minimum Working Price**
+- The lowest price at which the bot will buy
+- Prevents buying during severe crashes
+- Leave empty for no minimum limit
+
+**Maximum Working Price**
+- The highest price at which the bot will buy
+- Prevents buying at price tops
+- Leave empty for no maximum limit
+
+**When Creating a New Bot:**
+
+**Min Decrease %** (For new bots)
+- Percentage below current price to set the minimum working price
+- Example: 10% with current price $50,000 = Min working price of $45,000
+
+**Max Increase %** (For new bots)
+- Percentage above current price to set the maximum working price
+- Example: 10% with current price $50,000 = Max working price of $55,000
+
+> **NOTE:**
+> **Strategy Tip**: Setting a working range helps prevent poor buying decisions during extreme market conditions.
+
+### Simulation Mode
+
+**Simulation** (Toggle)
+- When enabled, the bot runs without placing real orders
+- All transactions are simulated
+- Perfect for:
+
+** Testing new strategies
+** Learning how the bot works
+** Backtesting parameters
+
+- **Cannot be changed** after bot creation
+
+> **NOTE:**
+> **Note**: Simulated bots are marked with a warning color and labeled "SIMULATION" throughout the interface.
+
+## Bot Behavior
+
+### Trading Logic
+
+The bot operates on a systematic approach with the following logic:
+
+#### Buying Conditions
+
+The bot will execute a BUY when **ALL** of the following conditions are met:
+
+1. **Free Positions Available**: At least one free position exists
+1. **Not Stopped**: The "Stop Buying" flag is not set
+1. **Price Range Check**: Current price is within the min/max working price range (if set)
+1. **One of These Triggers**:
+
+- **First Cycle**: Bot just started (cycle 0)
+- **Price Drop**: Price dropped by the configured threshold from the last highest price
+- **Rebuy After Sell**: Just sold a position AND rebought positions count is below the configured limit
+
+**Buy Order Details:**
+- **Order Type**: Market order (executes immediately at current market price)
+- **Amount**: Calculated from position price divided by current price
+- **Rounding**: Amount is rounded down to meet exchange increment requirements
+
+#### Selling Conditions
+
+The bot will execute a SELL when:
+
+1. **Target Price Reached**: A purchase's target price has been reached or exceeded
+1. **Target Price Calculation**: 
+
+```
+Target Price = ((Paid + Buy Fee) × (1 + Sell Fee Rate) × (1 + Profit Margin)) / Amount
+```
+
+This ensures that both fees and profit margin are accounted for.
+
+**Sell Order Details:**
+- **Order Type**: Market order (executes immediately at current market price)
+- **Amount Sold**:
+
+*** If "Profit as Crypto" is **OFF*: Sells entire position
+*** If "Profit as Crypto" is **ON*: Sells only enough to achieve USDT profit target, keeps the rest as crypto
+
+#### Position Management
+
+**Free Positions Counter:**
+- Starts at `Max Positions` when bot is created
+- Decreases by 1 with each buy
+- Increases by 1 with each sell
+- Can go negative if forced manual purchases are made
+- Can exceed `Max Positions` if profit reinvestment is enabled
+
+**Highest Price Tracking:**
+- The bot tracks the highest price reached since the last sell
+- This value is used to calculate when a price drop threshold is met
+- Resets to current price after each buy
+
+**Rebought Positions Counter:**
+- Tracks how many positions were rebought during a rising market
+- Increases when selling and immediately rebuying
+- Prevents excessive rebuying during sustained uptrends
+- Resets when price drops and triggers a drop-based buy
+
+### Bot Lifecycle
+
+#### 1. Creation
+
+- Bot is created with configuration
+- Initial state: **Not Started, Not Paused**
+- Opening price is recorded
+
+#### 2. Starting
+
+- User clicks "Start" button
+- Bot enters **Started, Not Paused** state
+- Configuration is validated
+- Trading pairs and API keys are verified
+- Bot begins its main cycle loop
+
+#### 3. Running
+
+- **Price Checking**: Fetches current price every interval
+- **Condition Evaluation**: Checks buy and sell conditions
+- **Order Execution**: Places buy/sell orders when conditions are met
+- **State Persistence**: Saves state to database after each cycle
+- **Logging**: Records all activities to bot-specific log file
+
+#### 4. Pausing
+
+- User clicks "Pause" button
+- Bot enters **Started, Paused** state
+- No new orders are placed
+- Current positions remain open
+- Can be resumed at any time
+
+#### 5. Stopping
+
+- User stops the bot (implementation-specific)
+- Bot stops checking prices and placing orders
+- Positions remain open until manually closed
+
+### Special Behaviors
+
+#### Stop Buying Modes
+
+The bot features two independent stop buying controls for different market conditions:
+
+**1. Stop Buying on Price Drop**
+- Activated via "Stop Buying on Drop" button
+- Bot stops buying when prices drop but continues normal rebuy behavior when prices rise
+- Useful when you believe the market has bottomed and want to preserve capital
+- Can be reversed with "Resume Buying on Drop" button
+
+**2. Stop Buying on Rebuy**
+- Activated via "Stop Buying on Rebuy" button
+- Bot stops automatic rebuying after selling positions during rising prices
+- Continues to buy on new price drops as configured
+- Useful to lock in profits during uptrends without catching falling knives
+- Can be reversed with "Resume Buying on Rebuy" button
+
+**Both Modes:**
+- Bot continues to sell profitable positions even when either stop mode is active
+- Can be combined (both enabled simultaneously) to pause all buying activity
+- Each can be controlled independently for specific market scenarios
+
+#### Forced Manual Actions
+
+Users can manually trigger actions:
+- **Manual Sell**: Sell all currently profitable positions
+- **Forced Buy**: Place a buy order even if conditions aren't met
+- **Forced Sell**: Sell specific positions even below profit target
+- **Update Configuration**: Modify parameters while bot is running (limited fields)
+
+#### Position Boost
+
+- Automatically calculated from profit reinvestment settings
+- Increases free positions beyond the base `Max Positions`
+- Formula based on accumulated profit and position price
+
+#### USDT Boost
+
+- Increases the USDT amount per position when "Reinvest Profit" is enabled
+- Compounds profits into larger positions over time
+- Calculated from total profit divided by max positions
+
+## Transaction Management
+
+### Viewing Transactions
+
+1. Navigate to **Trading** page
+1. Select a bot from your list
+1. View transaction history in the **Transactions** tab
+
+### Transaction Types
+
+**Purchase Transactions:**
+- **Amount**: Cryptocurrency amount bought
+- **Price**: Price at which it was bought
+- **Paid**: Total USDT spent
+- **Fee**: Exchange fee paid
+- **Target Price**: Calculated selling price for profit
+- **Status**: Active (waiting to sell) or Sold
+
+**Selling Transactions:**
+- **Amount**: Cryptocurrency amount sold
+- **Price**: Price at which it was sold
+- **Buy Price**: Original purchase price
+- **Profit**: USDT profit made (after fees)
+- **Fee**: Exchange fee paid
+
+### Manual Transaction Controls
+
+**Pause/Resume Specific Purchases:**
+- Click the pause icon on any active purchase
+- Paused purchases won't be sold automatically
+- Useful for holding specific positions longer
+
+**Force Sell:**
+- Click the sell icon on any active purchase
+- Sells immediately at market price regardless of profit
+- Use when you need to liquidate urgently
+
+## Monitoring & Analytics
+
+### Bot Selection
+
+The bot list provides a checkbox selection system for managing multiple bots:
+
+**Individual Bot Selection:**
+- Click the checkbox on the left of any bot row to select/deselect it
+- Selected bots are highlighted for easy identification
+- Selection persists while you navigate and while bots refresh in real-time
+- Selections are cleared when you change filter criteria
+
+**Master Checkbox:**
+- Located in the header row above all bots
+- **Checked state** (✓): All visible bots are selected
+- **Unchecked state** (☐): No bots are selected
+- **Indeterminate state** (⊟): Some bots are selected
+- Click the master checkbox to quickly select/deselect all visible bots
+- Only affects currently visible bots (respects active filters)
+
+**Selection Clearing:**
+- Selections are automatically cleared when you change:
+** Filter criteria (search, simulation toggle, running/paused filter)
+** This ensures your selection stays relevant to your current view
+
+**Using Selections:**
+- Global operations (Pause, Resume, Stop Buying controls) only affect selected bots
+- See "Global Bot Controls" section below for details
+
+### Bot Dashboard
+
+The main dashboard displays:
+
+**Bot Status Indicators:**
+- **Running** (Green): Bot is actively trading
+- **Paused** (Yellow): Bot is paused
+- **Stopped** (Gray): Bot is not running
+
+**Performance Metrics:**
+- **Total Profit (USDT)**: Cumulative USDT profit
+- **Total Profit (Crypto)**: Accumulated cryptocurrency (if enabled)
+- **Total Transactions**: Number of completed buy/sell cycles
+- **Current Price**: Live cryptocurrency price
+- **Free Positions**: Available positions for buying
+- **Cycles**: Number of completed check cycles
+
+**Configuration Display:**
+- All key configuration parameters
+- Current working price range
+- Visual price cursor showing position relative to range
+
+### Global Bot Controls
+
+The bot list header provides controls that affect selected bots:
+
+**Pause/Resume**
+- **Pause**: Pauses all selected bots (if none selected, shows grayed out)
+- **Resume**: Resumes all selected bots (if none selected, shows grayed out)
+- Only affects bots that are currently selected via checkboxes
+- Use master checkbox to quickly pause/resume all visible bots
+
+**Stop Buying Controls**
+- **Stop Buying on Drop**: Prevents buying on price drops for selected bots
+- **Stop Buying on Rebuy**: Prevents automatic rebuying for selected bots
+- **Resume Buying on Drop**: Re-enables buying on price drops for selected bots
+- **Resume Buying on Rebuy**: Re-enables automatic rebuying for selected bots
+- All buying control buttons only affect selected bots
+- Buttons show enabled/disabled state based on selection
+
+**Selection Requirements:**
+- To use any global control, you must select at least one bot
+- Controls are disabled (grayed out) when no bots are selected
+- Selection status shown in the header (e.g., "3 selected")
+
+**Example Workflow:**
+1. Select the bots you want to control using checkboxes
+1. Click **Pause** to pause only those bots
+1. Your other bots continue operating normally
+1. Click **Stop Buying on Drop** to prevent drop-based buys on selected bots only
+
+**Tip:**
+- Use the master checkbox for quick selection/deselection of all visible bots
+- Combine with filters to target specific bot groups (e.g., all simulation bots)
+
+### Price Visualization
+
+**Price Cursor:**
+- Visual representation of current price within working range
+- Tick marks show purchase prices and target sell prices
+- Helps visualize bot's position in the market
+
+**Transaction Ranges:**
+- Green range: Potential selling zone (above purchase prices)
+- Red range: Potential buying zone (below current highest price)
+
+### Logs
+
+**Accessing Logs:**
+1. Navigate to **Admin** → **Logs** (requires admin permissions)
+1. Select user and bot
+1. View real-time log stream
+
+**Log Information:**
+- Price checks and decisions
+- Buy/sell order placements
+- Configuration changes
+- Errors and warnings
+- Performance metrics
+
+### Balances
+
+**Viewing Balances:**
+1. Navigate to **Balances** page
+1. View current holdings across exchanges
+1. See available and in-use balances
+
+**Balance Components:**
+- **Available**: Funds available for trading
+- **In Orders**: Funds currently in open orders
+- **Total**: Sum of available and in-orders
+
+## Advanced Features
+
+### Bot Configuration Import/Export
+
+**Exporting Configurations:**
+1. Go to **Account** page
+1. Click **Manage Bot Configurations**
+1. Click **Download JSON**
+1. Configurations are saved to a JSON file with timestamp
+
+**Importing Configurations:**
+1. Go to **Account** page
+1. Click **Manage Bot Configurations**
+1. Click **Upload JSON**
+1. Select your previously exported JSON file
+1. System validates and creates bots from configurations
+
+> **NOTE:**
+> **Note**: Imported configurations must match the currently selected exchange. Bots are created in a paused state.
+
+### Multiple Bots Management
+
+**Running Multiple Bots:**
+- Create multiple bots for different trading pairs
+- Each bot operates independently
+- Manage all bots from the main dashboard
+
+**Best Practices:**
+- Don't over-allocate funds across bots
+- Monitor total investment across all bots
+- Consider correlation between trading pairs
+- Ensure sufficient balance for all active bots
+
+### Profit Strategies
+
+**Conservative Strategy:**
+- Higher profit margin (1.5-3%)
+- Lower price drop threshold (0.5-1%)
+- Fewer max positions (5-10)
+- No profit reinvestment
+- Result: Slower but more reliable profits
+
+**Aggressive Strategy:**
+- Lower profit margin (0.5-1.2%)
+- Higher price drop threshold (2-5%)
+- More max positions (15-30)
+- Profit reinvestment enabled
+- Result: Faster but more volatile profits
+
+**Accumulation Strategy:**
+- Enable "Profit as Crypto"
+- Medium profit margin (1-2%)
+- Medium positions (10-20)
+- Enable profit reinvestment
+- Result: Accumulate cryptocurrency while making USDT profit
+
+### Exchange-Specific Features
+
+**VIP Fee Discounts (Binance, KuCoin):**
+- Bot automatically detects your VIP level
+- Fees are adjusted based on your trading volume
+- More accurate profit calculations
+
+**Trading Pair Classes (KuCoin):**
+- Different fee structures for different pair classes
+- Displayed in bot configuration
+
+## Troubleshooting
+
+### Common Issues
+
+#### Bot Won't Start
+
+**Symptoms:**
+- Bot shows as "Not Started" after clicking Start
+- Error messages in logs
+
+**Solutions:**
+1. **Check API Keys**: Ensure API keys are correctly configured
+1. **Verify Permissions**: API keys must have trading permissions
+1. **Check Balance**: Ensure sufficient USDT balance for at least one position
+1. **Review Trading Pair**: Verify the trading pair is available on the exchange
+1. **Check Logs**: Review bot logs for specific error messages
+
+#### No Buying Activity
+
+**Symptoms:**
+- Bot is running but not placing buy orders
+
+**Possible Causes:**
+1. **No Free Positions**: All positions are filled
+
+** Solution: Wait for sells or increase max positions
+
+1. **Stop Buying Active**: Check if "Stop Buying on Drop" or "Stop Buying on Rebuy" mode is enabled
+
+** Solution: Click "Resume Buying on Drop" and/or "Resume Buying on Rebuy" as appropriate
+
+1. **Price Outside Range**: Current price is outside working range
+
+** Solution: Adjust min/max working prices
+
+1. **Insufficient Balance**: Not enough USDT for a position
+
+** Solution: Add funds or reduce position size
+
+1. **Price Not Dropped Enough**: Waiting for price drop threshold
+
+** Solution: Wait or reduce price drop threshold
+
+#### No Selling Activity
+
+**Symptoms:**
+- Bot has positions but isn't selling
+
+**Possible Causes:**
+1. **Target Price Not Reached**: Price hasn't risen enough for profit
+
+** Solution: Wait or reduce profit margin
+
+1. **Paused Purchases**: Some purchases may be manually paused
+
+** Solution: Resume paused purchases
+
+1. **Market Downtrend**: Price is below purchase prices
+
+** Solution: Wait for market recovery or use forced sell
+
+#### Orders Failing
+
+**Symptoms:**
+- Error messages about failed orders in logs
+
+**Possible Causes:**
+1. **Insufficient Balance**: Not enough funds for buy orders
+1. **Amount Too Small**: Order size below exchange minimum
+
+** Solution: Increase position size or max investment
+
+1. **Amount Too Large**: Order exceeds available balance
+1. **API Rate Limits**: Too many requests to exchange
+
+** Solution: Increase bot interval
+
+1. **Exchange Issues**: Temporary exchange problems
+
+** Solution: Wait and retry
+
+#### Incorrect Profit Calculations
+
+**Symptoms:**
+- Profits don't match expectations
+
+**Explanations:**
+1. **Fees**: Both buy and sell fees reduce profit
+1. **Slippage**: Market orders may execute at slightly different prices
+1. **Profit as Crypto**: Some profit is kept as crypto, reducing USDT profit
+1. **Rounding**: Small amounts may be rounded differently
+
+### Error Messages
+
+**"Invalid exchange API keys"**
+- Re-enter your API keys in Account settings
+- Verify keys are active on the exchange
+
+**"Selected trading pair is not available"**
+- Check if the trading pair exists on your exchange
+- Verify trading pair format (e.g., BTC-USDT)
+
+**"Minimum size not met"**
+- Increase max investment or reduce max positions
+- Ensure position size meets exchange minimum
+
+**"Unable to fetch current price"**
+- Check internet connection
+- Verify exchange API is accessible
+- Wait for temporary exchange issues to resolve
+
+**"Insufficient balance"**
+- Add more USDT to your exchange account
+- Reduce position size or number of positions
+
+### Performance Optimization
+
+**Slow Bot Response:**
+- Increase bot interval to reduce API calls
+- Check network latency to exchange
+
+**High Transaction Count:**
+- Increase profit margin (fewer small profits)
+- Increase price drop threshold (less frequent buying)
+
+**Memory Issues (Advanced):**
+- Contact administrator
+- May need to restart bot service
+
+### Getting Help
+
+**Information to Provide:**
+1. Exchange name
+1. Trading pair
+1. Bot configuration parameters
+1. Recent log excerpts
+1. Description of unexpected behavior
+1. Screenshots if applicable
+
+## Best Practices
+
+### Risk Management
+
+1. **Start Small**: Begin with small investments to learn the system
+1. **Use Simulation Mode**: Test strategies before using real funds
+1. **Diversify**: Don't put all funds in one bot or one trading pair
+1. **Set Realistic Expectations**: Crypto markets are volatile
+1. **Monitor Regularly**: Check bot performance daily
+1. **Keep Reserves**: Don't allocate 100% of your exchange balance
+
+### Configuration Tips
+
+1. **Conservative Settings**: Start with higher profit margins and fewer positions
+1. **Working Range**: Always set min/max working prices to prevent buying at extremes
+1. **Position Count**: More positions = better averaging but slower position fills
+1. **Profit Margin**: Cover at least 2x the trading fees (e.g., 0.2% fee = 0.5% minimum margin)
+1. **Bot Interval**: 5-10 seconds is optimal for most scenarios
+
+### Security
+
+1. **API Keys**: Never share your API keys
+1. **Withdrawal Permissions**: Disable withdrawal permissions on API keys
+1. **IP Restrictions**: Enable IP whitelisting on exchange if available
+1. **Regular Audits**: Review bot transactions regularly
+1. **Strong Passwords**: Use strong, unique passwords for the platform
+
+### Maintenance
+
+1. **Regular Reviews**: Check bot performance weekly
+1. **Configuration Updates**: Adjust parameters based on market conditions
+1. **Balance Management**: Ensure sufficient balance for bot operations
+1. **Log Reviews**: Check logs for errors or warnings
+1. **Software Updates**: Keep the platform updated (contact administrator)
+
+## Glossary
+
+**DCA (Dollar-Cost Averaging)**: Investment strategy of buying fixed amounts at regular intervals
+
+**Position**: A single buy order and its corresponding sell order
+
+**Free Positions**: Number of positions available for buying
+
+**Price Drop Threshold**: Percentage price must drop before buying
+
+**Profit Margin**: Target percentage profit for each trade
+
+**Working Range**: Min/max price boundaries for bot activity
+
+**Target Price**: Calculated sell price for a purchase to achieve profit margin
+
+**Simulation Mode**: Test mode where no real trades are executed
+
+**Exchange Fee**: Commission charged by exchange for each trade
+
+**Market Order**: Order that executes immediately at current market price
+
+**USDT**: Tether, a stablecoin pegged to the US Dollar
+
+**Rebuy**: Buying again immediately after selling during a price rise
+
+**Forced Action**: Manual override of bot automation
+
+**Slippage**: Difference between expected and actual execution price
+
+## Appendix
+
+### Configuration Template
+
+Here's a recommended starting configuration:
+
+```
+Bot Label: BTC Conservative
+Bot Interval: 5 seconds
+Trading Pair: BTC-USDT
+Max Investment: 1000 USDT
+Max Positions: 10
+High Positions: 1
+Price Drop Threshold: 1.5%
+Profit Margin: 1.2%
+Min Working Price: (Current Price - 10%)
+Max Working Price: (Current Price + 10%)
+Reinvest Profit: No
+Profit as Crypto: No
+Simulation: Yes (for testing)
+```
+
+### Support
+
+For technical support or questions:
+- Check the application documentation
+- Review logs for error details
+- Contact your system administrator
+
+---
+
+**Document Version**: 1.0  
+**Last Updated**: December 28, 2025  
+**Compatible with**: Trading Bot v1.x

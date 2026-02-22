@@ -450,7 +450,7 @@ class MemoryBot {
       }
 
       // this.log('💲 Placing a sell order...'.red)
-      let order = null
+      let order
       if (this.config.simulation) {
         const fee = this.config.fee ? this.config.fee / 100 : this.exchangeFee // legacy
         order = {
@@ -652,7 +652,7 @@ class MemoryBot {
       }
     }
     // this.log('💲 Placing a buy order...'.green)
-    let order = null
+    let order
     if (this.config.simulation) {
       const fee = this.config.fee ? this.config.fee / 100 : this.exchangeFee // legacy
       order = {
