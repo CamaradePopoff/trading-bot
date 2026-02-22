@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import https from 'https'
 
 if (process.argv.length < 5) {
   console.error('Usage: node script.js <folder> <version> <label>')
@@ -25,28 +26,30 @@ function parseSemgrepFlaws(json) {
   const results = json.results || []
 
   for (const result of results) {
-    let cweId = 'N/A', cweTitle = 'N/A';
-    const cweRaw = result.extra?.metadata?.cwe && result.extra.metadata.cwe[0];
+    let cweId = 'N/A',
+      cweTitle = 'N/A'
+    const cweRaw = result.extra?.metadata?.cwe && result.extra.metadata.cwe[0]
     if (cweRaw) {
-      const match = cweRaw.match(/^CWE-(\d+):\s*(.*)$/);
+      const match = cweRaw.match(/^CWE-(\d+):\s*(.*)$/)
       if (match) {
-        cweId = match[1];
-        cweTitle = match[2];
+        cweId = match[1]
+        cweTitle = match[2]
       } else if (/^CWE-\d+$/.test(cweRaw)) {
-        cweId = cweRaw.replace('CWE-', '');
-        cweTitle = 'N/A';
+        cweId = cweRaw.replace('CWE-', '')
+        cweTitle = 'N/A'
       } else {
-        cweTitle = cweRaw;
+        cweTitle = cweRaw
       }
     }
-    const description = result.extra?.message || result.check_id || 'No description';
-    const file = result.path || 'Unknown';
-    const line = result.start?.line ? result.start.line.toString() : '0';
+    const description =
+      result.extra?.message || result.check_id || 'No description'
+    const file = result.path || 'Unknown'
+    const line = result.start?.line ? result.start.line.toString() : '0'
     // Map Semgrep severity to Veracode/Excel style
-    let severity = 'Medium';
-    if (result.extra?.severity === 'ERROR') severity = 'High';
-    else if (result.extra?.severity === 'WARNING') severity = 'Medium';
-    else if (result.extra?.severity === 'INFO') severity = 'Low';
+    let severity = 'Medium'
+    if (result.extra?.severity === 'ERROR') severity = 'High'
+    else if (result.extra?.severity === 'WARNING') severity = 'Medium'
+    else if (result.extra?.severity === 'INFO') severity = 'Low'
 
     flaws.push({
       cweId,
@@ -56,7 +59,7 @@ function parseSemgrepFlaws(json) {
       line,
       severity,
       scanner: 'Semgrep'
-    });
+    })
   }
   return flaws
 }
@@ -84,6 +87,130 @@ function countSeverity(flaws) {
   return counts
 }
 
+function sendSummaryToSlack(summarySections, label) {
+  if (!process.env.SLACK_WEBHOOK) return
+  const slackWebhookUrl = process.env.SLACK_WEBHOOK
+  const severities = ['Very High', 'High', 'Medium', 'Low']
+
+  // Calculate column widths
+  const itemWidth = Math.max(4, ...summarySections.map((s) => s.title.length))
+  const severityWidths = severities.map((sev) => {
+    let maxCount = 0
+    summarySections.forEach((sec) => {
+      const count = sec.flawCounts.semgrep?.[sev] || 0
+      maxCount = Math.max(maxCount, count)
+    })
+    return Math.max(sev.length, String(maxCount).length)
+  })
+
+  let summaryTable = ''
+  // Header
+  summaryTable += '┌' + '─'.repeat(itemWidth + 2) + '┬'
+  severityWidths.forEach((width, i) => {
+    summaryTable +=
+      '─'.repeat(width + 2) + (i < severities.length - 1 ? '┬' : '')
+  })
+  summaryTable += '┐\n'
+  // Title row
+  summaryTable += '│ ' + 'Item'.padEnd(itemWidth) + ' │'
+  severities.forEach((sev, i) => {
+    summaryTable += ' ' + sev.padStart(severityWidths[i]) + ' │'
+  })
+  summaryTable += '\n'
+  // Separator
+  summaryTable += '├' + '─'.repeat(itemWidth + 2) + '┼'
+  severityWidths.forEach((width, i) => {
+    summaryTable +=
+      '─'.repeat(width + 2) + (i < severities.length - 1 ? '┼' : '')
+  })
+  summaryTable += '┤\n'
+  // Data rows
+  summarySections.forEach((sec) => {
+    summaryTable += '│ ' + sec.title.padEnd(itemWidth) + ' │'
+    severities.forEach((sev, i) => {
+      const count = sec.flawCounts.semgrep?.[sev] || 0
+      summaryTable += ' ' + String(count).padStart(severityWidths[i]) + ' │'
+    })
+    summaryTable += '\n'
+  })
+  // Bottom border
+  summaryTable += '└' + '─'.repeat(itemWidth + 2) + '┴'
+  severityWidths.forEach((width, i) => {
+    summaryTable +=
+      '─'.repeat(width + 2) + (i < severities.length - 1 ? '┴' : '')
+  })
+  summaryTable += '┘'
+
+  console.log('Summary table to send to Slack:\n' + summaryTable)
+
+  // Check if there are any Very High or High flaws
+  let success = true
+  summarySections.forEach((sec) => {
+    const counts = sec.flawCounts.semgrep || {}
+    if ((counts['Very High'] || 0) > 0 || (counts['High'] || 0) > 0) {
+      success = false
+    }
+  })
+
+  const payload = {
+    blocks: [
+      {
+        type: 'header',
+        text: {
+          type: 'plain_text',
+          text: `SAST Flaw Report - ${label}`,
+          emoji: true
+        }
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: success
+            ? ':white_check_mark: No very high or high flaws found!'
+            : ':warning: Very high or high flaws detected!'
+        }
+      },
+      { type: 'divider' },
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: '``' + '\n' + summaryTable + '\n' + '``'
+        }
+      }
+    ]
+  }
+
+  const postData = JSON.stringify(payload)
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(postData)
+    }
+  }
+
+  const req = https.request(slackWebhookUrl, options, (res) => {
+    let data = ''
+    res.on('data', (chunk) => {
+      data += chunk
+    })
+    res.on('end', () => {
+      if (res.statusCode === 200) {
+        console.log('✓ Slack message sent successfully')
+      } else {
+        console.error(`✗ Failed to send Slack message: ${res.statusCode}`)
+      }
+    })
+  })
+  req.on('error', (error) => {
+    console.error('Error sending Slack message:', error)
+  })
+  req.write(postData)
+  req.end()
+}
+
 function generateFlawTable(flaws) {
   if (!flaws.length) {
     return '<p>No flaws found.</p>'
@@ -93,7 +220,7 @@ function generateFlawTable(flaws) {
     '<table class="flaw-table" border="1" cellspacing="0" cellpadding="4">'
   html += '<thead><tr>'
   html +=
-          '<th>CWE</th><th>Title</th><th>Description</th><th>File</th><th>Line</th><th>Severity</th><th>Scanner</th>'
+    '<th>CWE</th><th>Title</th><th>Description</th><th>File</th><th>Line</th><th>Severity</th><th>Scanner</th>'
   html += '</tr></thead><tbody>'
 
   for (const flaw of flaws) {
@@ -273,10 +400,5 @@ fs.writeFileSync(outputFile, html, 'utf-8')
 console.log(`Scan report generated: ${outputFile}`)
 
 if (process.env.PUBLISH_SCAN_REPORT === 'true') {
-  const outputFileTable = `${folderPath}/scan-summary-${version}.html`
-  fs.writeFileSync(
-    outputFileTable,
-    generateCombinedSummaryTable(summarySections)
-  )
+  sendSummaryToSlack(summarySections, label)
 }
-
