@@ -170,7 +170,7 @@ function sendSummaryToSlack() {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: '``' + '\n' + summaryTable + '\n' + '``'
+          text: '```' + '\n' + summaryTable + '\n' + '```'
         }
       }
     ]
