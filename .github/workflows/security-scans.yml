@@ -95,6 +95,16 @@ jobs:
           semgrep --config=auto --json --output=scans/semgrep/semgrep-scan-frontend.json ./frontend
         continue-on-error: true
 
+      - name: Run Semgrep scan on admin
+        run: |
+          semgrep --config=auto --json --output=scans/semgrep/semgrep-scan-admin.json ./admin
+        continue-on-error: true
+
+      - name: Run Semgrep scan on proxy
+        run: |
+          semgrep --config=auto --json --output=scans/semgrep/semgrep-scan-proxy.json ./proxy
+        continue-on-error: true
+
       - name: Merge Semgrep scan reports
         run: |
           cd admin && npm install
@@ -110,7 +120,7 @@ jobs:
 
   upload-reports:
     runs-on: ubuntu-latest
-    needs: [trivy-scan, semgrep-scan]
+    needs: [trivy-scan, semgrep-scan, trivy-sast-scan]
     if: always()
     steps:
       - name: Download Trivy scan results
