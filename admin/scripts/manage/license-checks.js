@@ -2,21 +2,74 @@ import { execSync } from 'child_process'
 import fs from 'fs'
 import path from 'path'
 
-if (process.argv.length < 4) {
+function pathExists(targetPath) {
+  return fs.existsSync(targetPath)
+}
+
+const PACKAGE_PATH = path.resolve(process.argv[2] || '.')
+const ITEM = process.argv[3] || path.basename(process.cwd())
+const VERSION = process.argv[4] || 'latest'
+const DEPTH = process.argv[5] || '999'
+
+if (!pathExists(PACKAGE_PATH)) {
+  console.error(`Package path not found: ${PACKAGE_PATH}`)
   console.error(
     'Usage: node license-checks.js <path/to/package.json> <item> <version:latest>'
   )
   process.exit(1)
 }
 
-const PACKAGE_PATH = process.argv[2]
-const ITEM = process.argv[3]
-const VERSION = process.argv[4] || 'latest'
+const stat = fs.statSync(PACKAGE_PATH)
+const START_PATH = stat.isDirectory()
+  ? PACKAGE_PATH
+  : path.basename(PACKAGE_PATH).toLowerCase() === 'package.json'
+    ? path.dirname(PACKAGE_PATH)
+    : null
+
+if (!START_PATH) {
+  console.error(`Invalid start path: ${PACKAGE_PATH}`)
+  console.error(
+    'Provide a project folder or a path to package.json as the first argument.'
+  )
+  process.exit(1)
+}
+
+fs.mkdirSync('out', { recursive: true })
 
 const file1 = `out/${ITEM}-licenses-prod.json`
 const file2 = `out/${ITEM}-licenses-dev.json`
-const cmd1 = `npx license-checker --production --json --start "${PACKAGE_PATH}" --out ${file1}`
-const cmd2 = `npx license-checker --development --json --start "${PACKAGE_PATH}" --out ${file2}`
+const cmd1 = `npx license-checker-rseidelsohn --production --json --depth ${DEPTH} --start "${START_PATH}" --out "${file1}"`
+const cmd2 = `npx license-checker-rseidelsohn --development --json --depth ${DEPTH} --start "${START_PATH}" --out "${file2}"`
+
+function runLicenseCheck(scope, command, outputFile) {
+  try {
+    execSync(command, { stdio: 'inherit' })
+
+    if (!pathExists(outputFile)) {
+      if (scope === 'development') {
+        fs.writeFileSync(outputFile, '{}', 'utf8')
+        console.warn(
+          `No ${scope} license output generated for ${ITEM}. Generated empty report.`
+        )
+        return
+      }
+      throw new Error(`License checker did not generate expected file: ${outputFile}`)
+    }
+  } catch (error) {
+    const message = String(error?.message || '')
+    if (
+      message.includes('No packages found in this path') ||
+      scope === 'development'
+    ) {
+      fs.writeFileSync(outputFile, '{}', 'utf8')
+      console.warn(
+        `Unable to collect ${scope} dependencies for ${ITEM}. Generated empty report.`
+      )
+      return
+    }
+    throw error
+  }
+}
 
 function summarizeLicenses(licenseData) {
   const summary = {}
@@ -109,10 +162,10 @@ function generateLicenseReport(licenseData, item, scope, version) {
 }
 
 try {
-  execSync(cmd1, { stdio: 'inherit' })
-  execSync(cmd2, { stdio: 'inherit' })
+  runLicenseCheck('production', cmd1, file1)
+  runLicenseCheck('development', cmd2, file2)
   ;[file1, file2].forEach((file) => {
-    if (!fs.existsSync(file)) {
+    if (!pathExists(file)) {
       throw new Error(
         `File ${file} does not exist after running license-checker command.`
       )
@@ -125,6 +178,7 @@ try {
       VERSION
     )
     fs.writeFileSync(file.replace(/\.json$/, '.html'), htmlReport, 'utf8')
+    fs.unlinkSync(file)
   })
   console.log(
     `License reports generated successfully for ${ITEM} ${VERSION} in ${path.resolve('out')}`
