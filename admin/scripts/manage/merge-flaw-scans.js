@@ -34,7 +34,7 @@ function parseSemgrepFlaws(json) {
         cweId = match[1]
         cweTitle = match[2]
       } else if (/^CWE-\d+$/.test(cweRaw)) {
-        cweId = cweRaw.replace('CWE-', '')
+        cweId = cweRaw
         cweTitle = 'N/A'
       } else {
         cweTitle = cweRaw
