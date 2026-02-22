@@ -141,7 +141,7 @@ const sendSlackMessage = () => {
   if (!process.env.PUBLISH_TO_SLACK) return
 
   const slackWebhookUrl =
-    'https://hooks.slack.com/services/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'
+    'https://hooks.slack.com/services/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'
 
   const allTableText = getSimpleTableAsString('all')
   const prodTableText = getSimpleTableAsString('prod')
