@@ -11,7 +11,7 @@
   "dependencies": {
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
-    "hyper-express": "^6.17.3",
+    "express": "^4.21.2",
     "morgan": "^1.10.1",
     "nodemon": "^3.1.14"
   },
@@ -29,6 +29,6 @@
     "on-headers": "^1.1.0"
   },
   "engines": {
-    "node": ">=22.13.x"
+    "node": "22.x"
   }
 }

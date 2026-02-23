@@ -1,17 +1,16 @@
-const HyperExpress = require('hyper-express')
+const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
 require('dotenv').config()
 
-const app = new HyperExpress.Server()
+const app = express()
 const port = 4000
 const apiPrefix = process.env.VERCEL_ENV ? '/api/' : '/'
 
-// Note: x-powered-by is disabled by default in HyperExpress
+app.disable('x-powered-by')
 app.use(cors())
-// Body parsing is built into HyperExpress
+app.use(express.json())
 app.use(morgan('dev')) // automatically log incoming requests
-// app.use(express.static('public')) // Static files handled differently in HyperExpress
 
 app.get(apiPrefix, (req, res) => {
   res.send('Hello!')
