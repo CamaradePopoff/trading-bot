@@ -4,7 +4,7 @@ const exchanges = [
   'Binance',
   'Bitget',
   'Coinbase',
-  'Bybit',
+  'ByBit',
   'Kraken',
   'KuCoin',
   'MEXC',
