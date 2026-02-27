@@ -27,10 +27,10 @@ for dir in "$BASE_DIR"/*/; do
         npm run migrate:up
       fi
       
-      cd .. || exit
+      cd .. || continue
     fi
     
-    cd - > /dev/null || exit
+    cd - > /dev/null || continue
     echo "  ✓ $project ready"
   fi
 done
@@ -41,4 +41,4 @@ echo "Starting PM2 processes..."
 echo "======================================"
 
 cd "$BASE_DIR"
-cd kubot && pm2 start backend/index.js --name kucoin && cd .. && cd binance && pm2 start backend/index.js --name binance && cd .. && cd mexc && pm2 start backend/index.js --name mexc && cd .. && cd bybit && pm2 start backend/index.js --name bybit && cd ..
+cd kucoin && pm2 start backend/index.js --name kucoin && cd .. && cd binance && pm2 start backend/index.js --name binance && cd .. && cd mexc && pm2 start backend/index.js --name mexc && cd .. && cd bybit && pm2 start backend/index.js --name bybit && cd ..
