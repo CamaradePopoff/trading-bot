@@ -220,6 +220,8 @@ async function getTradingPairs(user) {
         baseCurrency: pair.baseCoin,
         quoteCurrency: pair.quoteCoin
       }))
+      .filter((pair) => pair.symbol.endsWith('-USDC'))
+      .sort((a, b) => a.symbol.localeCompare(b.symbol))
   } catch (error) {
     logger.error('Error fetching trading pairs:', error.message)
     return []

@@ -50,9 +50,9 @@ export const useMainStore = defineStore('main', {
       ByBit: {
         name: 'ByBit',
         url: 'https://www.bybit.com/$LANG/user/assets/home',
-        tradingAsset: 'USDT',
+        tradingAsset: 'USDC',
         tokenAsset: 'BIT',
-        tokenPair: 'BITUSDT',
+        tokenPair: 'BITUSDC',
         id: null,
         apiKey: null,
         apiSecret: null,
