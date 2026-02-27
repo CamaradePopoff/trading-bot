@@ -4,6 +4,7 @@
  */
 
 const { body, param, query, validationResult } = require('express-validator')
+const { exchanges } = require('../auth/enums')
 
 /**
  * Middleware to handle validation errors
@@ -215,7 +216,7 @@ const validateUserUpdate = [
 const validateExchangeCredentials = [
   body('exchange.name')
     .trim()
-    .isIn(['Binance', 'ByBit', 'KuCoin', 'MEXC'])
+    .isIn(exchanges)
     .withMessage('Invalid exchange name'),
 
   body('exchange.apiKey')
