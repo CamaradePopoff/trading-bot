@@ -215,7 +215,7 @@ const validateUserUpdate = [
 const validateExchangeCredentials = [
   body('exchange.name')
     .trim()
-    .isIn(['Binance', 'KuCoin', 'MEXC'])
+    .isIn(['Binance', 'ByBit', 'KuCoin', 'MEXC'])
     .withMessage('Invalid exchange name'),
 
   body('exchange.apiKey')
