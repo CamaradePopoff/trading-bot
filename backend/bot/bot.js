@@ -294,9 +294,10 @@ class MemoryBot {
       return false
     }
 
-    // Create a buffer zone around the selling price using the profit margin
+    // Create a buffer zone around the selling price using the drop threshold
     // This defines the area where we consider positions to be "clustered" together
-    const lowerBound = sellingPrice * (1 - this.config.profitMargin / 100)
+    const currentThreshold = this.getCurrentThreshold()
+    const lowerBound = sellingPrice * (1 - currentThreshold / 100)
     const upperBound = sellingPrice * (1 + this.config.profitMargin / 100)
 
     // Count how many positions fall within this price area
