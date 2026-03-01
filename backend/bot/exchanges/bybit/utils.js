@@ -154,12 +154,20 @@ async function getAccountBalances(user) {
 
       const balances = coins
         .map((coin) => {
-          const available =
-            parseFloat(coin.free) ||
-            parseFloat(coin.availableToWithdraw) ||
-            parseFloat(coin.walletBalance) ||
-            parseFloat(coin.equity) ||
-            0
+          // Try each field in order, use first non-zero value
+          let available = 0
+          if (coin.free !== undefined && coin.free !== null) {
+            available = parseFloat(coin.free) || 0
+          }
+          if (!available && coin.availableToWithdraw !== undefined && coin.availableToWithdraw !== null) {
+            available = parseFloat(coin.availableToWithdraw) || 0
+          }
+          if (!available && coin.walletBalance !== undefined && coin.walletBalance !== null) {
+            available = parseFloat(coin.walletBalance) || 0
+          }
+          if (!available && coin.equity !== undefined && coin.equity !== null) {
+            available = parseFloat(coin.equity) || 0
+          }
 
           return {
             currency: coin.coin,
@@ -169,6 +177,7 @@ async function getAccountBalances(user) {
         .filter((coin) => coin.available > 0)
 
       if (balances.length > 0) {
+        logger.info(`ByBit balances fetched from ${accountType}: ${balances.length} coins`)
         return balances
       }
     }
