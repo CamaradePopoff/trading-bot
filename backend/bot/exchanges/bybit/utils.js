@@ -7,6 +7,7 @@ const userService = require('../../../services/user-service')(null, logger)
 require('dotenv').config()
 
 const exchangeBaseURL = 'https://api.bybit.com'
+const BYBIT_SPOT_FEE_RATE = 0.001
 
 // ---------------- Private functions ----------------
 
@@ -133,31 +134,47 @@ function jsRound(num) {
 async function getAccountBalances(user) {
   const endpoint = '/v5/account/wallet-balance'
   try {
-    const res = await makeRequest(
-      user,
-      endpoint,
-      'GET',
-      { accountType: 'SPOT' },
-      true
-    )
+    const accountTypes = ['UNIFIED', 'SPOT']
 
-    if (!res || !res.list || res.list.length === 0) {
-      logger.error('ByBit account endpoint returned no data')
-      return []
+    for (const accountType of accountTypes) {
+      const res = await makeRequest(
+        user,
+        endpoint,
+        'GET',
+        { accountType },
+        true
+      )
+
+      if (!res || !res.list || res.list.length === 0) {
+        continue
+      }
+
+      const account = res.list[0]
+      const coins = account.coin || []
+
+      const balances = coins
+        .map((coin) => {
+          const available =
+            parseFloat(coin.free) ||
+            parseFloat(coin.availableToWithdraw) ||
+            parseFloat(coin.walletBalance) ||
+            parseFloat(coin.equity) ||
+            0
+
+          return {
+            currency: coin.coin,
+            available
+          }
+        })
+        .filter((coin) => coin.available > 0)
+
+      if (balances.length > 0) {
+        return balances
+      }
     }
 
-    const account = res.list[0]
-    const coins = account.coin || []
-
-    return coins
-      .filter((coin) => {
-        const hasBalance = (parseFloat(coin.free) || 0) > 0
-        return hasBalance
-      })
-      .map((coin) => ({
-        currency: coin.coin,
-        available: parseFloat(coin.free) || 0
-      }))
+    logger.error('ByBit account endpoint returned no positive balances')
+    return []
   } catch (error) {
     logger.error('Error fetching ByBit balances:', error.message)
     return []
@@ -229,32 +246,17 @@ async function getTradingPairs(user) {
 }
 
 async function getUserVipLevel(user) {
-  // ByBit has VIP levels but requires checking account info
-  // For now, return a default structure
-  try {
-    const endpoint = '/v5/user/query-api'
-    const response = await makeRequest(user, endpoint, 'GET', {}, true)
-
-    // Return default fee structure
-    // Standard spot trading fee is 0.1% for both maker and taker
-    return {
-      vipLevel: response?.vipLevel || 0,
-      makerFeeRate: 0.001, // 0.1%
-      takerFeeRate: 0.001 // 0.1%
-    }
-  } catch (error) {
-    logger.error('Error fetching VIP level:', error.message)
-    return {
-      vipLevel: 0,
-      makerFeeRate: 0.001,
-      takerFeeRate: 0.001
-    }
-  }
+  // ByBit does not use KuCoin-like fee classes in this bot context.
+  // Keep a fixed spot fee rate for consistency and stability.
+  return BYBIT_SPOT_FEE_RATE
 }
 
 async function getTradingPairFee(user, symbol) {
-  const vipInfo = await getUserVipLevel(user)
-  return vipInfo.takerFeeRate || 0.001
+  const feeRate = await getUserVipLevel(user)
+  return {
+    takerFeeRate: feeRate,
+    kcsDeductFee: false
+  }
 }
 
 async function getTickers(user) {
