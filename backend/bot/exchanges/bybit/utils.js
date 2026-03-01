@@ -251,7 +251,7 @@ async function getTradingPairs(user) {
           parseFloat(pair.lotSizeFilter?.qtyStep) ||
           0
       }))
-      .filter((pair) => pair.symbol.endsWith('USDT'))
+      .filter((pair) => pair.symbol.endsWith('USDC'))
       .sort((a, b) => a.symbol.localeCompare(b.symbol))
   } catch (error) {
     logger.error('Error fetching trading pairs:', error.message)
