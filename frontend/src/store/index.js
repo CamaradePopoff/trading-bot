@@ -57,7 +57,7 @@ export const useMainStore = defineStore('main', {
         apiKey: null,
         apiSecret: null,
         apiPassphrase: null,
-        disabled: false,
+        disabled: true,
         favorites: []
       },
       /* Coinbase: {
@@ -112,19 +112,32 @@ export const useMainStore = defineStore('main', {
         disabled: false,
         favorites: []
       },
-      /* OKX: {
+      OKX: {
         name: 'OKX',
-        url: '???',
+        url: 'https://www.okx.com/$LANG/balance',
         tradingAsset: 'USDT',
-        tokenAsset: '???',
-        tokenPair: '???USDT',
+        tokenAsset: 'OKB',
+        tokenPair: 'OKB-USDT',
         id: null,
         apiKey: null,
         apiSecret: null,
         apiPassphrase: null,
         disabled: true,
         favorites: []
-      } */
+      },
+      CoinEX: {
+        name: 'CoinEX',
+        url: 'https://www.coinex.com/account/balance',
+        tradingAsset: 'USDT',
+        tokenAsset: 'CET',
+        tokenPair: 'CETUSDT',
+        id: null,
+        apiKey: null,
+        apiSecret: null,
+        apiPassphrase: null,
+        disabled: false,
+        favorites: []
+      }
     },
     exchange: null,
     kucoinFee: 0.001, // legacy

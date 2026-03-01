@@ -159,10 +159,18 @@ async function getAccountBalances(user) {
           if (coin.free !== undefined && coin.free !== null) {
             available = parseFloat(coin.free) || 0
           }
-          if (!available && coin.availableToWithdraw !== undefined && coin.availableToWithdraw !== null) {
+          if (
+            !available &&
+            coin.availableToWithdraw !== undefined &&
+            coin.availableToWithdraw !== null
+          ) {
             available = parseFloat(coin.availableToWithdraw) || 0
           }
-          if (!available && coin.walletBalance !== undefined && coin.walletBalance !== null) {
+          if (
+            !available &&
+            coin.walletBalance !== undefined &&
+            coin.walletBalance !== null
+          ) {
             available = parseFloat(coin.walletBalance) || 0
           }
           if (!available && coin.equity !== undefined && coin.equity !== null) {
@@ -177,7 +185,9 @@ async function getAccountBalances(user) {
         .filter((coin) => coin.available > 0)
 
       if (balances.length > 0) {
-        logger.info(`ByBit balances fetched from ${accountType}: ${balances.length} coins`)
+        logger.info(
+          `ByBit balances fetched from ${accountType}: ${balances.length} coins`
+        )
         return balances
       }
     }

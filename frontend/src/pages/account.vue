@@ -173,7 +173,11 @@ const serverIp = ref(null)
 const isValidUser = ref(false)
 const isValidExchange = ref({
   KuCoin: false,
-  Binance: false
+  Binance: false,
+  ByBit: false,
+  MEXC: false,
+  OKX: false,
+  CoinEX: false
 })
 const showBotConfigManager = ref(false)
 

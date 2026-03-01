@@ -5,6 +5,7 @@
 
 const { body, param, query, validationResult } = require('express-validator')
 const { exchanges } = require('../auth/enums')
+const exchangeSlugs = exchanges.map((exchange) => exchange.toLowerCase())
 
 /**
  * Middleware to handle validation errors
@@ -137,16 +138,7 @@ const validateBotConfig = [
   body('exchange')
     .optional()
     .trim()
-    .isIn([
-      'binance',
-      'bitget',
-      'bybit',
-      'coinbase',
-      'kraken',
-      'kucoin',
-      'mexc',
-      'okx'
-    ])
+    .isIn(exchangeSlugs)
     .withMessage('Invalid exchange'),
 
   handleValidationErrors

@@ -8,7 +8,8 @@ const exchanges = [
   'Kraken',
   'KuCoin',
   'MEXC',
-  'OKX'
+  'OKX',
+  'CoinEX'
 ]
 
 module.exports = {
