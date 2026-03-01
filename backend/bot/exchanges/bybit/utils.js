@@ -235,9 +235,14 @@ async function getTradingPairs(user) {
       .map((pair) => ({
         symbol: pair.symbol,
         baseCurrency: pair.baseCoin,
-        quoteCurrency: pair.quoteCoin
+        quoteCurrency: pair.quoteCoin,
+        baseMinSize: parseFloat(pair.lotSizeFilter?.minOrderQty) || 0,
+        baseIncrement:
+          parseFloat(pair.lotSizeFilter?.basePrecision) ||
+          parseFloat(pair.lotSizeFilter?.qtyStep) ||
+          0
       }))
-      .filter((pair) => pair.symbol.endsWith('USDC'))
+      .filter((pair) => pair.symbol.endsWith('USDT'))
       .sort((a, b) => a.symbol.localeCompare(b.symbol))
   } catch (error) {
     logger.error('Error fetching trading pairs:', error.message)

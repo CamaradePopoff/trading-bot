@@ -264,7 +264,7 @@ export const useMainStore = defineStore('main', {
       return exchange ? exchange.tokenPair : '???-USDT'
     },
     isVipFeeExchange: (state) => {
-      return ['mexc', 'binance'].includes(state.exchange?.toLowerCase())
+      return !['kucoin'].includes(state.exchange?.toLowerCase())
     },
     botTransactions: (state) => (botId) => {
       if (!state.transactions[botId]) return []
