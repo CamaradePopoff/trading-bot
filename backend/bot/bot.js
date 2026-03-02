@@ -298,7 +298,7 @@ class MemoryBot {
     // This defines the area where we consider positions to be "clustered" together
     const currentThreshold = this.getCurrentThreshold()
     const lowerBound = sellingPrice * (1 - currentThreshold / 100)
-    const upperBound = sellingPrice * (1 + this.config.profitMargin / 100)
+    const upperBound = sellingPrice * (1 + currentThreshold / 100)
 
     // Count how many positions fall within this price area
     // If we have positionsToRebuy or more positions in this zone, it indicates
