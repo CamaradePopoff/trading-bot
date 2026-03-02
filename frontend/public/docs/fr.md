@@ -207,8 +207,8 @@ Vos clés API doivent avoir les permissions suivantes activées :
 - Nombre de positions qui déclenche la détection de cluster près de n'importe quel niveau de prix
 - Lors du rachat, le bot vérifie si autant de positions existent déjà près du prix de vente
 - Plage : 1 à (Positions Maximales - 1)
-- Le bot crée une zone tampon autour du prix de vente en utilisant ±pourcentage de marge bénéficiaire
-- Exemple : Avec 5% de marge et seuil de 2, si 2+ positions existent entre 95$-105$ lors d'une vente à 100$, ne pas racheter
+- Le bot crée une zone tampon autour du prix de vente en utilisant ±pourcentage du seuil de baisse de prix
+- Exemple : Avec 5% de seuil de baisse et seuil de cluster de 2, si 2+ positions existent entre 95$-105$ lors d'une vente à 100$, ne pas racheter
 - Valeurs plus élevées = autorise plus de positions au même niveau de prix avant d'éviter le rachat
 - **Recommandation** : Utilisez 1-2 pour maintenir une large distribution, 3-4 pour plus de tolérance à la concentration
 

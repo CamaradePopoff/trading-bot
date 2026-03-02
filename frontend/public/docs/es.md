@@ -207,8 +207,8 @@ Tus claves API deben tener los siguientes permisos habilitados:
 - Número de posiciones que activa la detección de clúster cerca de cualquier nivel de precio
 - Al recomprar, el bot verifica si existen tantas posiciones cerca del precio de venta
 - Rango: 1 a (Posiciones Máximas - 1)
-- El bot crea una zona de amortiguación alrededor del precio de venta usando ±porcentaje de margen de ganancia
-- Ejemplo: Con 5% de margen y umbral de 2, si existen 2+ posiciones entre $95-$105 al vender en $100, omitir recompra
+- El bot crea una zona de amortiguación alrededor del precio de venta usando ±porcentaje de umbral de caída de precio
+- Ejemplo: Con 5% de umbral de caída y umbral de clúster de 2, si existen 2+ posiciones entre $95-$105 al vender en $100, omitir recompra
 - Valores más altos = permite más posiciones al mismo nivel de precio antes de evitar recompra
 - **Recomendación**: Usa 1-2 para mantener amplia distribución, 3-4 para más tolerancia a la concentración
 

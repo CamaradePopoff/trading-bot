@@ -207,8 +207,8 @@ Your API keys must have the following permissions enabled:
 - Number of positions that trigger cluster detection near any price level
 - When rebuying, the bot checks if this many positions already exist near the selling price
 - Range: 1 to (Max Positions - 1)
-- The bot creates a buffer zone around the selling price using ±profit margin percentage
-- Example: With 5% profit margin and threshold of 2, if 2+ positions exist between $95-$105 when selling at $100, skip rebuy
+- The bot creates a buffer zone around the selling price using ±price drop threshold percentage
+- Example: With 5% price drop threshold and cluster threshold of 2, if 2+ positions exist between $95-$105 when selling at $100, skip rebuy
 - Higher values = allows more positions at same price level before avoiding rebuy
 - **Recommendation**: Use 1-2 to maintain wide distribution, 3-4 for more concentration tolerance
 
