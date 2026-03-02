@@ -329,7 +329,7 @@ class MemoryBot {
   ) {
     if (!this.currentPrice) {
       this.log('❌ [ERROR] No current price available. Cannot sell.')
-      return { sold: false }
+      return { sold: false, soldPrice: null }
     }
     let purchase = purchaseOrId
     if (!isObject)
@@ -340,14 +340,14 @@ class MemoryBot {
         this.logger.warn(
           `⚠️ Cannot sell purchase ${purchase._id}: already marked as sold.`
         )
-        return { sold: false }
+        return { sold: false, soldPrice: null }
       }
       if (!isForced && purchase.isPaused) {
         // should never happen
         this.logger.error(
           `❌ Could not automatically sell a paused purchase ${purchaseOrId}. Nothing was sold.`
         )
-        return { sold: false }
+        return { sold: false, soldPrice: null }
       }
 
       // Always compute cryptoToSell first - default to selling everything
@@ -405,7 +405,7 @@ class MemoryBot {
           this.log(
             `⚠️  Cannot sell - insufficient balance. Need ${jsRound(cryptoToSell)} ${this.cryptoName} but only have ${jsRound(cryptoBalance)} (${jsRound(availabilityRatio * 100)}%). Skipping sell.`
           )
-          return { sold: false }
+          return { sold: false, soldPrice: null }
         } else {
           // Normal mode: At least 90% available required
           if (availabilityRatio < 0.9) {
@@ -413,7 +413,7 @@ class MemoryBot {
               `⚠️  Cannot sell - insufficient balance. Need ${jsRound(cryptoToSell)} ${this.cryptoName} but only have ${jsRound(cryptoBalance)} (${jsRound(availabilityRatio * 100)}%). Skipping sell and pausing bot.`
             )
             this.pause()
-            return { sold: false }
+            return { sold: false, soldPrice: null }
           }
           // At least 80% available, adjust to sell what's available
           cryptoToSell = this.roundToCurrencyDigits(cryptoBalance, Math.floor)
@@ -447,7 +447,7 @@ class MemoryBot {
         this.log(
           `⚠️  Order value ${this.usdtToRecoverOnSell} ${this.getExchangeAsset()} is below minimum (1 ${this.getExchangeAsset()}). Skipping sell.`
         )
-        return { sold: false }
+        return { sold: false, soldPrice: null }
       }
 
       // this.log('💲 Placing a sell order...'.red)
@@ -494,7 +494,11 @@ class MemoryBot {
           }
         } catch (error) {
           this.log(`❌ [ERROR] ${error.message || error}`.red)
-          return { sold: false, errorMessage: error.message || error }
+          return {
+            sold: false,
+            soldPrice: null,
+            errorMessage: error.message || error
+          }
         }
       }
       if (order) {
@@ -511,6 +515,7 @@ class MemoryBot {
           )
           return {
             sold: false,
+            soldPrice: null,
             errorMessage: 'Invalid order data received from exchange'
           }
         }
@@ -613,18 +618,18 @@ class MemoryBot {
         }
         // Invalidate cache after sell
         this.purchasesCache = null
-        return { sold: true, wasEmergency }
+        return { sold: true, wasEmergency, soldPrice: price }
       } else {
         this.logger.error(
           `❌ Could not place sell order of ${cryptoToSell} ${this.cryptoName} at ${this.currentPrice} ${this.getExchangeAsset()} (total: ${this.usdtToRecoverOnSell} ${this.getExchangeAsset()})`
         )
-        return { sold: false }
+        return { sold: false, soldPrice: null }
       }
     } else {
       this.logger.error(
         `❌ Could not find purchase ${purchaseOrId}. Nothing was sold.`
       )
-      return { sold: false }
+      return { sold: false, soldPrice: null }
     }
   }
 
@@ -744,8 +749,8 @@ class MemoryBot {
         )
         sold = sold || result.sold
         soldEmergency = soldEmergency || result.wasEmergency
-        if (result.sold) {
-          lastSoldPrice = purchase.price
+        if (result.sold && typeof result.soldPrice === 'number') {
+          lastSoldPrice = result.soldPrice
         }
         return result
       })
