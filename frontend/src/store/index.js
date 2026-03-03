@@ -57,7 +57,7 @@ export const useMainStore = defineStore('main', {
         apiKey: null,
         apiSecret: null,
         apiPassphrase: null,
-        disabled: false,
+        disabled: true,
         favorites: []
       },
       /* Coinbase: {
