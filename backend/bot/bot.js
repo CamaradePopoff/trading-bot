@@ -312,10 +312,10 @@ class MemoryBot {
     const shouldAvoid = positionsInArea.length >= this.config.positionsToRebuy
 
     if (shouldAvoid) {
-    this.log(
-      `⚠️ Found ${positionsInArea.length} positions near ${sellingPrice} (zone: ${jsRound(lowerBound)}-${jsRound(upperBound)}). Not rebuying to maintain better distribution.`
-        .yellow
-    )
+      this.log(
+        `⚠️ Found ${positionsInArea.length} positions near ${sellingPrice} (zone: ${jsRound(lowerBound)}-${jsRound(upperBound)}). Not rebuying to maintain better distribution.`
+          .yellow
+      )
     }
 
     return shouldAvoid
@@ -1193,9 +1193,29 @@ class MemoryBot {
               this.freePositions > 0
             ) {
               // When stopBuyingOnRebuy is enabled and we skip the rebuy,
-              // still update lastHighestPrice to current price so the next
-              // drop threshold is calculated correctly from the current level
-              this.lastHighestPrice = this.currentPrice
+              // set nextHighestPrice to lowest existing position minus current threshold
+              // so the next buy will trigger when price drops that much further down
+              const purchases = await this.transactionService.getBotPurchases(
+                this.id,
+                true,
+                this
+              )
+              if (purchases.length > 0) {
+                const lowestPositionPrice = Math.min(
+                  ...purchases.map((p) => p.price)
+                )
+                const currentThreshold = this.getCurrentThreshold()
+                this.lastHighestPrice = jsRound(
+                  lowestPositionPrice * (1 - currentThreshold / 100)
+                )
+                this.log(
+                  `📍 No rebuy. Next buy will trigger when price drops to ${this.lastHighestPrice} (lowest position: ${lowestPositionPrice} - ${currentThreshold}% threshold)`
+                    .yellow
+                )
+              } else {
+                // No positions to reference, use current price as fallback
+                this.lastHighestPrice = this.currentPrice
+              }
               this.soldEmergency = false
             } else if (
               (emergencyPositionUnlocked || this.soldEmergency) &&
