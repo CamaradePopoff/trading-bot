@@ -59,6 +59,12 @@ onMounted(async () => {
 })
 
 const btcPair = computed(() => {
-  return pairs.value.find((p) => p.startsWith('BTC'))
+  const exchange = main.exchangeByName(main.exchange)
+  const tokenPair = exchange?.tokenPair
+  const tokenAsset = exchange?.tokenAsset
+  if (!tokenPair || !tokenAsset) return pairs.value[0]
+
+  const desiredBtcPair = tokenPair.replace(tokenAsset, 'BTC')
+  return pairs.value.find((p) => p === desiredBtcPair) || pairs.value[0]
 })
 </script>
