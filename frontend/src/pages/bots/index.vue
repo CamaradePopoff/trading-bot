@@ -552,6 +552,14 @@ watch(
   }
 )
 
+watch(
+  () => main.exchange,
+  async (newExchange, oldExchange) => {
+    if (!newExchange || newExchange === oldExchange || !oldExchange) return
+    await main.getTotalInvestment()
+  }
+)
+
 onMounted(async () => {
   isLoading.value = true
   await main.getBots()
