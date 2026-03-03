@@ -311,12 +311,12 @@ class MemoryBot {
     // This maintains better price distribution across the portfolio
     const shouldAvoid = positionsInArea.length >= this.config.positionsToRebuy
 
-    // if (shouldAvoid) {
-    // this.log(
-    //   `⚠️ Found ${positionsInArea.length} positions near ${sellingPrice} (zone: ${jsRound(lowerBound)}-${jsRound(upperBound)}). Not rebuying to maintain better distribution.`
-    //     .yellow
-    // )
-    // }
+    if (shouldAvoid) {
+    this.log(
+      `⚠️ Found ${positionsInArea.length} positions near ${sellingPrice} (zone: ${jsRound(lowerBound)}-${jsRound(upperBound)}). Not rebuying to maintain better distribution.`
+        .yellow
+    )
+    }
 
     return shouldAvoid
   }
