@@ -1134,12 +1134,12 @@ class MemoryBot {
             // Check if we should rebuy after selling
             let shouldRebuy = false
             if (soldOne) {
-              // After a sale, check if we should immediately rebuy
-              // We avoid rebuying if the selling price falls within an area where we already have
+              // After a sale, check if we should immediately rebuy at the current price
+              // We avoid rebuying if the current price falls within an area where we already have
               // a cluster of positions, to maintain better price distribution
               const inPositionArea =
                 await this.shouldAvoidRebuyingInExistingPositionArea(
-                  this.lastSoldPrice
+                  this.currentPrice
                 )
               shouldRebuy = !inPositionArea
             }
