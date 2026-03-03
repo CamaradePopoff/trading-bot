@@ -41,9 +41,8 @@
                 </template>
                 <v-list density="compact">
                   <v-list-item
-                    v-for="(exchange, key) in main.openExchanges"
+                    v-for="([key, exchange]) in switchableExchanges"
                     :key="key"
-                    :active="main.exchange === key.toLowerCase()"
                     @click="selectExchange(key.toLowerCase())"
                   >
                     <template #prepend>
@@ -679,6 +678,11 @@ const updateTokenExpiration = () => {
 const snackbarShow = computed({
   get: () => main.snackbar && main.snackbar.show,
   set: (val) => main.$patch({ snackbar: { ...main.snackbar, show: val } })
+})
+
+const switchableExchanges = computed(() => {
+  return Object.entries(main.openExchanges)
+    .filter(([key]) => key.toLowerCase() !== main.exchange)
 })
 
 const filteredTransactions = computed(() => {
