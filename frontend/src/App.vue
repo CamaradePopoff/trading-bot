@@ -9,12 +9,56 @@
     >
       <template #prepend>
         <v-app-bar-nav-icon @click="main.menuDrawer = !main.menuDrawer">
-          <img
-            v-if="main.exchange"
-            style="height: 36px"
-            :src="`/${main.exchange}.png`"
-            alt=""
-          >
+          <div v-if="main.exchange">
+            <img
+              style="height: 36px"
+              :src="`/${main.exchange}.png`"
+              alt=""
+            >
+            <div style="position: absolute; bottom: 0; right: 0;">
+              <v-menu
+                v-model="showExchangeMenu"
+                :close-on-content-click="true"
+                location="bottom"
+              >
+                <template #activator="{ props: menuProps }">
+                  <v-tooltip
+                    location="bottom"
+                    content-class="text-caption"
+                  >
+                    <template #activator="{ props: tooltipProps }">
+                      <v-icon
+                        size="24"
+                        color="primary"
+                        class="bg-white rounded-circle"
+                        v-bind="{ ...menuProps, ...tooltipProps }"
+                      >
+                        mdi-swap-horizontal-circle
+                      </v-icon>
+                    </template>
+                    {{ $t('pages.app.switchExchange') }}
+                  </v-tooltip>
+                </template>
+                <v-list density="compact">
+                  <v-list-item
+                    v-for="(exchange, key) in main.openExchanges"
+                    :key="key"
+                    :active="main.exchange === key.toLowerCase()"
+                    @click="selectExchange(key.toLowerCase())"
+                  >
+                    <template #prepend>
+                      <img
+                        :src="`/${key.toLowerCase()}.png`"
+                        alt=""
+                        style="height: 24px; width: 24px;"
+                      >
+                    </template>
+                    <v-list-item-title>{{ exchange.name }}</v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+            </div>
+          </div>
         </v-app-bar-nav-icon>
         <BotBrand
           v-if="mdAndUp"
@@ -550,7 +594,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useMainStore } from '@/store'
 import { useRouter, useRoute } from 'vue-router'
 import { useDisplay } from 'vuetify'
@@ -569,6 +613,7 @@ const { locale } = useI18n()
 
 const appInterval = ref()
 const showDeleteSimulationsDialog = ref(false)
+const showExchangeMenu = ref(false)
 const helpDialog = ref(null)
 const transactionFilter = ref('')
 const transactionTypeFilter = ref(null)
@@ -797,6 +842,21 @@ const getData = () => {
   main.getUserData()
 }
 
+const refreshExchangeData = () => {
+  if (!main.user || !main.token || !main.exchange) return
+  main.disconnectWebSocket()
+  main.connectWebSocket()
+  main.getUserData()
+}
+
+watch(
+  () => main.exchange,
+  (newExchange, oldExchange) => {
+    if (!newExchange || newExchange === oldExchange || !oldExchange) return
+    refreshExchangeData()
+  }
+)
+
 const switchLang = () => {
   const index = langs.value.indexOf(main.lang)
   main.lang = langs.value[(index + 1) % langs.value.length]
@@ -814,6 +874,12 @@ const navigate = (path) => {
 
 const logout = () => {
   main.logout()
+}
+
+const selectExchange = (exchange) => {
+  main.exchange = exchange
+  localStorage.setItem('exchange', exchange)
+  showExchangeMenu.value = false
 }
 </script>
 

@@ -238,7 +238,8 @@ export default {
       soundOn: 'Sound on',
       soundOff: 'Sound off',
       filterType: 'Filter by type',
-      filterSimulation: 'Filter simulation'
+      filterSimulation: 'Filter simulation',
+      switchExchange: 'Switch exchange'
     },
     account: {
       personalInfo: 'Personal information',

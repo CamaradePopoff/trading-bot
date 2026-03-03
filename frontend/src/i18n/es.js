@@ -234,7 +234,8 @@ export default {
       soundOn: 'Sonido activado',
       soundOff: 'Sonido desactivado',
       filterType: 'Filtrar por tipo',
-      filterSimulation: 'Filtrar simulación'
+      filterSimulation: 'Filtrar simulación',
+      switchExchange: 'Cambiar la plataforma'
     },
     account: {
       personalInfo: 'Información personal',

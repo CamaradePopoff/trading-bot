@@ -252,7 +252,9 @@ export const useMainStore = defineStore('main', {
     botSymbols: (state) => [
       ...new Set(state.bots.map((bot) => bot.config.symbol.replace(/-?USD(T|C)$/,'')))
     ],
-    openExchanges: (state) => Object.fromEntries(Object.entries(state.exchanges).filter(([key, value]) => key && !value.disabled)),
+    openExchanges: (state) => Object.fromEntries(Object.entries(state.exchanges)
+      .filter(([key, value]) => key && !value.disabled)
+      .sort((a, b) => a[1].name.localeCompare(b[1].name))),
     isAuthenticated: (state) => !!state.user && !!state.token,
     exchangeByName: (state) => (name) => {
       return Object.values(state.exchanges).find((e) => e.name.toLowerCase() === name.toLowerCase())
