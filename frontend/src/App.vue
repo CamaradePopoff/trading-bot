@@ -15,7 +15,10 @@
               :src="`/${main.exchange}.png`"
               alt=""
             >
-            <div style="position: absolute; bottom: 0; right: 0;">
+            <div
+              v-show="canSwitchExchange"
+              style="position: absolute; bottom: 0; right: 0;"
+            >
               <v-menu
                 v-model="showExchangeMenu"
                 :close-on-content-click="true"
@@ -682,7 +685,12 @@ const snackbarShow = computed({
 
 const switchableExchanges = computed(() => {
   return Object.entries(main.openExchanges)
-    .filter(([key]) => key.toLowerCase() !== main.exchange)
+    .filter(([key, exchange]) => key.toLowerCase() !== main.exchange && exchange.id)
+})
+
+const canSwitchExchange = computed(() => {
+  const configuredCount = Object.values(main.openExchanges).filter(e => e.id).length
+  return configuredCount > 1
 })
 
 const filteredTransactions = computed(() => {
