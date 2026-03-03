@@ -497,7 +497,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useMainStore } from '@/store'
 import { useDisplay } from 'vuetify'
 import { useRouter } from 'vue-router'
@@ -519,18 +519,33 @@ const showCryptoDialog = ref(false)
 const selectedCurrency = ref(null)
 const failedPriceFetchSymbols = ref(new Set())
 
-onMounted(() => {
+const loadPageData = async () => {
   isLoading.value = true
-  currencyService.getTradingPairs().then((data) => {
+  failedPriceFetchSymbols.value = new Set()
+  currentPrices.value = {}
+  history.value = {}
+  transactions.value = {}
+
+  return currencyService.getTradingPairs().then((data) => {
     pairs.value = data
-    getCurrencyData().then(() => {
-      isLoading.value = false
-    })
+    return getCurrencyData()
   }).finally(() => {
     isLoading.value = false
   })
+}
+
+onMounted(() => {
+  loadPageData()
   interval.value = setInterval(getCurrencyData, 5 * 1000)
 })
+
+watch(
+  () => main.exchange,
+  async (newExchange, oldExchange) => {
+    if (!newExchange || newExchange === oldExchange || !oldExchange) return
+    await loadPageData()
+  }
+)
 
 onUnmounted(() => {
   clearInterval(interval.value)

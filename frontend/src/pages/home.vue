@@ -72,7 +72,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import userService from '@services/user.service'
 import { useMainStore } from '@/store'
 import { useI18n } from 'vue-i18n'
@@ -87,18 +87,30 @@ const interval = ref()
 const windowHeight = ref(window.innerHeight)
 const profitsSimul = ref(false)
 
-onMounted(async () => {
+const loadDashboardData = async () => {
   isLoading.value = true
   await main.getBots()
   await getDailyProfits()
   await getDailyProfitsSimulated()
+  isLoading.value = false
+}
+
+onMounted(async () => {
+  await loadDashboardData()
   interval.value = setInterval(() => {
     main.getBots()
     getDailyProfits()
   }, 60000)
   window.addEventListener('resize', updateHeight)
-  isLoading.value = false
 })
+
+watch(
+  () => main.exchange,
+  async (newExchange, oldExchange) => {
+    if (!newExchange || newExchange === oldExchange || !oldExchange) return
+    await loadDashboardData()
+  }
+)
 
 onUnmounted(() => {
   clearInterval(interval.value)

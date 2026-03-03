@@ -121,7 +121,7 @@
 <script setup>
 import { useMainStore } from '@/store'
 import { useDisplay } from 'vuetify'
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import currencyService from '@services/currency.service'
 import userService from '@services/user.service'
 
@@ -135,25 +135,38 @@ const favorites = ref([])
 const favoriteClasses = ref([])
 const classToggle = ref([0])
 
-onMounted(async () => {
+const loadFavoritesData = async () => {
   isLoading.value = true
-  favorites.value = main.exchanges[main.exchangeByName(main.exchange).name].favorites
-  // console.log('Favorites:', favorites.value)
-  topPairs.value = (await currencyService.getTopPairs())
-    ?.filter(t => t.symbol.endsWith(main.exchangeAsset))
-    ?.map((t, i) => ({
-      position: i+1,
-      symbol: t.symbol,
-      volume: Math.round(t.volValue / 1000000 * 10) / 10,
-      fee: t.takerFeeRate * t.takerCoefficient
-    }))
-    // console.log('top', topPairs.value)
+  try {
+    const exchangeName = main.exchangeByName(main.exchange)?.name
+    favorites.value = exchangeName ? [...(main.exchanges[exchangeName]?.favorites || [])] : []
+    topPairs.value = (await currencyService.getTopPairs())
+      ?.filter(t => t.symbol.endsWith(main.exchangeAsset))
+      ?.map((t, i) => ({
+        position: i + 1,
+        symbol: t.symbol,
+        volume: Math.round(t.volValue / 1000000 * 10) / 10,
+        fee: t.takerFeeRate * t.takerCoefficient
+      })) || []
     pairs.value = (await currencyService.getTradingPairs()).map((p) => p.symbol).sort()
-    // console.log('Pairs:', pairs.value)
-  favoriteClasses.value = favorites.value.map((p) => getSymbolClass(p))
-  pairClasses.value = pairs.value.map((p) => getSymbolClass(p))
-  isLoading.value = false
+    favoriteClasses.value = favorites.value.map((p) => getSymbolClass(p))
+    pairClasses.value = pairs.value.map((p) => getSymbolClass(p))
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(async () => {
+  await loadFavoritesData()
 })
+
+watch(
+  () => main.exchange,
+  async (newExchange, oldExchange) => {
+    if (!newExchange || newExchange === oldExchange || !oldExchange) return
+    await loadFavoritesData()
+  }
+)
 
 const pairInfo = computed(() => {
   return (pair) => topPairs.value.find((t) => t.symbol === pair)

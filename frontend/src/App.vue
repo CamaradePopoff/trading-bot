@@ -50,7 +50,7 @@
                       <img
                         :src="`/${key.toLowerCase()}.png`"
                         alt=""
-                        style="height: 24px; width: 24px;"
+                        style="height: 24px; width: 24px; margin-right: 8px;"
                       >
                     </template>
                     <v-list-item-title>{{ exchange.name }}</v-list-item-title>
