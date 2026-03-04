@@ -16,6 +16,7 @@ export default {
     fee: 'Fee',
     from: 'from',
     help: 'Help',
+    loading: 'Loading',
     margin: 'Margin:',
     minIncrement: 'Minimim increment',
     minSize: 'Minimum buy',

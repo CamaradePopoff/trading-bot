@@ -16,6 +16,7 @@ export default {
     fee: 'Comisión',
     from: 'de',
     help: 'Ayuda',
+    loading: 'Cargando',
     margin: 'Margen:',
     minIncrement: 'Incremento mínimo',
     minSize: 'Compra mínima',
