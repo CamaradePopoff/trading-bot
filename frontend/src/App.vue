@@ -859,6 +859,7 @@ const refreshExchangeData = () => {
   main.disconnectWebSocket()
   main.connectWebSocket()
   main.getUserData()
+  main.getNews()
 }
 
 watch(
