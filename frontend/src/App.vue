@@ -287,7 +287,10 @@
               </template>
               <v-list-item-title>{{ $t('menus.favorites') }}</v-list-item-title>
             </v-list-item>
-            <v-list-item @click="navigate('/news')">
+            <v-list-item
+              v-if="main.news.length > 0"
+              @click="navigate('/news')"
+            >
               <template #prepend>
                 <v-icon icon="mdi-script-text-outline" />
               </template>

@@ -22,6 +22,7 @@ export default {
     minSize: 'Compra mínima',
     noData: 'Sin datos',
     noDate: 'Ninguna fecha seleccionada',
+    noNewsAvailable: 'No hay noticias disponibles',
     pair: 'Par',
     price: 'Precio',
     profit: 'Ganancia',
