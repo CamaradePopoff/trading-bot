@@ -593,6 +593,23 @@
       </v-btn>
     </template>
   </v-snackbar>
+
+  <v-overlay
+    v-model="exchangeSwitchLoading"
+    class="align-center justify-center"
+  >
+    <div class="text-center">
+      <v-progress-circular
+        indeterminate
+        size="64"
+        width="8"
+        color="primary"
+      />
+      <div class="mt-4 text-white">
+        {{ $t('common.loading') }}
+      </div>
+    </div>
+  </v-overlay>
 </template>
 
 <script setup>
@@ -616,6 +633,7 @@ const { locale } = useI18n()
 const appInterval = ref()
 const showDeleteSimulationsDialog = ref(false)
 const showExchangeMenu = ref(false)
+const exchangeSwitchLoading = ref(false)
 const helpDialog = ref(null)
 const transactionFilter = ref('')
 const transactionTypeFilter = ref(null)
@@ -854,18 +872,23 @@ const getData = () => {
   main.getUserData()
 }
 
-const refreshExchangeData = () => {
+const refreshExchangeData = async () => {
   if (!main.user || !main.token || !main.exchange) return
-  main.disconnectWebSocket()
-  main.connectWebSocket()
-  main.getUserData()
-  main.getNews()
+  try {
+    main.disconnectWebSocket()
+    main.connectWebSocket()
+    await main.getUserData()
+    await main.getNews()
+  } finally {
+    exchangeSwitchLoading.value = false
+  }
 }
 
 watch(
   () => main.exchange,
   (newExchange, oldExchange) => {
     if (!newExchange || newExchange === oldExchange || !oldExchange) return
+    exchangeSwitchLoading.value = true
     refreshExchangeData()
   }
 )
