@@ -47,19 +47,6 @@ export const useMainStore = defineStore('main', {
         disabled: true,
         favorites: []
       }, */
-      ByBit: {
-        name: 'ByBit',
-        url: 'https://www.bybit.com/$LANG/user/assets/home',
-        tradingAsset: 'USDC',
-        tokenAsset: 'BIT',
-        tokenPair: 'BITUSDC',
-        id: null,
-        apiKey: null,
-        apiSecret: null,
-        apiPassphrase: null,
-        disabled: true,
-        favorites: []
-      },
       /* Coinbase: {
         name: 'Coinbase',
         url: '???',
