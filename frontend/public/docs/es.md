@@ -9,6 +9,7 @@ Este bot de trading automatizado está diseñado para ejecutar estrategias siste
 - **Binance** - Exchange de criptomonedas global
 - **KuCoin** - Exchange global con extensa selección de altcoins
 - **MEXC** - Plataforma global de trading de activos digitales
+- **CoinEX** - Exchange global de criptomonedas con capacidades de trading integral
 
 > **NOTE:**
 > **Nota**: La disponibilidad de exchanges puede variar según la región. Asegúrese de que el exchange elegido sea accesible en su jurisdicción.
@@ -128,6 +129,31 @@ Tus claves API deben tener los siguientes permisos habilitados:
 - Habilita el permiso de **Trading Spot**
 - Deshabilita el permiso de **Retiros** (por seguridad)
 1. Haz clic en **Confirmar** para guardar la clave API
+
+##### CoinEX
+
+1. Inicia sesión en tu [cuenta de CoinEX](https://www.coinex.com)
+1. Haz clic en el ícono de tu perfil en la esquina superior derecha
+1. Selecciona **Configuración de API** del menú
+1. Haz clic en el botón **Crear Clave API**
+1. Ingresa la siguiente información:
+
+- **Etiqueta de Clave API**: Una etiqueta para tu clave API (por ejemplo, "Bot de Trading")
+- **Lista Blanca de IP** (Opcional): Agrega la dirección IP del bot (IP mostrada en la página Cuenta)
+1. Completa la verificación de seguridad (2FA, email, etc.)
+1. Una vez creada, **copia y guarda inmediatamente la Clave de Acceso y la Clave Secreta**
+
+> **WARNING:**
+> ¡La Clave Secreta solo se muestra una vez! Guárdala de forma segura antes de cerrar la ventana.
+
+1. Configura los permisos de API:
+
+- Habilita el permiso de **Trading Spot**
+- Deshabilita el permiso de **Transfer/Retiros** (por seguridad)
+1. Haz clic en **Guardar** para aplicar los permisos
+
+> **NOTE:**
+> CoinEX requiere Clave de Acceso y Clave Secreta (no se requiere frase secreta).
 
 > **IMPORTANT:**
 > Para todos los exchanges:

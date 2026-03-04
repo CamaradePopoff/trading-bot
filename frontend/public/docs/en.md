@@ -9,6 +9,7 @@ This automated trading bot is designed to execute systematic cryptocurrency trad
 - **Binance** - Global cryptocurrency exchange
 - **KuCoin** - Global cryptocurrency exchange with extensive altcoin selection
 - **MEXC** - Global digital asset trading platform
+- **CoinEX** - Global cryptocurrency exchange with comprehensive trading capabilities
 
 > **NOTE:**
 > **Note**: Exchange availability may vary by region. Ensure your chosen exchange is accessible in your jurisdiction.
@@ -128,6 +129,31 @@ Your API keys must have the following permissions enabled:
 - Enable **Spot Trading** permission
 - Disable **Withdrawals** permission (for security)
 1. Click **Confirm** to save the API key
+
+##### CoinEX
+
+1. Log in to your [CoinEX account](https://www.coinex.com)
+1. Click on your profile icon in the top right corner
+1. Select **API Settings** from the menu
+1. Click **Create API Key** button
+1. Enter the following information:
+
+- **API Key Label**: A label for your API key (e.g., "Trading Bot")
+- **IP Whitelist** (Optional): Add the bot's IP address (IP shown in Account page)
+1. Complete the security verification (2FA, email, etc.)
+1. Once created, **copy and save both the Access Key and Secret Key immediately**
+
+> **WARNING:**
+> The Secret Key is only shown once! Save it securely before closing the window.
+
+1. Configure API permissions:
+
+- Enable **Spot Trading** permission
+- Disable **Transfer/Withdrawal** permission (for security)
+1. Click **Save** to apply the permissions
+
+> **NOTE:**
+> CoinEX requires API Key and API Secret (no passphrase needed).
 
 > **IMPORTANT:**
 > For all exchanges:
