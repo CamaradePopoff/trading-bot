@@ -601,8 +601,8 @@
     <div class="text-center">
       <v-progress-circular
         indeterminate
-        size="64"
-        width="8"
+        size="100"
+        width="10"
         color="primary"
       />
       <div class="mt-4 text-white">
