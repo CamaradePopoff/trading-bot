@@ -9,6 +9,7 @@ Ce bot de trading automatisé est conçu pour exécuter des stratégies de tradi
 - **Binance** - Plateforme d'échange de cryptomonnaies mondiale
 - **KuCoin** - Plateforme d'échange mondiale avec une sélection étendue d'altcoins
 - **MEXC** - Plateforme mondiale de trading d'actifs numériques
+- **CoinEX** - Plateforme d'échange de cryptomonnaies mondiale avec capacités de trading complètes
 
 > **NOTE:**
 > **Note** : La disponibilité des plateformes peut varier selon les régions. Assurez-vous que la plateforme choisie est accessible dans votre juridiction.
@@ -128,6 +129,31 @@ Vos clés API doivent avoir les permissions suivantes activées :
 - Activez la permission **Trading Spot**
 - Désactivez la permission **Retraits** (pour la sécurité)
 1. Cliquez sur **Confirmer** pour sauvegarder la clé API
+
+##### CoinEX
+
+1. Connectez-vous à votre [compte CoinEX](https://www.coinex.com)
+1. Cliquez sur l'icône de votre profil en haut à droite
+1. Sélectionnez **Paramètres API** dans le menu
+1. Cliquez sur le bouton **Créer une Clé API**
+1. Entrez les informations suivantes :
+
+- **Étiquette de Clé API** : Une étiquette pour votre clé API (par exemple, "Bot de Trading")
+- **Adresses IP Autorisées** (Optionnel) : Ajoutez l'adresse IP du bot (IP affichée dans la page Compte)
+1. Complétez la vérification de sécurité (2FA, email, etc.)
+1. Une fois créée, **copiez et sauvegardez immédiatement la Clé d'Accès et la Clé Secrète**
+
+> **WARNING:**
+> La Clé Secrète n'est affichée qu'une seule fois ! Sauvegardez-la en toute sécurité avant de fermer la fenêtre.
+
+1. Configurez les permissions API :
+
+- Activez la permission **Trading Spot**
+- Désactivez la permission **Transfer/Retraits** (pour la sécurité)
+1. Cliquez sur **Enregistrer** pour appliquer les permissions
+
+> **NOTE:**
+> CoinEX nécessite une Clé d'Accès et une Clé Secrète (aucune phrase secrète requise).
 
 > **IMPORTANT:**
 > Pour toutes les plateformes :

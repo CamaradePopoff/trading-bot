@@ -31,7 +31,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useMainStore } from '@/store'
 import currencyService from '@services/currency.service'
@@ -48,17 +48,44 @@ const goToPair = (pair) => {
   router.push({ path: '/trading', query: { pair } })
 }
 
-onMounted(async () => {
+const getPreferredPair = () => {
+  const requestedPair = route.query?.pair
+  if (requestedPair && pairs.value.includes(requestedPair)) return requestedPair
+  if (main.selectedTradingPair && pairs.value.includes(main.selectedTradingPair)) return main.selectedTradingPair
+  return btcPair.value
+}
+
+const loadPairs = async () => {
   isLoading.value = true
-  currencyService.getTradingPairs().then((data) => {
+  try {
+    const data = await currencyService.getTradingPairs()
     pairs.value = data.map((p) => p.symbol)
-    goToPair(route.query?.pair || main.selectedTradingPair || btcPair.value)
-  }).finally(() => {
+    const pairToSelect = getPreferredPair()
+    if (pairToSelect) goToPair(pairToSelect)
+  } finally {
     isLoading.value = false
-  })
+  }
+}
+
+onMounted(async () => {
+  await loadPairs()
 })
 
+watch(
+  () => main.exchange,
+  async (newExchange, oldExchange) => {
+    if (!newExchange || newExchange === oldExchange || !oldExchange) return
+    await loadPairs()
+  }
+)
+
 const btcPair = computed(() => {
-  return pairs.value.find((p) => p.startsWith('BTC'))
+  const exchange = main.exchangeByName(main.exchange)
+  const tokenPair = exchange?.tokenPair
+  const tokenAsset = exchange?.tokenAsset
+  if (!tokenPair || !tokenAsset) return pairs.value[0]
+
+  const desiredBtcPair = tokenPair.replace(tokenAsset, 'BTC')
+  return pairs.value.find((p) => p === desiredBtcPair) || pairs.value[0]
 })
 </script>

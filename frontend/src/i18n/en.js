@@ -16,11 +16,13 @@ export default {
     fee: 'Fee',
     from: 'from',
     help: 'Help',
+    loading: 'Loading',
     margin: 'Margin:',
     minIncrement: 'Minimim increment',
     minSize: 'Minimum buy',
     noData: 'No data',
     noDate: 'No date selected',
+    noNewsAvailable: 'No news available',
     pair: 'Pair',
     price: 'Price',
     profit: 'Profit',
@@ -238,7 +240,8 @@ export default {
       soundOn: 'Sound on',
       soundOff: 'Sound off',
       filterType: 'Filter by type',
-      filterSimulation: 'Filter simulation'
+      filterSimulation: 'Filter simulation',
+      switchExchange: 'Switch exchange'
     },
     account: {
       personalInfo: 'Personal information',

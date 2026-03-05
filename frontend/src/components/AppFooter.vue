@@ -1,6 +1,7 @@
 <template>
   <div class="mx-auto marquee">
     <span
+      v-if="main.news.length > 0"
       class="marquee-content"
       :style="{ 'animation-duration': `${main.news.length * 10}s` }"
     >
@@ -21,6 +22,12 @@
         </v-chip>
       </v-hover>
     </span>
+    <div
+      v-else
+      class="text-grey-lighten-1 text-body-2"
+    >
+      {{ $t('common.noNewsAvailable') }}
+    </div>
   </div>
 </template>
 

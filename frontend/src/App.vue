@@ -9,12 +9,58 @@
     >
       <template #prepend>
         <v-app-bar-nav-icon @click="main.menuDrawer = !main.menuDrawer">
-          <img
-            v-if="main.exchange"
-            style="height: 36px"
-            :src="`/${main.exchange}.png`"
-            alt=""
-          >
+          <div v-if="main.exchange">
+            <img
+              style="height: 36px"
+              :src="`/${main.exchange}.png`"
+              alt=""
+            >
+            <div
+              v-show="canSwitchExchange"
+              style="position: absolute; bottom: 0; right: 0;"
+            >
+              <v-menu
+                v-model="showExchangeMenu"
+                :close-on-content-click="true"
+                location="bottom"
+              >
+                <template #activator="{ props: menuProps }">
+                  <v-tooltip
+                    location="bottom"
+                    content-class="text-caption"
+                  >
+                    <template #activator="{ props: tooltipProps }">
+                      <v-icon
+                        size="24"
+                        color="primary"
+                        class="bg-white rounded-circle"
+                        v-bind="{ ...menuProps, ...tooltipProps }"
+                      >
+                        mdi-swap-horizontal-circle
+                      </v-icon>
+                    </template>
+                    {{ $t('pages.app.switchExchange') }}
+                  </v-tooltip>
+                </template>
+                <v-list density="compact">
+                  <v-list-item
+                    v-for="([key, exchange]) in switchableExchanges"
+                    :key="key"
+                    @click="selectExchange(key.toLowerCase())"
+                  >
+                    <template #prepend>
+                      <img
+                        :src="`/${key.toLowerCase()}.png`"
+                        alt=""
+                        style="height: 24px; width: 24px; margin-right: 8px;"
+                      >
+                    </template>
+                    <v-list-item-title>{{ exchange.name }}</v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+            </div>
+          </div>
         </v-app-bar-nav-icon>
         <BotBrand
           v-if="mdAndUp"
@@ -241,7 +287,10 @@
               </template>
               <v-list-item-title>{{ $t('menus.favorites') }}</v-list-item-title>
             </v-list-item>
-            <v-list-item @click="navigate('/news')">
+            <v-list-item
+              v-if="main.news.length > 0"
+              @click="navigate('/news')"
+            >
               <template #prepend>
                 <v-icon icon="mdi-script-text-outline" />
               </template>
@@ -547,10 +596,27 @@
       </v-btn>
     </template>
   </v-snackbar>
+
+  <v-overlay
+    v-model="exchangeSwitchLoading"
+    class="align-center justify-center"
+  >
+    <div class="text-center">
+      <v-progress-circular
+        indeterminate
+        size="100"
+        width="10"
+        color="primary"
+      />
+      <div class="mt-4 text-white">
+        {{ $t('common.loading') }}
+      </div>
+    </div>
+  </v-overlay>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useMainStore } from '@/store'
 import { useRouter, useRoute } from 'vue-router'
 import { useDisplay } from 'vuetify'
@@ -569,6 +635,8 @@ const { locale } = useI18n()
 
 const appInterval = ref()
 const showDeleteSimulationsDialog = ref(false)
+const showExchangeMenu = ref(false)
+const exchangeSwitchLoading = ref(false)
 const helpDialog = ref(null)
 const transactionFilter = ref('')
 const transactionTypeFilter = ref(null)
@@ -634,6 +702,16 @@ const updateTokenExpiration = () => {
 const snackbarShow = computed({
   get: () => main.snackbar && main.snackbar.show,
   set: (val) => main.$patch({ snackbar: { ...main.snackbar, show: val } })
+})
+
+const switchableExchanges = computed(() => {
+  return Object.entries(main.openExchanges)
+    .filter(([key, exchange]) => key.toLowerCase() !== main.exchange && exchange.id)
+})
+
+const canSwitchExchange = computed(() => {
+  const configuredCount = Object.values(main.openExchanges).filter(e => e.id).length
+  return configuredCount > 1
 })
 
 const filteredTransactions = computed(() => {
@@ -797,6 +875,27 @@ const getData = () => {
   main.getUserData()
 }
 
+const refreshExchangeData = async () => {
+  if (!main.user || !main.token || !main.exchange) return
+  try {
+    main.disconnectWebSocket()
+    main.connectWebSocket()
+    await main.getUserData()
+    await main.getNews()
+  } finally {
+    exchangeSwitchLoading.value = false
+  }
+}
+
+watch(
+  () => main.exchange,
+  (newExchange, oldExchange) => {
+    if (!newExchange || newExchange === oldExchange || !oldExchange) return
+    exchangeSwitchLoading.value = true
+    refreshExchangeData()
+  }
+)
+
 const switchLang = () => {
   const index = langs.value.indexOf(main.lang)
   main.lang = langs.value[(index + 1) % langs.value.length]
@@ -814,6 +913,12 @@ const navigate = (path) => {
 
 const logout = () => {
   main.logout()
+}
+
+const selectExchange = (exchange) => {
+  main.exchange = exchange
+  localStorage.setItem('exchange', exchange)
+  showExchangeMenu.value = false
 }
 </script>
 

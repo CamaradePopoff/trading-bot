@@ -605,6 +605,28 @@ watch(thresholdMode, (newMode) => {
   }
 })
 
+watch(
+  () => main.exchange,
+  (newExchange, oldExchange) => {
+    if (!newExchange || newExchange === oldExchange || !oldExchange) return
+    if (props.isEdition) return // Only reload in create mode
+    
+    currencyService.getTradingPairs().then((data) => {
+      pairData.value = data
+      pairs.value = data.map((p) => p.symbol)
+    })
+    if (main.isVipFeeExchange) {
+      currencyService.getVipFee().then((data) => {
+        vipFee.value = data.vipFee
+      }).catch(() => {
+        vipFee.value = 0.001
+      })
+    } else {
+      vipFee.value = null
+    }
+  }
+)
+
 onMounted(() => {
   // Initialize threshold mode based on existing config
   if (localForm.value.priceDropThresholds && Array.isArray(localForm.value.priceDropThresholds) && localForm.value.priceDropThresholds.length > 0) {

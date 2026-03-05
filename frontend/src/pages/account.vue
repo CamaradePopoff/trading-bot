@@ -95,7 +95,7 @@
                         :class="mdAndUp ? 'mt-2' : ' mt-0 d-flex justify-center'"
                       >
                         <v-btn
-                          :disabled="!isValidExchange[exchange.name]"
+                          :disabled="exchange.disabled || !isValidExchange[exchange.name]"
                           variant="outlined"
                           color="primary"
                           @click="saveExchange(exchange)"
@@ -171,15 +171,14 @@ const isLoading = ref(false)
 const user = ref()
 const serverIp = ref(null)
 const isValidUser = ref(false)
-const isValidExchange = ref({
-  KuCoin: false,
-  Binance: false,
-  ByBit: false,
-  MEXC: false,
-  OKX: false,
-  CoinEX: false
-})
+const isValidExchange = ref({})
 const showBotConfigManager = ref(false)
+
+const initExchangeValidation = () => {
+  isValidExchange.value = Object.fromEntries(
+    Object.entries(main.openExchanges).map(([name]) => [name, false])
+  )
+}
 
 onMounted(() => {
   isLoading.value = true
@@ -191,6 +190,7 @@ onMounted(() => {
       confirmPassword: null
     }
     main.getExchanges().then(() => {
+      initExchangeValidation()
       isLoading.value = false
     })
   })
@@ -222,6 +222,7 @@ const saveAccount = () => {
 }
 
 const saveExchange = (exchange) => {
+  if (main.exchanges[exchange.name]?.disabled) return
   if (!isValidExchange.value[exchange.name]) return
   const exch = {
     name: exchange.name,

@@ -102,7 +102,7 @@
           <MiniChart
             :chart-key="`${props.bot.config.exchange}:${props.bot.config.symbol}`"
             :price="props.bot.currentPrice"
-            :height="50"
+            :height="showChart ? 25 : 50"
             :max-points="180"
           />
         </div>

@@ -16,11 +16,13 @@ export default {
     fee: 'Commission',
     from: 'de',
     help: 'Aide',
+    loading: 'Chargement',
     margin: 'Marge :',
     minIncrement: 'Incrément minimum',
     minSize: 'Achat minimum',
     noData: 'Aucune donnée',
     noDate: 'Aucune date sélectionnée',
+    noNewsAvailable: 'Aucune actualité disponible',
     pair: 'Paire',
     price: 'Prix',
     profit: 'Profit',
@@ -234,7 +236,8 @@ export default {
       soundOn: 'Son activé',
       soundOff: 'Son désactivé',
       filterType: 'Filtrer par type',
-      filterSimulation: 'Filtrer simulation'
+      filterSimulation: 'Filtrer la simulation',
+      switchExchange: 'Changer de plateforme'
     },
     account: {
       personalInfo: 'Informations personnelles',
