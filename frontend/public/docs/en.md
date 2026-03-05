@@ -8,6 +8,7 @@ This automated trading bot is designed to execute systematic cryptocurrency trad
 
 - **Binance** - Global cryptocurrency exchange
 - **KuCoin** - Global cryptocurrency exchange with extensive altcoin selection
+- **Kraken** - European-based cryptocurrency exchange with strong security
 - **MEXC** - Global digital asset trading platform
 - **CoinEX** - Global cryptocurrency exchange with comprehensive trading capabilities
 
@@ -107,6 +108,35 @@ Your API keys must have the following permissions enabled:
 
 > **NOTE:**
 > KuCoin requires all three values: API Key, API Secret, and API Passphrase.
+
+##### Kraken
+
+1. Log in to your [Kraken account](https://www.kraken.com)
+1. Click on your profile icon in the top right corner
+1. Select **Settings** from the dropdown menu
+1. Click **API** in the left sidebar
+1. Click **Generate New Key** button
+1. Enter the following information:
+
+- **Key Label**: A label for your API key (e.g., "Trading Bot")
+- **Nonce Window**: Use default (5 minutes)
+- **Query String, API-Sign Header, or QUERY_DATA**: Keep default settings
+1. Under **Permissions**, enable:
+   - **Query Funds**: Required to view balances
+   - **Query Open Orders & Trades**: Required for trading
+   - **Query Closed Orders & Trades**: Required for transaction history
+   - **Create & Modify Orders**: Required to place buy/sell orders
+   - **Cancel/Close Orders**: Required to cancel orders
+1. Under **Nonce Window**, use default (5 minute window)
+1. Add IP addresses to whitelist (IP shown in Account page)
+1. Click **Generate** to create the key
+1. **Save the Private Key securely** - it's only shown once
+
+> **WARNING:**
+> The Private Key is only shown once! Save it securely before closing the window.
+
+> **NOTE:**
+> Kraken requires API Key (public key), API Secret (private key), and is configured with a 5-minute nonce window.
 
 ##### MEXC
 

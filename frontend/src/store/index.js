@@ -60,19 +60,19 @@ export const useMainStore = defineStore('main', {
         disabled: true,
         favorites: []
       }, */
-      /* Kraken: {
+      Kraken: {
         name: 'Kraken',
-        url: '???',
-        tradingAsset: 'USDT',
-        tokenAsset: '???',
-        tokenPair: '???USDT',
+        url: 'https://www.kraken.com/en-us/features/crypto-trading',
+        tradingAsset: 'USD',
+        tokenAsset: 'XBT',
+        tokenPair: 'XBTUSD',
         id: null,
         apiKey: null,
         apiSecret: null,
         apiPassphrase: null,
-        disabled: true,
+        disabled: false,
         favorites: []
-      }, */
+      },
       KuCoin: {
         name: 'KuCoin',
         url: 'https://www.kucoin.com/$LANG/assets',

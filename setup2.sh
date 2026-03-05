@@ -5,11 +5,12 @@ sudo apt update && sudo apt upgrade -y && apt install net-tools -y
 
 # Clone repos
 mkdir -p kubot && cd kubot
-mkdir -p kucoin binance mexc coinex
+mkdir -p kucoin binance mexc coinex kraken
 cd kucoin && git clone git@github.com:CamaradePopoff/trading-bot.git . && cd ..
 cd binance && git clone git@github.com:CamaradePopoff/trading-bot.git . && cd ..
 cd mexc && git clone git@github.com:CamaradePopoff/trading-bot.git . && cd ..
 cd coinex && git clone git@github.com:CamaradePopoff/trading-bot.git . && cd ..
+cd kraken && git clone git@github.com:CamaradePopoff/trading-bot.git . && cd ..
 cd
 
 # Copy .env files
@@ -17,6 +18,7 @@ cp kubot/kucoin/vps/kubot/binance/.env.prod kubot/binance/.env
 cp kubot/kucoin/vps/kubot/kucoin/.env.prod kubot/kucoin/.env
 cp kubot/kucoin/vps/kubot/mexc/.env.prod kubot/mexc/.env
 cp kubot/kucoin/vps/kubot/coinex/.env.prod kubot/coinex/.env
+cp kubot/kucoin/vps/kubot/kraken/.env.prod kubot/kraken/.env
 
 # Copy certificates
 cp kubot/kucoin/vps/etc/ssl/certs/*.* /etc/ssl/certs/

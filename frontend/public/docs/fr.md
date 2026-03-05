@@ -8,6 +8,7 @@ Ce bot de trading automatisé est conçu pour exécuter des stratégies de tradi
 
 - **Binance** - Plateforme d'échange de cryptomonnaies mondiale
 - **KuCoin** - Plateforme d'échange mondiale avec une sélection étendue d'altcoins
+- **Kraken** - Plateforme d'échange de cryptomonnaies basée en Europe avec une forte sécurité
 - **MEXC** - Plateforme mondiale de trading d'actifs numériques
 - **CoinEX** - Plateforme d'échange de cryptomonnaies mondiale avec capacités de trading complètes
 
@@ -107,6 +108,35 @@ Vos clés API doivent avoir les permissions suivantes activées :
 
 > **NOTE:**
 > KuCoin nécessite les trois valeurs : Clé API, Secret API et Phrase Secrète API.
+
+##### Kraken
+
+1. Connectez-vous à votre [compte Kraken](https://www.kraken.com)
+1. Cliquez sur l'icône de votre profil dans le coin supérieur droit
+1. Sélectionnez **Paramètres** dans le menu déroulant
+1. Cliquez sur **API** dans la barre latérale gauche
+1. Cliquez sur le bouton **Générer une nouvelle clé**
+1. Entrez les informations suivantes:
+
+- **Libellé de Clé**: Un libellé pour votre clé API (par exemple, "Trading Bot")
+- **Fenêtre Nonce**: Utilisez la valeur par défaut (5 minutes)
+- **Query String, API-Sign Header, ou QUERY_DATA**: Conservez les paramètres par défaut
+1. Sous **Permissions**, activez:
+   - **Interroger Fonds**: Requis pour afficher les soldes
+   - **Interroger Ordres Ouverts et Transactions**: Requis pour le trading
+   - **Interroger Ordres Fermés et Transactions**: Requis pour l'historique
+   - **Créer et Modifier Ordres**: Requis pour passer des ordres d'achat/vente
+   - **Annuler/Fermer Ordres**: Requis pour annuler les ordres
+1. Sous **Fenêtre Nonce**, utilisez la valeur par défaut (fenêtre de 5 minutes)
+1. Ajoutez les adresses IP à la liste blanche (IP affichée dans la page Compte)
+1. Cliquez sur **Générer** pour créer la clé
+1. **Enregistrez la Clé Privée en toute sécurité** - elle n'est affichée qu'une seule fois
+
+> **AVERTISSEMENT:**
+> La Clé Privée ne s'affiche qu'une seule fois! Enregistrez-la de manière sécurisée avant de fermer la fenêtre.
+
+> **REMARQUE:**
+> Kraken nécessite une Clé API (clé publique), un Secret API (clé privée), et est configuré avec une fenêtre de nonce de 5 minutes.
 
 ##### MEXC
 

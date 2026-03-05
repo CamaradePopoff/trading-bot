@@ -8,6 +8,7 @@ Este bot de trading automatizado está diseñado para ejecutar estrategias siste
 
 - **Binance** - Exchange de criptomonedas global
 - **KuCoin** - Exchange global con extensa selección de altcoins
+- **Kraken** - Exchange de criptomonedas con sede en Europa y fuerte seguridad
 - **MEXC** - Plataforma global de trading de activos digitales
 - **CoinEX** - Exchange global de criptomonedas con capacidades de trading integral
 
@@ -107,6 +108,35 @@ Tus claves API deben tener los siguientes permisos habilitados:
 
 > **NOTE:**
 > KuCoin requiere los tres valores: Clave API, Secreto API y Frase Secreta API.
+
+##### Kraken
+
+1. Inicia sesión en tu [cuenta de Kraken](https://www.kraken.com)
+1. Haz clic en el ícono de tu perfil en la esquina superior derecha
+1. Selecciona **Configuración** en el menú desplegable
+1. Haz clic en **API** en la barra lateral izquierda
+1. Haz clic en el botón **Generar Nueva Clave**
+1. Ingresa la siguiente información:
+
+- **Etiqueta de Clave**: Una etiqueta para tu clave API (por ejemplo, "Trading Bot")
+- **Ventana Nonce**: Usa la predeterminada (5 minutos)
+- **Query String, API-Sign Header, o QUERY_DATA**: Mantén los valores predeterminados
+1. Bajo **Permisos**, habilita:
+   - **Consultar Fondos**: Requerido para ver saldos
+   - **Consultar Órdenes y Operaciones Abiertas**: Requerido para operar
+   - **Consultar Órdenes y Operaciones Cerradas**: Requerido para el historial
+   - **Crear y Modificar Órdenes**: Requerido para realizar compras/ventas
+   - **Cancelar/Cerrar Órdenes**: Requerido para cancelar órdenes
+1. Bajo **Ventana Nonce**, usa la predeterminada (ventana de 5 minutos)
+1. Agrega direcciones IP a la lista blanca (IP mostrada en la página Cuenta)
+1. Haz clic en **Generar** para crear la clave
+1. **Guarda la Clave Privada de forma segura** - solo se muestra una vez
+
+> **WARNING:**
+> ¡La Clave Privada solo se muestra una vez! Guárdala de forma segura antes de cerrar la ventana.
+
+> **NOTE:**
+> Kraken requiere Clave API (clave pública), Secreto API (clave privada), y está configurado con una ventana de nonce de 5 minutos.
 
 ##### MEXC
 
