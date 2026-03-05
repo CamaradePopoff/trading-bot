@@ -109,7 +109,16 @@ async function makeRequest(
 async function getTickers(user, pairs = []) {
   try {
     if (!pairs || pairs.length === 0) return {}
-    const pairString = pairs.join(',')
+    // Convert all pairs to Kraken format
+    const krakenPairs = pairs.map(
+      (p) =>
+        p
+          .replace('-', '')
+          .replace(/^BTC/, 'XBT') // Kraken uses XBT for Bitcoin
+          .replace(/USDT/, 'USD') // Kraken uses USD, not USDT
+          .toUpperCase()
+    )
+    const pairString = krakenPairs.join(',')
     const result = await makeRequest(
       user,
       '/0/public/Ticker',
@@ -126,8 +135,13 @@ async function getTickers(user, pairs = []) {
 
 async function getCurrentPrice(user, symbol) {
   try {
-    // Convert symbol to Kraken pair format (e.g., BTC-USDT -> XBTUSDT)
-    const krakenPair = symbol.replace('-', '').replace(/USDT/, 'USD')
+    // Convert symbol to Kraken pair format (e.g., BTC-USD -> XBTUSD)
+    const krakenPair = symbol
+      .replace('-', '')
+      .replace(/^BTC/, 'XBT') // Kraken uses XBT for Bitcoin
+      .replace(/USDT/, 'USD') // Kraken uses USD, not USDT
+      .toUpperCase()
+
     const result = await makeRequest(
       user,
       '/0/public/Ticker',
@@ -180,6 +194,12 @@ async function getTradingPairs(user, assetPair) {
 
 async function getTradingPairFee(user, symbol) {
   try {
+    // Convert symbol to Kraken pair format if needed (e.g., BTC-USD -> XBTUSD)
+    const krakenPair = symbol
+      .replace('-', '')
+      .replace(/^BTC/, 'XBT') // Kraken uses XBT for Bitcoin
+      .toUpperCase()
+
     const result = await makeRequest(
       user,
       '/0/private/TradeVolume',
@@ -187,11 +207,21 @@ async function getTradingPairFee(user, symbol) {
       {},
       false
     )
-    // Kraken returns maker/taker fees in the response
-    if (result && result.fees) {
-      // Default to 0.26% maker fee if not found
+
+    if (!result || !result.fees) {
+      logger.warn(`No fee data found for ${symbol}, using default 0.26%`)
       return 0.0026
     }
+
+    // Kraken returns fees as an object with pair names as keys
+    // Each pair has maker and taker fees
+    if (result.fees[krakenPair]) {
+      const pairFees = result.fees[krakenPair]
+      // Use taker fee (typically higher than maker fee)
+      const takerFee = parseFloat(pairFees[1]) / 100 // Convert from percentage to decimal
+      return takerFee > 0 ? takerFee : 0.0026
+    }
+
     return 0.0026 // Default Kraken fee
   } catch (error) {
     logger.error(`getTradingPairFee error: ${error.message}`)
@@ -201,6 +231,12 @@ async function getTradingPairFee(user, symbol) {
 
 async function getMinimumSize(user, symbol) {
   try {
+    // Convert symbol to Kraken pair format (e.g., BTC-USD -> XBTUSD)
+    const krakenPair = symbol
+      .replace('-', '')
+      .replace(/^BTC/, 'XBT') // Kraken uses XBT for Bitcoin
+      .toUpperCase()
+
     const result = await makeRequest(
       user,
       '/0/public/AssetPairs',
@@ -209,15 +245,18 @@ async function getMinimumSize(user, symbol) {
       true
     )
 
-    if (!result || !result[symbol]) return 0
+    if (!result || !result[krakenPair]) {
+      logger.warn(`Trading pair ${krakenPair} not found, using default minimum`)
+      return 0.0001
+    }
 
-    const pair = result[symbol]
-    // Kraken returns lot_decimals and lot_multiplier
-    const minSize = pair.lot_multiplier || 0.00000001
+    const pair = result[krakenPair]
+    // Kraken returns ordermin as the minimum order value for the pair
+    const minSize = parseFloat(pair.ordermin) || 0.0001
     return minSize
   } catch (error) {
     logger.error(`getMinimumSize error for ${symbol}: ${error.message}`)
-    return 0
+    return 0.0001
   }
 }
 
@@ -271,8 +310,12 @@ async function getCryptoBalance(user, symbol) {
 
 async function placeOrder(user, symbol, side, orderType, price, amount) {
   try {
-    // Convert symbol to Kraken pair format
-    const krakenPair = symbol.replace('-', '').replace(/USDT/, 'USD')
+    // Convert symbol to Kraken pair format (e.g., BTC-USD -> XBTUSD)
+    const krakenPair = symbol
+      .replace('-', '')
+      .replace(/^BTC/, 'XBT') // Kraken uses XBT for Bitcoin
+      .replace(/USDT/, 'USD') // Kraken uses USD, not USDT
+      .toUpperCase()
 
     const params = {
       pair: krakenPair,
