@@ -88,9 +88,9 @@ async function makeRequest(
       headers,
       body
     })
-    console.log(
-      `CoinEX ${normalizedMethod} ${endpoint} - Status: ${response.status}`
-    )
+    // console.log(
+    //   `CoinEX ${normalizedMethod} ${endpoint} - Status: ${response.status}`
+    // )
 
     let data
     try {
