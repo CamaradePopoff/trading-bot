@@ -33,7 +33,7 @@
             v-for="crypto in sortedCryptoKeys"
             :key="crypto"
           >
-            {{ crypto.replace(/([^-]+)-?USD(T|C)$/,'$1') }}
+            {{ crypto.replace(/([^-]+)-?USD(T|C)?$/,'$1') }}
             <span class="text-grey pl-2">
               {{ ['TOTAL', main.exchangeAsset].includes(crypto) ? main.usdtRound(sumByCrypto[crypto]) : main.jsRound(sumByCrypto[crypto]) }}
               <span v-if="!['TOTAL', main.exchangeAsset].includes(crypto) && currentPrices[crypto]">({{ main.usdtRound(sumByCrypto[crypto] * currentPrices[crypto]) }} {{ main.exchangeAsset }})</span>
@@ -152,10 +152,10 @@
                             <td> {{ main.formatDate($t, tr.date) }}</td>
                             <td v-if="crypto !== main.exchangeAsset">
                               {{ main.jsRound(tr.amount) }}
-                              <span v-if="crypto === 'TOTAL'">{{ tr.symbol === main.exchangeAsset ? tr.symbol : tr.symbol.replace(/-?USD(T|C)$/,'') }}</span>
+                              <span v-if="crypto === 'TOTAL'">{{ tr.symbol === main.exchangeAsset ? tr.symbol : tr.symbol.replace(/-?USD(T|C)?$/,'') }}</span>
                             </td>
                             <td>
-                              {{ main.usdtRound(tr.amount * (tr.symbol === main.exchangeAsset ? 1 : currentPrices[tr.symbol.replace(/-?USD(T|C)$/,'')])) }}
+                              {{ main.usdtRound(tr.amount * (tr.symbol === main.exchangeAsset ? 1 : currentPrices[tr.symbol.replace(/-?USD(T|C)?$/,'')])) }}
                             </td>
                           </tr>
                         </tbody>

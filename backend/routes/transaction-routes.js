@@ -98,7 +98,7 @@ module.exports = function (io, logger) {
       // Strip exchange asset suffix from keys (e.g., BTC-USDT -> BTC)
       const transactionsMap = results.reduce(
         (acc, { symbol, transactions, error }) => {
-          const currency = symbol.replace(/-?USD(T|C)$/, '')
+          const currency = symbol.replace(/-?USD(T|C)?$/, '')
           acc[currency] = error ? [] : transactions
           return acc
         },

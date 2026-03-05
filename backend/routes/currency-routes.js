@@ -67,7 +67,7 @@ module.exports = function (io, logger) {
       // Convert array to object for easier lookup
       // Strip exchange asset suffix from keys (e.g., BTC-USDT -> BTC)
       const pricesMap = results.reduce((acc, { symbol, price, error }) => {
-        const currency = symbol.replace(/-?USD(T|C)$/, '')
+        const currency = symbol.replace(/-?USD(T|C)?$/, '')
         acc[currency] = error ? { error } : price
         return acc
       }, {})

@@ -25,7 +25,7 @@ module.exports = function (io, logger) {
         }
         if (botId) {
           logs[key][date] = logs[key][date].map((l) =>
-            l.replace(` - ${botId}`, '').replace(/ \(.+-USD(T|C)\)/, '')
+            l.replace(` - ${botId}`, '').replace(/ \(.+-USD(T|C)?\)/, '')
           )
         }
       }

@@ -432,7 +432,7 @@ async function getCryptoBalance(user, symbol) {
       b.type === 'trade' &&
       b.currency &&
       b.currency.toLowerCase() ===
-        symbol.replace(/([^-]+)-?USD(T|C)$/, '$1').toLowerCase()
+        symbol.replace(/([^-]+)-?USD(T|C)?$/, '$1').toLowerCase()
   )
   // console.log('getCryptoBalance', symbol, bal)
   if (bal) {
@@ -493,7 +493,7 @@ async function buyCrypto(user, symbol, amount = null) {
     const amt = parseFloat(order.dealSize)
     const price = jsRound(paid / amt)
     logger.info(
-      `💲 Bought ${amt} ${symbol.replace(/([^-]+)-?USD(T|C)$/, '$1')} at ${price} USDT (total: ${paid} USDT + fee ${jsRound(fee)} USDT).`
+      `💲 Bought ${amt} ${symbol.replace(/([^-]+)-?USD(T|C)?$/, '$1')} at ${price} USDT (total: ${paid} USDT + fee ${jsRound(fee)} USDT).`
     )
     return order
   }
@@ -509,7 +509,7 @@ async function sellCrypto(user, symbol, amount = null) {
     const amt = parseFloat(order.dealSize)
     const price = jsRound(received / amt)
     logger.info(
-      `💲 Sold ${amt} ${symbol.replace(/([^-]+)-?USD(T|C)$/, '$1')} at ${price} USDT (total: ${received} USDT - fee ${fee} USDT).`
+      `💲 Sold ${amt} ${symbol.replace(/([^-]+)-?USD(T|C)?$/, '$1')} at ${price} USDT (total: ${received} USDT - fee ${fee} USDT).`
     )
     return order
   }

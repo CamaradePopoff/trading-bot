@@ -237,7 +237,7 @@ export const useMainStore = defineStore('main', {
       return balance ? balance.available : 0
     },
     botSymbols: (state) => [
-      ...new Set(state.bots.map((bot) => bot.config.symbol.replace(/-?USD(T|C)$/,'')))
+      ...new Set(state.bots.map((bot) => bot.config.symbol.replace(/-?USD(T|C)?$/,'')))
     ],
     openExchanges: (state) => Object.fromEntries(Object.entries(state.exchanges)
       .filter(([key, value]) => key && !value.disabled)

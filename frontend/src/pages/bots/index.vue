@@ -462,7 +462,7 @@ const filteredBots = computed(() => {
   // Filter by search text
   if (s !== '') {
     bots = bots.filter((bot) => (bot.config.label || '').toLowerCase().includes(s.toLowerCase())
-      || bot.config.symbol.replace(/-?USD(T|C)$/, '').toLowerCase().includes(s.toLowerCase()))
+      || bot.config.symbol.replace(/-?USD(T|C)?$/, '').toLowerCase().includes(s.toLowerCase()))
   }
   
   // Sort: real bots first, simulated bots last, then alphabetically by label or symbol

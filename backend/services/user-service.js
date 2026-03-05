@@ -164,7 +164,7 @@ module.exports = function (io, logger) {
     const dates = [...new Set(profits.map((p) => p.date))].sort((a, b) => a - b) // Get sorted unique dates
     const dateIndex = new Map(dates.map((date, index) => [date, index])) // Map dates to index
     profits.forEach(({ date, symbol, profit }) => {
-      const cur = symbol.replace(/-?USD(T|C)$/, '')
+      const cur = symbol.replace(/-?USD(T|C)?$/, '')
       if (!seriesMap.has(cur)) {
         seriesMap.set(cur, Array(dates.length).fill(null))
       }
