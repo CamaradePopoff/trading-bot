@@ -18,7 +18,11 @@ function parseNumeric(value, fallback = 0) {
 // Helper function to create a signature
 function createSignature(apiSecret, endpoint, params, nonce) {
   const message =
-    endpoint + crypto.createHash('sha256').update(nonce + JSON.stringify(params)).digest()
+    endpoint +
+    crypto
+      .createHash('sha256')
+      .update(nonce + JSON.stringify(params))
+      .digest()
   return crypto
     .createHmac('sha512', Buffer.from(apiSecret, 'base64'))
     .update(message)
@@ -75,9 +79,7 @@ async function makeRequest(
       body
     })
 
-    console.log(
-      `Kraken ${method} ${endpoint} - Status: ${response.status}`
-    )
+    console.log(`Kraken ${method} ${endpoint} - Status: ${response.status}`)
 
     let data
     try {
@@ -108,7 +110,13 @@ async function getTickers(user, pairs = []) {
   try {
     if (!pairs || pairs.length === 0) return {}
     const pairString = pairs.join(',')
-    const result = await makeRequest(user, '/0/public/Ticker', 'GET', { pair: pairString }, true)
+    const result = await makeRequest(
+      user,
+      '/0/public/Ticker',
+      'GET',
+      { pair: pairString },
+      true
+    )
     return result || {}
   } catch (error) {
     logger.error(`getTickers error: ${error.message}`)
@@ -120,8 +128,14 @@ async function getCurrentPrice(user, symbol) {
   try {
     // Convert symbol to Kraken pair format (e.g., BTC-USDT -> XBTUSDT)
     const krakenPair = symbol.replace('-', '').replace(/USDT/, 'USD')
-    const result = await makeRequest(user, '/0/public/Ticker', 'GET', { pair: krakenPair }, true)
-    
+    const result = await makeRequest(
+      user,
+      '/0/public/Ticker',
+      'GET',
+      { pair: krakenPair },
+      true
+    )
+
     if (result && result[krakenPair]) {
       const price = parseFloat(result[krakenPair].c[0])
       return price > 0 ? price : 0
@@ -135,8 +149,14 @@ async function getCurrentPrice(user, symbol) {
 
 async function getTradingPairs(user, assetPair) {
   try {
-    const result = await makeRequest(user, '/0/public/AssetPairs', 'GET', {}, true)
-    
+    const result = await makeRequest(
+      user,
+      '/0/public/AssetPairs',
+      'GET',
+      {},
+      true
+    )
+
     if (!result) return []
 
     const pairs = Object.entries(result)
@@ -160,7 +180,13 @@ async function getTradingPairs(user, assetPair) {
 
 async function getTradingPairFee(user, symbol) {
   try {
-    const result = await makeRequest(user, '/0/private/TradeVolume', 'POST', {}, false)
+    const result = await makeRequest(
+      user,
+      '/0/private/TradeVolume',
+      'POST',
+      {},
+      false
+    )
     // Kraken returns maker/taker fees in the response
     if (result && result.fees) {
       // Default to 0.26% maker fee if not found
@@ -175,8 +201,14 @@ async function getTradingPairFee(user, symbol) {
 
 async function getMinimumSize(user, symbol) {
   try {
-    const result = await makeRequest(user, '/0/public/AssetPairs', 'GET', {}, true)
-    
+    const result = await makeRequest(
+      user,
+      '/0/public/AssetPairs',
+      'GET',
+      {},
+      true
+    )
+
     if (!result || !result[symbol]) return 0
 
     const pair = result[symbol]
@@ -191,8 +223,14 @@ async function getMinimumSize(user, symbol) {
 
 async function getAccountBalances(user) {
   try {
-    const result = await makeRequest(user, '/0/private/Balance', 'POST', {}, false)
-    
+    const result = await makeRequest(
+      user,
+      '/0/private/Balance',
+      'POST',
+      {},
+      false
+    )
+
     if (!result) return {}
 
     const balances = {}
@@ -247,7 +285,13 @@ async function placeOrder(user, symbol, side, orderType, price, amount) {
       params.price = price.toString()
     }
 
-    const result = await makeRequest(user, '/0/private/AddOrder', 'POST', params, false)
+    const result = await makeRequest(
+      user,
+      '/0/private/AddOrder',
+      'POST',
+      params,
+      false
+    )
 
     if (result && result.txid && result.txid.length > 0) {
       return {
@@ -258,7 +302,7 @@ async function placeOrder(user, symbol, side, orderType, price, amount) {
         amount,
         dealSize: amount,
         dealFunds: (price || 0) * amount,
-        fee: ((price || 0) * amount * 0.0026) // Default fee
+        fee: (price || 0) * amount * 0.0026 // Default fee
       }
     }
     return null
