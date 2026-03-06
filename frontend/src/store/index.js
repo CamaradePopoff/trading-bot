@@ -63,9 +63,9 @@ export const useMainStore = defineStore('main', {
       Kraken: {
         name: 'Kraken',
         url: 'https://www.kraken.com/en-us/features/crypto-trading',
-        tradingAsset: 'USD',
+        tradingAsset: 'USDC',
         tokenAsset: 'XBT',
-        tokenPair: 'XBTUSD',
+        tokenPair: 'XBTUSDC',
         id: null,
         apiKey: null,
         apiSecret: null,
