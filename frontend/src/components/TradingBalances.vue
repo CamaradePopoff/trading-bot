@@ -39,7 +39,7 @@
       <span :class="bal.currency.toUpperCase() === main.exchangeAsset ? 'text-primary' : 'text-grey'">{{ main.usdtRound(bal.available) }}</span>
       <v-spacer />
       <div
-        v-if="!main.exchangeTokenPair.includes('?') && bal.currency.toUpperCase() === main.exchangeToken"
+        v-if="main.exchangeToken && main.exchangeTokenPair && bal.currency.toUpperCase() === main.exchangeToken"
         style="margin-top: -1px"
       >
         <v-tooltip
@@ -89,7 +89,7 @@
         >{{ bal.currency }}</span>
         <span :class="bal.currency.toUpperCase() === main.exchangeAsset ? 'text-primary' : 'text-grey'">{{ bal.available }}</span>
         <div
-          v-if="!main.exchangeTokenPair.includes('?') && bal.currency.toUpperCase() === main.exchangeToken"
+          v-if="main.exchangeToken && main.exchangeTokenPair && bal.currency.toUpperCase() === main.exchangeToken"
           style="margin-top: -1px"
         >
           <v-tooltip
@@ -166,23 +166,34 @@ onUnmounted(()=>{
 
 const balances = computed(() => {
   if (!main.balances) return []
-  const filtered = props.filter.length === 0 
+  
+  // Filter out null values from the filter array
+  const validFilters = props.filter.filter(f => f !== null && f !== undefined)
+  
+  const filtered = validFilters.length === 0 
     ? main.balances 
-    : main.balances.filter(bal => props.filter.includes(bal.currency.toUpperCase()))
-        .sort((a, b) => props.filter.indexOf(a.currency) - props.filter.indexOf(b.currency))
+    : main.balances.filter(bal => validFilters.includes(bal.currency.toUpperCase()))
+        .sort((a, b) => validFilters.indexOf(a.currency) - validFilters.indexOf(b.currency))
   
-  // Check if exchangeToken is in the filtered list
-  const hasExchangeToken = filtered.some(bal => bal.currency.toUpperCase() === main.exchangeToken.toUpperCase())
-  
-  // If exchangeToken is not in the list, prepend it with 0 balance
-  if (!hasExchangeToken && main.exchangeToken) {
-    return [{ currency: main.exchangeToken, available: 0 }, ...filtered]
+  // Only add exchangeToken if it exists (not null for exchanges like Kraken)
+  if (main.exchangeToken) {
+    // Check if exchangeToken is in the filtered list
+    const hasExchangeToken = filtered.some(bal => bal.currency.toUpperCase() === main.exchangeToken.toUpperCase())
+    
+    // If exchangeToken is not in the list, prepend it with 0 balance
+    if (!hasExchangeToken) {
+      return [{ currency: main.exchangeToken, available: 0 }, ...filtered]
+    }
   }
   
   return filtered
 })
 
 const buyExchangeToken = () => {
+  if (!main.exchangeTokenPair) {
+    console.warn('Cannot buy exchange token: no token pair configured')
+    return
+  }
   const minAmount = main.exchanges[main.exchange]?.minOrderAmount
   currencyService.buyCrypto(main.exchangeTokenPair, minAmount).then(() => {
     main.getBalances()

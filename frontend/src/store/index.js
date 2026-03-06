@@ -64,8 +64,8 @@ export const useMainStore = defineStore('main', {
         name: 'Kraken',
         url: 'https://www.kraken.com/en-us/features/crypto-trading',
         tradingAsset: 'USD',
-        tokenAsset: 'XBT',
-        tokenPair: 'XBTUSD',
+        tokenAsset: null, // Kraken doesn't have a native token
+        tokenPair: null,
         id: null,
         apiKey: null,
         apiSecret: null,
@@ -259,11 +259,11 @@ export const useMainStore = defineStore('main', {
     },
     exchangeToken: (state) => {
       const exchange = state.exchangeByName(state.exchange)
-      return exchange ? exchange.tokenAsset : '???'
+      return exchange ? exchange.tokenAsset : null
     },
     exchangeTokenPair: (state) => {
       const exchange = state.exchangeByName(state.exchange)
-      return exchange ? exchange.tokenPair : '???-USDT'
+      return exchange ? exchange.tokenPair : null
     },
     isVipFeeExchange: (state) => {
       return !['kucoin'].includes(state.exchange?.toLowerCase())

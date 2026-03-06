@@ -552,7 +552,9 @@ onUnmounted(() => {
 })
 
 const buildSymbol = (currency) => {
-  const separator = main.exchangeTokenPair.includes('-') ? '-' : ''
+  // For exchanges without token pairs (like Kraken with null tokenPair),
+  // use empty separator and trading asset
+  const separator = main.exchangeTokenPair && main.exchangeTokenPair.includes('-') ? '-' : ''
   return `${currency}${separator}${main.exchangeAsset}`
 }
 

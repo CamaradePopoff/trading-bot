@@ -99,17 +99,8 @@ async function makeRequest(
       // Using milliseconds since epoch ensures it's always increasing
       const nonce = Date.now().toString()
       params.nonce = nonce
-
-      // Log params before converting to body
-      logger.info(`Kraken Params: ${JSON.stringify(params)}`)
-
       body = new URLSearchParams(params).toString()
-
-      logger.info(`Kraken ${endpoint} - Body: ${body}`)
-      logger.info(`Kraken ${endpoint} - Nonce value: ${nonce}`)
-
       const signature = createSignature(apiSecret, endpoint, body, nonce)
-
       headers['API-Sign'] = signature
       headers['API-Key'] = apiKey
     }
@@ -269,32 +260,55 @@ async function getTradingPairFee(user, symbol) {
       .replace(/USDT/, 'USD') // Kraken uses USD, not USDT
       .toUpperCase()
 
+    // Kraken fee calculation:
+    // - No platform token discounts (unlike Binance BNB, KuCoin KCS, etc.)
+    // - Fees are based purely on 30-day volume tier
+    // - VIP levels (0-6) provide progressive fee reductions based on volume
+    // - TradeVolume endpoint returns current user fees including volume tier
     const result = await makeRequest(
       user,
       '/0/private/TradeVolume',
       'POST',
-      {},
+      { pair: krakenPair },
       false
     )
 
     if (!result || !result.fees) {
       logger.warn(`No fee data found for ${symbol}, using default 0.26%`)
-      return 0.0026
+      return {
+        takerFeeRate: 0.0026,
+        platformTokenDiscount: false // Kraken doesn't offer fee discounts for holding platform tokens
+      }
     }
 
-    // Kraken returns fees as an object with pair names as keys
-    // Each pair has maker and taker fees
+    // Kraken returns fees in format:
+    // {
+    //   "fees": { "ACUUSD": { "fee": "0.4000", ... } },     // taker fees
+    //   "fees_maker": { "ACUUSD": { "fee": "0.2300", ... } } // maker fees
+    // }
+    // Fee values are percentages as strings (e.g., "0.4000" = 0.4%)
+    
     if (result.fees[krakenPair]) {
-      const pairFees = result.fees[krakenPair]
-      // Use taker fee (typically higher than maker fee)
-      const takerFee = parseFloat(pairFees[1]) / 100 // Convert from percentage to decimal
-      return takerFee > 0 ? takerFee : 0.0026
+      const takerFeePercent = parseFloat(result.fees[krakenPair].fee)
+      const takerFee = takerFeePercent / 100 // Convert percentage to decimal
+
+      return {
+        takerFeeRate: takerFee > 0 ? takerFee : 0.0026,
+        platformTokenDiscount: false // Kraken doesn't offer fee discounts for holding platform tokens
+      }
     }
 
-    return 0.0026 // Default Kraken fee
+    logger.warn(`Trading pair ${krakenPair} not found in fees, using default 0.26%`)
+    return {
+      takerFeeRate: 0.0026, // Default Kraken fee (0.26% taker for base tier)
+      platformTokenDiscount: false
+    }
   } catch (error) {
     logger.error(`getTradingPairFee error: ${error.message}`)
-    return 0.0026
+    return {
+      takerFeeRate: 0.0026,
+      platformTokenDiscount: false
+    }
   }
 }
 
@@ -311,9 +325,11 @@ async function getMinimumSize(user, symbol) {
       user,
       '/0/public/AssetPairs',
       'GET',
-      {},
+      { pair: krakenPair },
       true
     )
+
+    console.log(`getMinimumSize - result for ${krakenPair}:`, result)
 
     if (!result || !result[krakenPair]) {
       logger.warn(`Trading pair ${krakenPair} not found, using default minimum`)
@@ -340,8 +356,6 @@ async function getAccountBalances(user) {
       false
     )
     if (!result) return []
-
-    console.log(`Raw balance data from Kraken: ${JSON.stringify(result)}`)
 
     const balances = {}
 
@@ -391,9 +405,6 @@ async function getAccountBalances(user) {
         available: b.available
       }))
 
-    logger.info(
-      `getAccountBalances - Formatted balances: ${JSON.stringify(balancesArray)}`
-    )
     return balancesArray
   } catch (error) {
     logger.error(`getAccountBalances error: ${error.message}`)
