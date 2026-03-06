@@ -177,15 +177,18 @@ async function makeRequest(
 async function getTickers(user, pairs = []) {
   try {
     if (!pairs || pairs.length === 0) return {}
-    // Convert all pairs to Kraken format
-    const krakenPairs = pairs.map((p) =>
-      p
-        .replace('-', '')
-        .replace(/^BTC/, 'XBT') // Kraken uses XBT for Bitcoin
-        .replace(/USDT?$/, 'USD') // Kraken uses USD, not USDT or UST
-        .replace(/USDC$/, 'USD') // Kraken uses USD, not USDC
-        .toUpperCase()
-    )
+    // Convert all pairs to Kraken format and skip quote-only symbols (e.g., USD)
+    const krakenPairs = pairs
+      .filter((p) => p && String(p).includes('-'))
+      .map((p) =>
+        p
+          .replace('-', '')
+          .replace(/^BTC/, 'XBT') // Kraken uses XBT for Bitcoin
+          .replace(/USDT?$/, 'USD') // Kraken uses USD, not USDT or UST
+          .replace(/USDC$/, 'USD') // Kraken uses USD, not USDC
+          .toUpperCase()
+      )
+    if (krakenPairs.length === 0) return {}
     const pairString = krakenPairs.join(',')
     const result = await makeRequest(
       user,
@@ -204,8 +207,12 @@ async function getTickers(user, pairs = []) {
 
 async function getCurrentPrice(user, symbol) {
   try {
+    const normalizedSymbol = String(symbol || '').toUpperCase()
+    // Quote asset itself should be treated as 1:1
+    if (/^USD(T|C)?$/.test(normalizedSymbol)) return 1
+
     // Convert symbol to Kraken pair format (e.g., BTC-USD -> XBTUSD, ADA-USD -> ADAUSD)
-    let krakenPair = symbol
+    let krakenPair = normalizedSymbol
       .replace('-', '')
       .replace(/^BTC/, 'XBT') // Kraken uses XBT for Bitcoin
       .replace(/USDT?$/, 'USD') // Kraken uses USD, not USDT or UST
