@@ -182,7 +182,8 @@ async function getTickers(user, pairs = []) {
       p
         .replace('-', '')
         .replace(/^BTC/, 'XBT') // Kraken uses XBT for Bitcoin
-        .replace(/USDT/, 'USD') // Kraken uses USD, not USDT
+        .replace(/USDT?$/, 'USD') // Kraken uses USD, not USDT or UST
+        .replace(/USDC$/, 'USD') // Kraken uses USD, not USDC
         .toUpperCase()
     )
     const pairString = krakenPairs.join(',')
@@ -203,11 +204,12 @@ async function getTickers(user, pairs = []) {
 
 async function getCurrentPrice(user, symbol) {
   try {
-    // Convert symbol to Kraken pair format (e.g., BTC-USD -> XBTUSD)
-    const krakenPair = symbol
+    // Convert symbol to Kraken pair format (e.g., BTC-USD -> XBTUSD, ADA-USD -> ADAUSD)
+    let krakenPair = symbol
       .replace('-', '')
       .replace(/^BTC/, 'XBT') // Kraken uses XBT for Bitcoin
-      .replace(/USDT/, 'USD') // Kraken uses USD, not USDT
+      .replace(/USDT?$/, 'USD') // Kraken uses USD, not USDT or UST
+      .replace(/USDC$/, 'USD') // Kraken uses USD, not USDC
       .toUpperCase()
 
     const result = await makeRequest(
@@ -218,9 +220,14 @@ async function getCurrentPrice(user, symbol) {
       true
     )
 
-    if (result && result[krakenPair]) {
-      const price = parseFloat(result[krakenPair].c[0])
-      return price > 0 ? price : 0
+    if (result) {
+      // Kraken may return the pair with a different key (e.g., prefixes)
+      // Try exact match first, then use the first available key
+      const pairKey = Object.keys(result)[0]
+      if (pairKey && result[pairKey] && result[pairKey].c) {
+        const price = parseFloat(result[pairKey].c[0])
+        return price > 0 ? price : 0
+      }
     }
     return 0
   } catch (error) {
@@ -293,7 +300,8 @@ async function getTradingPairFee(user, symbol) {
     const krakenPair = symbol
       .replace('-', '')
       .replace(/^BTC/, 'XBT') // Kraken uses XBT for Bitcoin
-      .replace(/USDT/, 'USD') // Kraken uses USD, not USDT
+      .replace(/USDT?$/, 'USD') // Kraken uses USD, not USDT or UST
+      .replace(/USDC$/, 'USD') // Kraken uses USD, not USDC
       .toUpperCase()
 
     // Kraken fee calculation:
@@ -324,8 +332,13 @@ async function getTradingPairFee(user, symbol) {
     // }
     // Fee values are percentages as strings (e.g., "0.4000" = 0.4%)
 
-    if (result.fees[krakenPair]) {
-      const takerFeePercent = parseFloat(result.fees[krakenPair].fee)
+    // Kraken may return the pair with a different key, try exact match first, then use first available
+    const feePairKey = result.fees[krakenPair]
+      ? krakenPair
+      : Object.keys(result.fees)[0]
+
+    if (feePairKey && result.fees[feePairKey]) {
+      const takerFeePercent = parseFloat(result.fees[feePairKey].fee)
       const takerFee = takerFeePercent / 100 // Convert percentage to decimal
 
       return {
@@ -383,7 +396,8 @@ async function getMinimumSize(user, symbol) {
     const krakenPair = symbol
       .replace('-', '')
       .replace(/^BTC/, 'XBT') // Kraken uses XBT for Bitcoin
-      .replace(/USDT/, 'USD') // Kraken uses USD, not USDT
+      .replace(/USDT?$/, 'USD') // Kraken uses USD, not USDT or UST
+      .replace(/USDC$/, 'USD') // Kraken uses USD, not USDC
       .toUpperCase()
 
     const result = await makeRequest(
@@ -394,12 +408,21 @@ async function getMinimumSize(user, symbol) {
       true
     )
 
-    if (!result || !result[krakenPair]) {
+    if (!result) {
       logger.warn(`Trading pair ${krakenPair} not found, using default minimum`)
       return 0.0001
     }
 
-    const pair = result[krakenPair]
+    // Kraken may return the pair with a different key, use first available
+    const pairKey = Object.keys(result)[0]
+    if (!pairKey || !result[pairKey]) {
+      logger.warn(
+        `Trading pair ${krakenPair} not found in result, using default minimum`
+      )
+      return 0.0001
+    }
+
+    const pair = result[pairKey]
     // Kraken returns ordermin as the minimum order value for the pair
     const minSize = parseFloat(pair.ordermin) || 0.0001
     return minSize
@@ -501,7 +524,8 @@ async function placeOrder(user, symbol, side, orderType, price, amount) {
     const krakenPair = symbol
       .replace('-', '')
       .replace(/^BTC/, 'XBT') // Kraken uses XBT for Bitcoin
-      .replace(/USDT/, 'USD') // Kraken uses USD, not USDT
+      .replace(/USDT?$/, 'USD') // Kraken uses USD, not USDT or UST
+      .replace(/USDC$/, 'USD') // Kraken uses USD, not USDC
       .toUpperCase()
 
     const params = {
@@ -522,6 +546,8 @@ async function placeOrder(user, symbol, side, orderType, price, amount) {
       params,
       false
     )
+
+    console.log('Kraken placeOrder result:', JSON.stringify(result, null, 2))
 
     if (result && result.txid && result.txid.length > 0) {
       return {
