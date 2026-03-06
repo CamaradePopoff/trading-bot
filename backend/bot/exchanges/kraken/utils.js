@@ -22,30 +22,17 @@ function createSignature(apiSecret, endpoint, body, nonce) {
   try {
     // Step 1: SHA256(nonce + POST_data)
     const encoded = nonce + body
-    logger.info(`Kraken Signature - Encoded (nonce + body): ${encoded}`)
-
     const sha256Hash = crypto.createHash('sha256').update(encoded).digest()
-
-    logger.info(
-      `Kraken Signature - SHA256 Hash (hex): ${sha256Hash.toString('hex')}`
-    )
 
     // Step 2: Concatenate endpoint + sha256Hash as binary string
     const message = endpoint + sha256Hash.toString('binary')
 
-    logger.info(
-      `Kraken Signature - Message (first 100 chars): ${Buffer.from(message, 'binary').toString('hex').substring(0, 100)}...`
-    )
-
     // Step 3: HMAC-SHA512(secret, message)
     const secretBuffer = Buffer.from(apiSecret, 'base64')
-    logger.info(`Kraken Signature - Secret length: ${secretBuffer.length}`)
 
     const hmac = crypto.createHmac('sha512', secretBuffer)
     hmac.update(message, 'binary')
     const signature = hmac.digest('base64')
-
-    logger.info(`Kraken Signature - Final Signature: ${signature}`)
 
     return signature
   } catch (error) {
@@ -83,19 +70,10 @@ async function makeRequest(
       }
     } else {
       // Private requests - use the specified exchangeName (default: Kraken)
-      logger.info(`Looking for exchange: ${exchangeName}`)
       const exchange = await userService.getExchangeByName(
         user._id,
         exchangeName
       )
-
-      logger.info(`Exchange found: ${exchange ? 'YES' : 'NO'}`)
-      if (exchange) {
-        logger.info(`Exchange has apiKey: ${exchange.apiKey ? 'YES' : 'NO'}`)
-        logger.info(
-          `Exchange has apiSecret: ${exchange.apiSecret ? 'YES' : 'NO'}`
-        )
-      }
 
       if (!exchange || !exchange.apiKey || !exchange.apiSecret) {
         const error = new Error(
@@ -105,23 +83,9 @@ async function makeRequest(
         throw error
       }
 
-      logger.info(
-        `Attempting to decode apiKey: ${exchange.apiKey.substring(0, 20)}...`
-      )
       const decodedKeyResult = userService.decodeData(exchange.apiKey)
-      logger.info(
-        `Decode result: ${JSON.stringify({ hasDecodedData: !!decodedKeyResult.decodedData, type: typeof decodedKeyResult.decodedData })}`
-      )
-
       const apiKey = decodedKeyResult.decodedData
       const apiSecret = userService.decodeData(exchange.apiSecret).decodedData
-
-      logger.info(
-        `apiKey value: ${apiKey ? apiKey.substring(0, 10) + '...' : 'UNDEFINED'}`
-      )
-      logger.info(
-        `apiSecret value: ${apiSecret ? 'EXISTS (length: ' + apiSecret.length + ')' : 'UNDEFINED'}`
-      )
 
       if (!apiKey || !apiSecret) {
         const error = new Error(
@@ -156,23 +120,23 @@ async function makeRequest(
       body
     })
 
-    logger.info(`=== Kraken Request Debug ===`)
-    logger.info(`Method: ${method}`)
-    logger.info(`URL: ${url}`)
-    logger.info(
-      `Headers: ${JSON.stringify(
-        {
-          'Content-Type': headers['Content-Type'],
-          'API-Key': headers['API-Key']?.substring(0, 10) + '...',
-          'API-Sign': headers['API-Sign']?.substring(0, 20) + '...'
-        },
-        null,
-        2
-      )}`
-    )
-    logger.info(`Body: ${body}`)
-    logger.info(`Response Status: ${response.status}`)
-    logger.info(`=== End Debug ===`)
+    // logger.info(`=== Kraken Request Debug ===`)
+    // logger.info(`Method: ${method}`)
+    // logger.info(`URL: ${url}`)
+    // logger.info(
+    //   `Headers: ${JSON.stringify(
+    //     {
+    //       'Content-Type': headers['Content-Type'],
+    //       'API-Key': headers['API-Key']?.substring(0, 10) + '...',
+    //       'API-Sign': headers['API-Sign']?.substring(0, 20) + '...'
+    //     },
+    //     null,
+    //     2
+    //   )}`
+    // )
+    // logger.info(`Body: ${body}`)
+    // logger.info(`Response Status: ${response.status}`)
+    // logger.info(`=== End Debug ===`)
 
     let data
     try {
