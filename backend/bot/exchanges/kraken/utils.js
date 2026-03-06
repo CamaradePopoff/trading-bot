@@ -6,6 +6,15 @@ require('dotenv').config()
 
 const exchangeBaseURL = 'https://api.kraken.com'
 
+// Nonce management for Kraken API
+// Kraken requires each nonce to be strictly greater than all previous nonces
+let lastNonce = Date.now() * 1000 // Start with microsecond precision
+function getNextNonce() {
+  const now = Date.now() * 1000
+  lastNonce = Math.max(now, lastNonce + 1)
+  return lastNonce.toString()
+}
+
 function jsRound(num) {
   return Math.round(1e15 * num) / 1e15
 }
@@ -96,8 +105,8 @@ async function makeRequest(
       }
 
       // Kraken requires nonce as an always increasing unsigned 64-bit integer
-      // Using milliseconds since epoch ensures it's always increasing
-      const nonce = Date.now().toString()
+      // Using a counter ensures it's always strictly increasing even for rapid requests
+      const nonce = getNextNonce()
       params.nonce = nonce
       body = new URLSearchParams(params).toString()
       const signature = createSignature(apiSecret, endpoint, body, nonce)
