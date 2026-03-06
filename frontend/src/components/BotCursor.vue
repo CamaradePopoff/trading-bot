@@ -148,10 +148,8 @@ const nextPurchasePrice = computed(() => {
     props.bot.config.emergencyUnlockThreshold > 0 &&
     props.bot.activeEmergencyPositions < (props.bot.config.emergencyUnlockPositions || 1)
   
-  // Base price from the next selling transaction
-  const basePrice = props.nextSellingTransaction
-    ? props.nextSellingTransaction.price
-    : props.bot.lastHighestPrice
+  // Bot logic always uses lastHighestPrice to determine next purchase price
+  const basePrice = props.bot.lastHighestPrice
   
   // For emergency positions, use emergency threshold
   if (isNextEmergency) {
