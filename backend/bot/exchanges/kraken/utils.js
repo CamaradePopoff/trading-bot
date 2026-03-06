@@ -525,6 +525,59 @@ async function getCryptoBalance(user, symbol) {
   }
 }
 
+async function getOrder(user, txid) {
+  const maxRetries = 5
+  let result
+  let retries = 0
+
+  try {
+    let response = await makeRequest(
+      user,
+      '/0/private/QueryOrders',
+      'POST',
+      { txid, trades: true },
+      false
+    )
+
+    if (response && Object.keys(response).length > 0) {
+      const orderId = Object.keys(response)[0]
+      result = response[orderId]
+      if (result) return result
+    }
+
+    // If not found in open/recent orders, try closed orders
+    while (!result && retries < maxRetries) {
+      retries++
+      await new Promise((resolve) => setTimeout(resolve, retries * 1000))
+      logger.warn(
+        `⚠️ Could not fetch order ${txid} for user ${user.username}, retry #${retries}...`
+      )
+
+      response = await makeRequest(
+        user,
+        '/0/private/QueryOrders',
+        'POST',
+        { txid, trades: true },
+        false
+      )
+
+      if (response && Object.keys(response).length > 0) {
+        const orderId = Object.keys(response)[0]
+        result = response[orderId]
+        if (result) return result
+      }
+    }
+
+    logger.error(
+      `❌ Could not fetch order ${txid} for user ${user.username} after ${retries} retries.`
+    )
+    return null
+  } catch (error) {
+    logger.error(`getOrder error for ${txid}: ${error.message}`)
+    return null
+  }
+}
+
 async function placeOrder(user, symbol, side, orderType, price, amount) {
   try {
     // Convert symbol to Kraken pair format (e.g., BTC-USD -> XBTUSD)
@@ -554,18 +607,60 @@ async function placeOrder(user, symbol, side, orderType, price, amount) {
       false
     )
 
-    console.log('Kraken placeOrder result:', JSON.stringify(result, null, 2))
-
     if (result && result.txid && result.txid.length > 0) {
+      const txid = result.txid[0]
+
+      // Fetch real order details using txid
+      const orderDetails = await getOrder(user, txid)
+
+      console.log(
+        `Order placed with txid: ${txid}, orderDetails: ${JSON.stringify(orderDetails, null, 2)}`
+      )
+
+      if (!orderDetails) {
+        logger.warn(
+          `Could not fetch order details for ${txid}, using estimated values`
+        )
+        return {
+          id: txid,
+          symbol: symbol,
+          side,
+          price: price || 0,
+          amount,
+          dealSize: amount,
+          dealFunds: (price || 0) * amount,
+          fee: (price || 0) * amount * 0.0026
+        }
+      }
+
+      // Kraken order response format:
+      // {
+      //   status: 'closed',
+      //   vol: '19.30569016',      // volume ordered
+      //   vol_exec: '19.30569016', // volume executed
+      //   cost: '5.0000',          // total cost in quote currency (USD)
+      //   fee: '0.013',            // fee paid
+      //   price: '0.259',          // average price
+      //   descr: { pair: 'ADAUSD', type: 'buy', ... }
+      // }
+
+      const dealFunds = parseNumeric(orderDetails.cost)
+      const dealSize = parseNumeric(orderDetails.vol_exec || orderDetails.vol)
+      const fee = parseNumeric(orderDetails.fee)
+      const avgPrice =
+        dealFunds > 0 && dealSize > 0
+          ? dealFunds / dealSize
+          : parseNumeric(orderDetails.price)
+
       return {
-        id: result.txid[0],
+        id: txid,
         symbol: symbol,
         side,
-        price: price || 0,
-        amount,
-        dealSize: amount,
-        dealFunds: (price || 0) * amount,
-        fee: (price || 0) * amount * 0.0026 // Default fee
+        price: avgPrice,
+        amount: dealSize,
+        dealSize: dealSize,
+        dealFunds: dealFunds,
+        fee: fee
       }
     }
     return null
@@ -579,14 +674,13 @@ async function buyCrypto(user, symbol, amount = null) {
   const crypto = amount || (await getMinimumSize(user, symbol))
   if (!crypto) return null
   const order = await placeOrder(user, symbol, 'buy', 'market', null, crypto)
-  console.log('Kraken buyCrypto order result:', JSON.stringify(order, null, 2))
   if (order) {
     const paid = parseFloat(order.dealFunds)
     const fee = parseFloat(order.fee)
     const amt = parseFloat(order.dealSize)
     const price = jsRound(paid / amt)
     logger.info(
-      `💲 Bought ${amt} ${symbol.replace(/([^-]+)-?USD(T|C)?$/, '$1')} at ${price} USDT (total: ${paid} USDT - fee ${fee} USDT).`
+      `💲 Bought ${amt} ${symbol.replace(/([^-]+)-?USD(T|C)?$/, '$1')} at ${price} USD (total: ${paid} USD - fee ${fee} USD).`
     )
     return order
   }
@@ -601,7 +695,7 @@ async function sellCrypto(user, symbol, amount) {
     const amt = parseFloat(order.dealSize)
     const price = jsRound(received / amt)
     logger.info(
-      `💲 Sold ${amt} ${symbol.replace(/([^-]+)-?USD(T|C)?$/, '$1')} at ${price} USDT (total: ${received} USDT - fee ${fee} USDT).`
+      `💲 Sold ${amt} ${symbol.replace(/([^-]+)-?USD(T|C)?$/, '$1')} at ${price} USD (total: ${received} USD - fee ${fee} USD).`
     )
     return order
   }
