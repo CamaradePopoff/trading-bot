@@ -340,6 +340,33 @@ async function getTradingPairFee(user, symbol) {
   }
 }
 
+async function getUserVipLevel(user) {
+  try {
+    // Kraken does not have platform-token fee discounts.
+    // Fees are volume-tier based and returned by TradeVolume.
+    const result = await makeRequest(
+      user,
+      '/0/private/TradeVolume',
+      'POST',
+      { pair: 'XBTUSD' },
+      false
+    )
+
+    if (!result || !result.fees) return 0.0026
+
+    // Prefer XBTUSD fee when present, otherwise use first returned taker fee.
+    const xbtUsdFee = result.fees.XBTUSD?.fee
+    const firstFee = Object.values(result.fees)[0]?.fee
+    const takerFeePercent = parseFloat(xbtUsdFee ?? firstFee)
+
+    if (!Number.isFinite(takerFeePercent) || takerFeePercent <= 0) return 0.0026
+    return takerFeePercent / 100
+  } catch (error) {
+    logger.error(`getUserVipLevel error: ${error.message}`)
+    return 0.0026
+  }
+}
+
 async function getMinimumSize(user, symbol) {
   try {
     // Convert symbol to Kraken pair format (e.g., BTC-USD -> XBTUSD)
@@ -549,6 +576,7 @@ module.exports = {
   placeOrder,
   getTradingPairs,
   getTradingPairFee,
+  getUserVipLevel,
   getMinimumSize,
   getAccountBalances,
   getCryptoBalance,
