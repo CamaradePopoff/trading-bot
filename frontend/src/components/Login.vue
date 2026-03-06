@@ -23,7 +23,7 @@
             </div>
             <div
               class="d-flex justify-center align-center bg-transparent text-white"
-              :class="mdAndUp ? 'mb-12' : ''"
+              :class="mdAndUp ? 'mt-2 mb-4' : ''"
             >
               <h3>{{ $t('common.welcomeToSubtitle') }}</h3>
             </div>
