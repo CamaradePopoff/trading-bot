@@ -238,10 +238,36 @@ async function getTradingPairs(user, assetPair) {
         // Filter for USD pairs (not USDC/USDT, only pure USD)
         return upper.endsWith('USD') && !upper.includes('SETTLED')
       })
-      .map(([key]) => ({
-        symbol: key,
-        name: key
-      }))
+      .map(([key, pairInfo]) => {
+        // Extract base asset (everything before USD)
+        const baseAsset = key.replace(/USD$/, '')
+        const lotDecimals = parseInt(pairInfo.lot_decimals, 10)
+        const pairDecimals = parseInt(pairInfo.pair_decimals, 10)
+        const tickSize = parseFloat(pairInfo.tick_size)
+        const baseIncrement =
+          jsRound(Number.isInteger(lotDecimals) && lotDecimals >= 0
+            ? Math.pow(10, -lotDecimals)
+            : parseFloat(pairInfo.ordermin) || 0.0001)
+        const priceIncrement = jsRound(
+          Number.isFinite(tickSize) && tickSize > 0
+            ? tickSize
+            : Number.isInteger(pairDecimals) && pairDecimals >= 0
+              ? Math.pow(10, -pairDecimals)
+              : 0.0001
+        )
+
+        return {
+          symbol: key,
+          baseAsset: baseAsset,
+          quoteAsset: 'USD',
+          // Kraken uses 'ordermin' for minimum order size
+          baseMinSize: parseFloat(pairInfo.ordermin) || 0.0001,
+          // Increment is 10^-lot_decimals
+          baseIncrement,
+          // Price increment uses tick_size when present, otherwise 10^-pair_decimals
+          priceIncrement
+        }
+      })
       .sort((a, b) => a.symbol.localeCompare(b.symbol))
 
     return pairs
@@ -287,7 +313,7 @@ async function getTradingPairFee(user, symbol) {
     //   "fees_maker": { "ACUUSD": { "fee": "0.2300", ... } } // maker fees
     // }
     // Fee values are percentages as strings (e.g., "0.4000" = 0.4%)
-    
+
     if (result.fees[krakenPair]) {
       const takerFeePercent = parseFloat(result.fees[krakenPair].fee)
       const takerFee = takerFeePercent / 100 // Convert percentage to decimal
@@ -298,7 +324,9 @@ async function getTradingPairFee(user, symbol) {
       }
     }
 
-    logger.warn(`Trading pair ${krakenPair} not found in fees, using default 0.26%`)
+    logger.warn(
+      `Trading pair ${krakenPair} not found in fees, using default 0.26%`
+    )
     return {
       takerFeeRate: 0.0026, // Default Kraken fee (0.26% taker for base tier)
       platformTokenDiscount: false
@@ -328,8 +356,6 @@ async function getMinimumSize(user, symbol) {
       { pair: krakenPair },
       true
     )
-
-    console.log(`getMinimumSize - result for ${krakenPair}:`, result)
 
     if (!result || !result[krakenPair]) {
       logger.warn(`Trading pair ${krakenPair} not found, using default minimum`)
@@ -506,9 +532,9 @@ async function sellCrypto(user, symbol, amount) {
   return null
 }
 
-async function botLog(user, botId, message) {
-  // Kraken doesn't have a dedicated logging API
-  logger.info(message)
+function botLog(botId, message, logger = console) {
+  const now = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+  if (logger) logger.info(`${now} - ${botId} - ${message}`)
 }
 
 async function getNews(user, lang = 'en') {
