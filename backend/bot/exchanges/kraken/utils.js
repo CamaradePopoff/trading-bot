@@ -253,10 +253,11 @@ async function getTradingPairs(user, assetPair) {
         const lotDecimals = parseInt(pairInfo.lot_decimals, 10)
         const pairDecimals = parseInt(pairInfo.pair_decimals, 10)
         const tickSize = parseFloat(pairInfo.tick_size)
-        const baseIncrement =
-          jsRound(Number.isInteger(lotDecimals) && lotDecimals >= 0
+        const baseIncrement = jsRound(
+          Number.isInteger(lotDecimals) && lotDecimals >= 0
             ? Math.pow(10, -lotDecimals)
-            : parseFloat(pairInfo.ordermin) || 0.0001)
+            : parseFloat(pairInfo.ordermin) || 0.0001
+        )
         const priceIncrement = jsRound(
           Number.isFinite(tickSize) && tickSize > 0
             ? tickSize
@@ -476,8 +477,13 @@ async function getAccountBalances(user) {
 
 async function getCryptoBalance(user, symbol) {
   try {
-    // Remove -USDT suffix if present
-    const asset = symbol.replace(/-?USD(T|C)?$/, '').toUpperCase()
+    // Handle when symbol IS the quote asset (USD, USDT, USDC)
+    // Otherwise remove the quote asset suffix (e.g., ADA-USD -> ADA)
+    let asset = symbol.toUpperCase()
+    if (!asset.match(/^USD(T|C)?$/)) {
+      // Not a quote asset itself, remove suffix
+      asset = asset.replace(/-?USD(T|C)?$/, '')
+    }
 
     const balances = await getAccountBalances(user)
     // balances is now an array, find the matching currency
