@@ -9,7 +9,7 @@
         <v-row>
           <v-col cols="12">
             <div
-              class="d-flex justify-center align-center bg-transparent mb-4"
+              class="d-flex justify-center align-center bg-transparent mb-1"
             >
               <v-icon
                 color="primary"
@@ -26,6 +26,25 @@
               :class="mdAndUp ? 'mb-12' : ''"
             >
               <h3>{{ $t('common.welcomeToSubtitle') }}</h3>
+            </div>
+            <div
+              class="d-flex justify-center align-center flex-wrap ga-3 my-2"
+            >
+              <v-tooltip
+                v-for="exchange in Object.keys(main.openExchanges)"
+                :key="exchange"
+                location="bottom"
+              >
+                <template #activator="{ props }">
+                  <img
+                    v-bind="props"
+                    style="height: 32px"
+                    :src="`/${main.exchanges[exchange]?.name?.toLowerCase()}.png`"
+                    :alt="exchange"
+                  >
+                </template>
+                <span>{{ main.exchanges[exchange]?.name || exchange }}</span>
+              </v-tooltip>
             </div>
           </v-col>
 
