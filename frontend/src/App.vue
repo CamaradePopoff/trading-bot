@@ -891,6 +891,12 @@ watch(
   () => main.exchange,
   (newExchange, oldExchange) => {
     if (!newExchange || newExchange === oldExchange || !oldExchange) return
+    
+    // If viewing a specific bot, return to bots list when exchange changes
+    if (route.path === '/bots' && route.query.id) {
+      router.push('/bots')
+    }
+    
     exchangeSwitchLoading.value = true
     refreshExchangeData()
   }
