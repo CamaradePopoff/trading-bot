@@ -572,6 +572,7 @@ async function buyCrypto(user, symbol, amount = null) {
   const crypto = amount || (await getMinimumSize(user, symbol))
   if (!crypto) return null
   const order = await placeOrder(user, symbol, 'buy', 'market', null, crypto)
+  console.log('Kraken buyCrypto order result:', JSON.stringify(order, null, 2))
   if (order) {
     const paid = parseFloat(order.dealFunds)
     const fee = parseFloat(order.fee)
