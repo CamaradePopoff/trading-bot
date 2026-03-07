@@ -124,7 +124,20 @@ export const useMainStore = defineStore('main', {
         apiPassphrase: null,
         disabled: false,
         favorites: []
-      }
+      },
+      'Crypto.com': {
+        name: 'Crypto.com',
+        url: 'https://crypto.com/exchange',
+        tradingAsset: 'USDT',
+        tokenAsset: 'CRO',
+        tokenPair: 'CRO-USDT',
+        id: null,
+        apiKey: null,
+        apiSecret: null,
+        apiPassphrase: null,
+        disabled: true,
+        favorites: []
+      },
     },
     exchange: null,
     kucoinFee: 0.001, // legacy

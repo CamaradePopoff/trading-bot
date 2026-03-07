@@ -5,6 +5,7 @@ const mexc = require('./exchanges/mexc/utils')
 const okx = require('./exchanges/okx/utils')
 const coinex = require('./exchanges/coinex/utils')
 const kraken = require('./exchanges/kraken/utils')
+const cryptocom = require('./exchanges/crypto.com/utils')
 
 console.log(`Loading code for exchange: ${process.env.BOT_EXCHANGE}`)
 module.exports = {
@@ -13,5 +14,7 @@ module.exports = {
   mexc,
   okx,
   coinex,
-  kraken
+  kraken,
+  cryptocom,
+  'crypto.com': cryptocom
 }[process.env.BOT_EXCHANGE]

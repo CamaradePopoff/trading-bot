@@ -37,12 +37,15 @@
                 location="bottom"
               >
                 <template #activator="{ props }">
-                  <img
-                    v-bind="props"
-                    style="height: 32px"
-                    :src="`/${main.exchanges[exchange]?.name?.toLowerCase()}.png`"
-                    :alt="exchange"
-                  >
+                  <div style="position: relative; display: inline-block;">
+                    <img
+                      v-bind="props"
+                      style="height: 34px; width: 34px;"
+                      :src="`/${main.exchanges[exchange]?.name?.toLowerCase()}.png`"
+                      :alt="exchange"
+                    >
+                    <div style="position: absolute; top: -1px; left: -1px; height: 36px; width: 36px; border: 2px solid white; border-radius: 50%; pointer-events: none;"></div>
+                  </div>
                 </template>
                 <span>{{ main.exchanges[exchange]?.name || exchange }}</span>
               </v-tooltip>
