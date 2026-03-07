@@ -4,79 +4,92 @@
       v-if="mdAndUp || main.user && main.user.username && main.token"
       v-show="main.user && main.user.username && main.token"
       app
-      :title="mdAndUp ? $t('common.welcomeToSubtitle') : ''"
       color="blue-grey-darken-4"
     >
       <template #prepend>
-        <v-app-bar-nav-icon @click="main.menuDrawer = !main.menuDrawer">
-          <div v-if="main.exchange">
-            <img
-              style="height: 36px"
-              :src="`/${main.exchange}.png`"
-              alt=""
-            >
-            <div
-              v-show="canSwitchExchange"
-              style="position: absolute; bottom: 0; right: 0;"
-            >
-              <v-menu
-                v-model="showExchangeMenu"
-                :close-on-content-click="true"
-                location="bottom"
+        <v-chip
+          class="mx-1 d-flex"
+          size="large"
+          style="width: 160px;"
+        >
+          <v-app-bar-nav-icon
+            :ripple="false"
+            style="margin: 4px 0 0 -20px;"
+            @click="main.menuDrawer = !main.menuDrawer"
+          >
+            <div v-if="main.exchange">
+              <img
+                style="height: 38px;"
+                :src="`/${main.exchange}.png`"
+                alt=""
               >
-                <template #activator="{ props: menuProps }">
-                  <v-tooltip
-                    location="bottom"
-                    content-class="text-caption"
-                  >
-                    <template #activator="{ props: tooltipProps }">
-                      <v-icon
-                        size="24"
-                        color="primary"
-                        class="bg-white rounded-circle"
-                        v-bind="{ ...menuProps, ...tooltipProps }"
-                      >
-                        mdi-swap-horizontal-circle
-                      </v-icon>
-                    </template>
-                    {{ $t('pages.app.switchExchange') }}
-                  </v-tooltip>
-                </template>
-                <v-list density="compact">
-                  <v-list-item
-                    v-for="([key, exchange]) in switchableExchanges"
-                    :key="key"
-                    @click="selectExchange(key.toLowerCase())"
-                  >
-                    <template #prepend>
-                      <img
-                        :src="`/${key.toLowerCase()}.png`"
-                        alt=""
-                        style="height: 24px; width: 24px; margin-right: 8px;"
-                      >
-                    </template>
-                    <v-list-item-title>{{ exchange.name }}</v-list-item-title>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
             </div>
+          </v-app-bar-nav-icon>
+          <div class="pl-1 pr-1 text-h8">
+            {{ main.exchangeName }}
           </div>
-        </v-app-bar-nav-icon>
+          <v-spacer />
+          <div
+            v-show="canSwitchExchange"
+            style="position: absolute; top: 6px; right: 7px;"
+          >
+            <v-menu
+              v-model="showExchangeMenu"
+              :close-on-content-click="true"
+              location="bottom"
+            >
+              <template #activator="{ props: menuProps }">
+                <v-tooltip
+                  location="bottom"
+                  content-class="text-caption"
+                >
+                  <template #activator="{ props: tooltipProps }">
+                    <v-icon
+                      size="24"
+                      color="error"
+                      class="brounded-circle"
+                      v-bind="{ ...menuProps, ...tooltipProps }"
+                    >
+                      mdi-swap-horizontal-circle
+                    </v-icon>
+                  </template>
+                  {{ $t('pages.app.switchExchange') }}
+                </v-tooltip>
+              </template>
+              <v-list density="compact">
+                <v-list-item
+                  v-for="([key, exchange]) in switchableExchanges"
+                  :key="key"
+                  @click="selectExchange(key.toLowerCase())"
+                >
+                  <template #prepend>
+                    <img
+                      :src="`/${key.toLowerCase()}.png`"
+                      alt=""
+                      style="height: 24px; width: 24px; margin-right: 8px;"
+                    >
+                  </template>
+                  <v-list-item-title>{{ exchange.name }}</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </div>
+        </v-chip>
+        <v-spacer class="text-grey-darken-2 ml-1">
+          <h1 v-if="mdAndUp">
+            |
+          </h1>
+        </v-spacer>
         <BotBrand
           v-if="mdAndUp"
           text
         />
         <div
-          v-else
-          id="bot-cursor-slot"
-          class="ml-4 mt-12"
-          style="width: calc(100vw - 278px);"
-        />
-        <v-spacer class="text-grey-darken-2 ml-7">
-          <h1 v-if="mdAndUp">
-            |
-          </h1>
-        </v-spacer>
+          v-if="mdAndUp"
+          class="ml-2 text-h6"
+        >
+          {{ ' - ' + $t('common.welcomeToSubtitle') }}
+        </div>
       </template>
 
       <template v-if="main.user">
@@ -301,7 +314,7 @@
                 <v-icon icon="mdi-web" />
               </template>
               <v-list-item-title>
-                {{ main.exchangeByName(main.exchange).name }} <v-icon
+                {{ main.exchangeName }} <v-icon
                   icon="mdi-open-in-new"
                   color="primary"
                   size="mini"

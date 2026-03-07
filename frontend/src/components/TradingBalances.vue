@@ -30,7 +30,7 @@
       v-for="(bal, index) in balances"
       :key="index"
       class="d-flex bg-blue-grey-darken-3 px-2 py-1 mt-1"
-      style="border-radius:4px"
+      style="border-radius: 4px;"
     >
       <span
         :class="bal.currency.toUpperCase() === main.exchangeAsset ? 'text-primary font-weight-bold' : ''"

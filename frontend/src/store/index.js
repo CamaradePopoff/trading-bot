@@ -246,6 +246,11 @@ export const useMainStore = defineStore('main', {
     exchangeByName: (state) => (name) => {
       return Object.values(state.exchanges).find((e) => e.name.toLowerCase() === name.toLowerCase())
     },
+    exchangeName: (state) => {
+      if (!state.exchange) return null
+      const exchange = state.exchangeByName(state.exchange)
+      return exchange ? exchange.name : null
+    },
     exchangeUrl: (state) => {
       const exchange = state.exchangeByName(state.exchange)
       if (exchange && exchange.url) {

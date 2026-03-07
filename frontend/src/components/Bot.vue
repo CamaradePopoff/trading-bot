@@ -858,19 +858,6 @@
         </v-icon>
       </LogList>
     </v-dialog>
-    
-    <Teleport
-      v-if="!mdAndUp"
-      to="#bot-cursor-slot"
-    >
-      <BotCursor
-        v-if="nextPurchasePrice && nextSellingTransaction?.targetPrice"
-        :bot="bot"
-        dense
-        hide-details
-        :next-selling-transaction="nextSellingTransaction"
-      />
-    </Teleport>
   </template>
 </template>
 

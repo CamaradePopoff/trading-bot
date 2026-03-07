@@ -185,7 +185,7 @@ const getSymbolClass = (symbol) => {
 }
 
 const saveFavorites = async () => {
-  const exchangeName = main.exchangeByName(main.exchange).name
+  const exchangeName = main.exchangeName
   userService.updateFavorites(exchangeName, favorites.value).then((favs) => {
     main.exchanges[exchangeName].favorites = favs
   })

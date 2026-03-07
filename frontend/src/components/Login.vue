@@ -28,7 +28,8 @@
               <h3>{{ $t('common.welcomeToSubtitle') }}</h3>
             </div>
             <div
-              class="d-flex justify-center align-center flex-wrap ga-3 my-2"
+              class="d-flex justify-center align-center flex-wrap ga-2"
+              :class="mdAndUp ? 'my-2' : 'mt-2'"
             >
               <v-tooltip
                 v-for="exchange in Object.keys(main.openExchanges)"
@@ -53,7 +54,7 @@
               class="d-flex justify-center align-center bg-transparent"
             >
               <v-card
-                :width="mdAndUp ? 600 : 300"
+                :width="mdAndUp ? 600 : 240"
                 color="rgba(38, 50, 56, 0.85)"
                 class="backdrop-blur glow-card"
               >
@@ -68,7 +69,10 @@
                         md="6"
                         class="ma-0 pa-0"
                       >
-                        <div class="robot" />
+                        <div
+                          class="robot"
+                          :style="{ height: mdAndUp ? '300px' : '240px', width: mdAndUp ? '300px' : '240px' }"
+                        />
                       </v-col>
                       <v-col
                         cols="12"
@@ -77,10 +81,10 @@
                       >
                         <v-sheet
                           class="mx-auto"
-                          width="300"
+                          :width="mdAndUp ? 300 : 240"
                           color="transparent"
                         >
-                          <v-form width="300">
+                          <v-form :width="mdAndUp ? 300 : 240">
                             <div class="ma-4">
                               <div
                                 class="d-flex"
@@ -100,7 +104,7 @@
                                 :label="$t('components.userInfo.username')"
                                 variant="outlined"
                                 hide-details
-                                class="mb-5"
+                                :class="mdAndUp ? 'mb-5' : 'mb-4'"
                               />
                               <v-text-field
                                 v-model="password"
@@ -111,7 +115,7 @@
                                 :label="$t('components.userInfo.password')"
                                 variant="outlined"
                                 hide-details
-                                class="mb-5"
+                                :class="mdAndUp ? 'mb-5' : 'mb-4'"
                                 @click:append-inner="showPassword = !showPassword"
                               />
 
@@ -120,7 +124,7 @@
                                 :items="Object.keys(main.openExchanges)"
                                 variant="outlined"
                                 hide-details
-                                class="mb-5"
+                                :class="mdAndUp ? 'mb-5' : 'mb-4'"
                                 :density="mdAndUp ? 'default' : 'compact'"
                                 :label="$t('common.exchange')"
                               >
@@ -225,8 +229,6 @@ const login = async () => {
   background-image: url('/robot.jpg');
   background-size: contain;
   background-repeat: no-repeat;
-  height: 300px;
-  width: 300px;
   margin: 0 auto;
 }
 
