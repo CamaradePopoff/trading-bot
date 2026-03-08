@@ -41,4 +41,4 @@ echo "Starting PM2 processes..."
 echo "======================================"
 
 cd "$BASE_DIR"
-cd kucoin && pm2 start backend/index.js --name kucoin && cd .. && cd binance && pm2 start backend/index.js --name binance && cd .. && cd mexc && pm2 start backend/index.js --name mexc && cd .. && cd coinex && pm2 start backend/index.js --name coinex && cd .. && cd kraken && pm2 start backend/index.js --name kraken && cd ..
+cd kucoin && pm2 start backend/index.js --name kucoin && cd .. && cd binance && pm2 start backend/index.js --name binance && cd .. && cd mexc && pm2 start backend/index.js --name mexc && cd .. && cd coinex && pm2 start backend/index.js --name coinex && cd .. && cd kraken && pm2 start backend/index.js --name kraken && cd .. && cd okx && pm2 start backend/index.js --name okx && cd ..
