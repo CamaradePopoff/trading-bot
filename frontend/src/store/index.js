@@ -103,13 +103,13 @@ export const useMainStore = defineStore('main', {
         name: 'OKX',
         url: 'https://www.okx.com/$LANG/balance',
         tradingAsset: 'USDT',
-        tokenAsset: 'OKB',
-        tokenPair: 'OKB-USDT',
+        tokenAsset: null,
+        tokenPair: null,
         id: null,
         apiKey: null,
         apiSecret: null,
         apiPassphrase: null,
-        disabled: true,
+        disabled: false,
         favorites: []
       },
       CoinEX: {

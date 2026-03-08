@@ -4,7 +4,9 @@ const logger = require('../../../logger')
 const userService = require('../../../services/user-service')(null, logger)
 require('dotenv').config()
 
-const exchangeBaseURL = 'https://www.okx.com'
+// For EEA users, please change your API request domain name to eea.okx.com instead of www.okx.com
+// For US users, please change your API request domain name to us.okx.com instead of www.okx.com
+const exchangeBaseURL = 'https://eea.okx.com'
 const OKX_SPOT_FEE_RATE = 0.001
 
 function jsRound(num) {
@@ -32,16 +34,46 @@ function getQuoteAssetFromSymbol(symbol) {
   return knownQuotes.find((q) => upper.endsWith(q)) || ''
 }
 
+function normalizeInstId(symbol) {
+  const upper = String(symbol || '').toUpperCase()
+  if (!upper) return upper
+
+  if (upper.includes('-')) {
+    const [base] = upper.split('-')
+    return `${base}-USDT`
+  }
+
+  return `${upper}-USDT`
+}
+
 async function getExchangeApiKeys(user) {
   const exchange = await userService.getExchangeByName(
     user._id,
     process.env.BOT_EXCHANGE
   )
 
+  if (!exchange) {
+    throw new Error(
+      'OKX API keys not configured. Please add your API key, secret and passphrase in Account settings.'
+    )
+  }
+
+  const apiKey = userService.decodeData(exchange.apiKey).decodedData?.trim()
+  const apiSecret = userService.decodeData(exchange.apiSecret).decodedData?.trim()
+  const apiPassphrase = userService
+    .decodeData(exchange.apiPassphrase)
+    .decodedData?.trim()
+
+  if (!apiKey || !apiSecret || !apiPassphrase) {
+    throw new Error(
+      'Incomplete OKX credentials. Please ensure API key, secret, and passphrase are all set correctly.'
+    )
+  }
+
   return {
-    apiKey: userService.decodeData(exchange.apiKey).decodedData,
-    apiSecret: userService.decodeData(exchange.apiSecret).decodedData,
-    apiPassphrase: userService.decodeData(exchange.apiPassphrase).decodedData
+    apiKey,
+    apiSecret,
+    apiPassphrase
   }
 }
 
@@ -63,12 +95,22 @@ async function makeRequest(
     let body = ''
 
     if (normalizedMethod === 'GET' && Object.keys(params).length > 0) {
-      const queryString = new URLSearchParams(params).toString()
+      const sanitizedParams = Object.entries(params || {}).reduce(
+        (acc, [key, value]) => {
+          if (value !== undefined && value !== null && value !== '') {
+            acc[key] = String(value)
+          }
+          return acc
+        },
+        {}
+      )
+      const queryString = new URLSearchParams(sanitizedParams).toString()
       requestPath = `${endpoint}?${queryString}`
     }
 
     if (normalizedMethod !== 'GET') {
-      body = JSON.stringify(params || {})
+      body =
+        params && Object.keys(params).length > 0 ? JSON.stringify(params) : ''
     }
 
     if (requiresAuth) {
@@ -87,30 +129,60 @@ async function makeRequest(
       headers['OK-ACCESS-SIGN'] = signature
       headers['OK-ACCESS-TIMESTAMP'] = timestamp
       headers['OK-ACCESS-PASSPHRASE'] = apiPassphrase
+
+      if (
+        process.env.OKX_ENABLE_ACCESS_PROJECT === '1' &&
+        process.env.OKX_ACCESS_PROJECT
+      ) {
+        headers['OK-ACCESS-PROJECT'] = process.env.OKX_ACCESS_PROJECT
+      }
     }
 
-    const response = await fetch(`${exchangeBaseURL}${requestPath}`, {
-      method: normalizedMethod,
-      headers,
-      body: normalizedMethod === 'GET' ? undefined : body
-    })
+    const executeRequest = async (baseURL) => {
+      const requestHeaders = { ...headers }
 
-    let data
-    try {
-      data = await response.json()
-    } catch (parseError) {
-      const error = new Error(
-        `OKX response parse error: HTTP ${response.status}`
-      )
-      error.statusCode = response.status
-      throw error
+      const response = await fetch(`${baseURL}${requestPath}`, {
+        method: normalizedMethod,
+        headers: requestHeaders,
+        body: normalizedMethod === 'GET' || body === '' ? undefined : body
+      })
+
+      let data
+      try {
+        data = await response.json()
+      } catch (parseError) {
+        const error = new Error(
+          `OKX response parse error: HTTP ${response.status}`
+        )
+        error.statusCode = response.status
+        throw error
+      }
+
+      return { response, data }
     }
+
+    let { response, data } = await executeRequest(exchangeBaseURL)
 
     if (!response.ok) {
       const message = data?.msg || data?.message || response.statusText
       const error = new Error(`HTTP ${response.status}: ${message}`)
       error.statusCode = response.status
       error.apiError = data
+      error.requestMeta = {
+        endpoint,
+        method: normalizedMethod,
+        usedProjectHeader: Boolean(process.env.OKX_ACCESS_PROJECT)
+      }
+
+      if (
+        response.status === 401 &&
+        String(message).toLowerCase().includes("api key doesn't exist")
+      ) {
+        logger.error(
+          'OKX auth hint: verify API key IP whitelist (must include this server public IP), and key permissions (Read/Trade as needed).'
+        )
+      }
+
       throw error
     }
 
@@ -118,25 +190,41 @@ async function makeRequest(
       const error = new Error(`OKX API Error ${data.code}: ${data.msg}`)
       error.apiError = data
       error.errorCode = data.code
+      error.requestMeta = {
+        endpoint,
+        method: normalizedMethod,
+        usedProjectHeader: Boolean(process.env.OKX_ACCESS_PROJECT)
+      }
       throw error
     }
 
     return data
   } catch (error) {
-    logger.error(`Error making OKX request: ${error.message || error}`)
+    const extra = {
+      statusCode: error?.statusCode,
+      errorCode: error?.errorCode,
+      apiMessage: error?.apiError?.msg || error?.apiError?.message,
+      endpoint: error?.requestMeta?.endpoint,
+      method: error?.requestMeta?.method,
+      usedProjectHeader: error?.requestMeta?.usedProjectHeader
+    }
+    logger.error(
+      `Error making OKX request: ${error.message || error} | ${JSON.stringify(extra)}`
+    )
     throw error
   }
 }
 
 async function getOrderFills(user, instId, ordId) {
   const maxRetries = 5
+  const normalizedInstId = normalizeInstId(instId)
 
   for (let retry = 0; retry < maxRetries; retry++) {
     const fillsResponse = await makeRequest(
       user,
       '/api/v5/trade/fills',
       'GET',
-      { instId, ordId },
+      { instId: normalizedInstId, ordId },
       true
     )
 
@@ -189,11 +277,17 @@ function botLog(botId, message, logger = console) {
 
 async function getCurrentPrice(user, symbol) {
   try {
+    const normalizedSymbol = String(symbol || '').toUpperCase()
+    if (/^USD(C|T)?$/.test(normalizedSymbol)) {
+      return 1
+    }
+
+    const normalizedInstId = normalizeInstId(symbol)
     const response = await makeRequest(
       user,
       '/api/v5/market/ticker',
       'GET',
-      { instId: symbol },
+      { instId: normalizedInstId },
       false
     )
 
@@ -237,7 +331,7 @@ async function getTradingPairFee(user, symbol) {
   const feeRate = await getUserVipLevel(user)
   return {
     takerFeeRate: feeRate,
-    kcsDeductFee: false
+    okbDeductFee: false
   }
 }
 
@@ -279,11 +373,12 @@ async function getCryptoBalance(user, asset) {
 
 async function getMinimumSize(user, symbol) {
   try {
+    const normalizedInstId = normalizeInstId(symbol)
     const response = await makeRequest(
       user,
       '/api/v5/public/instruments',
       'GET',
-      { instType: 'SPOT', instId: symbol },
+      { instType: 'SPOT', instId: normalizedInstId },
       false
     )
 
@@ -308,9 +403,10 @@ async function placeOrder(
 ) {
   const normalizedSide = side.toLowerCase()
   const normalizedType = type.toLowerCase()
+  const normalizedInstId = normalizeInstId(symbol)
 
   const params = {
-    instId: symbol,
+    instId: normalizedInstId,
     tdMode: 'cash',
     side: normalizedSide,
     ordType: normalizedType
@@ -351,7 +447,7 @@ async function placeOrder(
       throw new Error('Invalid OKX order response: missing ordId')
     }
 
-    const fills = await getOrderFills(user, symbol, order.ordId)
+    const fills = await getOrderFills(user, normalizedInstId, order.ordId)
 
     if (fills.length > 0) {
       return aggregateOrderFromFills(symbol, fills)
@@ -361,7 +457,7 @@ async function placeOrder(
       user,
       '/api/v5/trade/order',
       'GET',
-      { instId: symbol, ordId: order.ordId },
+      { instId: normalizedInstId, ordId: order.ordId },
       true
     )
 
