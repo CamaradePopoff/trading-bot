@@ -24,6 +24,170 @@ function parseNumeric(value, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback
 }
 
+// Kraken order validation cache (stores pair metadata)
+const pairMetadataCache = new Map()
+const CACHE_DURATION = 24 * 60 * 60 * 1000 // 24 hours
+
+async function getPairMetadata(user, krakenPair) {
+  const now = Date.now()
+  const cached = pairMetadataCache.get(krakenPair)
+  if (cached && now - cached.timestamp < CACHE_DURATION) {
+    return cached.data
+  }
+
+  try {
+    const result = await makeRequest(
+      user,
+      '/0/public/AssetPairs',
+      'GET',
+      { pair: krakenPair },
+      true
+    )
+
+    if (result && Object.keys(result).length > 0) {
+      const pairKey = Object.keys(result)[0]
+      const metadata = result[pairKey]
+      pairMetadataCache.set(krakenPair, {
+        data: metadata,
+        timestamp: now
+      })
+      return metadata
+    }
+  } catch (error) {
+    logger.warn(`getPairMetadata error for ${krakenPair}: ${error.message}`)
+  }
+  return null
+}
+
+// Comprehensive order validation following Kraken production standards
+async function validateOrder(user, krakenPair, side, price, amount) {
+  const validationErrors = []
+
+  try {
+    // Step 1: Get pair metadata
+    const metadata = await getPairMetadata(user, krakenPair)
+    if (!metadata) {
+      return { valid: false, errors: ['Cannot fetch pair metadata'] }
+    }
+
+    // Step 2: Check market status
+    const status = metadata.status
+    if (status && status !== 'online') {
+      validationErrors.push(
+        `Market status is "${status}" (only "online" accepts new orders)`
+      )
+      return { valid: false, errors: validationErrors }
+    }
+
+    // Step 3: Validate order size (amount >= ordermin)
+    const ordermin = parseNumeric(metadata.ordermin, 0.0001)
+    if (amount < ordermin) {
+      validationErrors.push(
+        `Order amount ${amount} is below minimum ${ordermin}`
+      )
+    }
+
+    // Step 4: Validate order value (price × amount >= costmin)
+    const costmin = parseNumeric(metadata.cost_min, 0.0)
+    const orderValue = price * amount
+    if (costmin > 0 && orderValue < costmin) {
+      validationErrors.push(
+        `Order value ${jsRound(orderValue)} USD is below minimum ${costmin} USD`
+      )
+    }
+
+    // Step 5: Apply precision rules
+    const lotDecimals = parseInt(metadata.lot_decimals, 10)
+    const pairDecimals = parseInt(metadata.pair_decimals, 10)
+
+    let precisionErrors = []
+    if (Number.isInteger(lotDecimals) && lotDecimals >= 0) {
+      const maxDecimals = lotDecimals
+      const amountStr = amount.toFixed(maxDecimals + 2)
+      const truncated =
+        Math.floor(amount * Math.pow(10, maxDecimals)) /
+        Math.pow(10, maxDecimals)
+      if (
+        truncated !==
+        parseNumeric(
+          amountStr.substring(0, amountStr.indexOf('.') + maxDecimals + 1)
+        )
+      ) {
+        precisionErrors.push(
+          `Amount precision mismatch: max ${maxDecimals} decimals allowed`
+        )
+      }
+    }
+
+    if (Number.isInteger(pairDecimals) && pairDecimals >= 0) {
+      const maxDecimals = pairDecimals
+      const priceStr = price.toFixed(maxDecimals + 2)
+      const truncated =
+        Math.floor(price * Math.pow(10, maxDecimals)) /
+        Math.pow(10, maxDecimals)
+      if (
+        truncated !==
+        parseNumeric(
+          priceStr.substring(0, priceStr.indexOf('.') + maxDecimals + 1)
+        )
+      ) {
+        precisionErrors.push(
+          `Price precision mismatch: max ${maxDecimals} decimals allowed`
+        )
+      }
+    }
+    validationErrors.push(...precisionErrors)
+
+    // Step 6: Apply tick size validation
+    const tickSize = parseNumeric(metadata.tick_size, 0)
+    if (tickSize > 0) {
+      const tickRemainder = (price * 10000) % (tickSize * 10000) // Avoid floating point precision issues
+      if (Math.abs(tickRemainder) > 0.01) {
+        validationErrors.push(
+          `Price ${price} does not align with tick size ${tickSize}`
+        )
+      }
+    }
+
+    // Step 7: Validate account balance
+    if (side === 'buy') {
+      const balance = await getCryptoBalance(user, 'USD')
+      // Include estimated fee in required balance (default 0.26% taker fee)
+      const requiredBalance = orderValue * 1.0026
+      if (balance < requiredBalance) {
+        validationErrors.push(
+          `Insufficient USD balance: have ${jsRound(balance)}, need ${jsRound(requiredBalance)} (including ${jsRound(orderValue * 0.0026)} fee)`
+        )
+      }
+    } else if (side === 'sell') {
+      // Extract base asset from Kraken pair (e.g., XBTC -> BTC)
+      let baseAsset = krakenPair.replace(/USD(T|C)?$/, '').replace(/^X/, '')
+      const balance = await getCryptoBalance(user, baseAsset)
+      if (balance < amount) {
+        validationErrors.push(
+          `Insufficient ${baseAsset} balance: have ${balance}, need ${amount}`
+        )
+      }
+    }
+
+    return {
+      valid: validationErrors.length === 0,
+      errors: validationErrors,
+      metadata: {
+        ordermin,
+        costmin,
+        status,
+        lotDecimals,
+        pairDecimals,
+        tickSize
+      }
+    }
+  } catch (error) {
+    logger.error(`validateOrder error: ${error.message}`)
+    return { valid: false, errors: [`Validation error: ${error.message}`] }
+  }
+}
+
 // Helper function to create a signature for Kraken API
 function createSignature(apiSecret, endpoint, body, nonce) {
   // Kraken signature: HMAC-SHA512 of (URI path + SHA256(nonce + POST data))
@@ -588,6 +752,26 @@ async function placeOrder(user, symbol, side, orderType, price, amount) {
       .replace(/USDC$/, 'USD') // Kraken uses USD, not USDC
       .toUpperCase()
 
+    // For limit orders, validate against Kraken's strict requirements
+    if (orderType === 'limit' && price && price > 0) {
+      const validation = await validateOrder(
+        user,
+        krakenPair,
+        side,
+        price,
+        amount
+      )
+      if (!validation.valid) {
+        logger.error(
+          `❌ Order validation failed for ${symbol}: ${validation.errors.join('; ')}`
+        )
+        return null
+      }
+      logger.info(
+        `✅ Order validation passed for ${symbol}: amount=${amount}, price=${price}`
+      )
+    }
+
     const params = {
       pair: krakenPair,
       type: side === 'buy' ? 'buy' : 'sell',
@@ -726,5 +910,6 @@ module.exports = {
   buyCrypto,
   sellCrypto,
   botLog,
-  getNews
+  getNews,
+  validateOrder
 }

@@ -11,7 +11,9 @@ function botLog(botId, message, customLogger = console) {
 }
 
 function notImplemented(functionName) {
-  const error = new Error(`Crypto.com adapter: ${functionName} is not implemented yet`)
+  const error = new Error(
+    `Crypto.com adapter: ${functionName} is not implemented yet`
+  )
   logger.error(error.message)
   throw error
 }
