@@ -44,7 +44,7 @@
                       :src="`/${main.exchanges[exchange]?.name?.toLowerCase()}.png`"
                       :alt="exchange"
                     >
-                    <div style="position: absolute; top: -1px; left: -1px; height: 36px; width: 36px; border: 2px solid white; border-radius: 50%; pointer-events: none;"></div>
+                    <div style="position: absolute; top: -1px; left: -1px; height: 36px; width: 36px; border: 2px solid white; border-radius: 50%; pointer-events: none;" />
                   </div>
                 </template>
                 <span>{{ main.exchanges[exchange]?.name || exchange }}</span>

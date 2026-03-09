@@ -12,12 +12,25 @@
               :src="`/${localForm.name.toLowerCase()}.png`"
               alt=""
             >
-            <span
-              class="text-h6 pl-4 py-3"
-              :class="props.disabled ? 'text-disabled' : ''"
-            >
-              {{ localForm.name }}
-            </span>
+            <div style="margin-top: -4px;">
+              <div
+                class="text-h6 pl-4"
+                :class="props.disabled ? 'text-disabled' : ''"
+              >
+                {{ localForm.name }}
+              </div>
+              <v-chip
+                class="ma-0 ml-4 pa-0 pr-3"
+                size="24px"
+              >
+                <img
+                  style="height: 24px;"
+                  :src="`/${props.asset}.png`"
+                  alt=""
+                >
+                <span class="pl-2">{{ props.asset }}</span>
+              </v-chip>
+            </div>
           </div>
         </v-col>
         <v-col
@@ -86,6 +99,10 @@ const props = defineProps({
   disabled: {
     type: Boolean,
     default: false
+  },
+  asset: {
+    type: String,
+    required: true
   }
 })
 

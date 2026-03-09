@@ -85,6 +85,7 @@
                     <Exchange
                       v-model="main.exchanges[name]"
                       :disabled="exchange.disabled"
+                      :asset="exchange.tradingAsset"
                       @valid="isValidExchange[name] = true"
                       @invalid="isValidExchange[name] = false"
                     >
