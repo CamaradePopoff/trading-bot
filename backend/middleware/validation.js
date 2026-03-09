@@ -130,9 +130,9 @@ const validateBotConfig = [
     .optional()
     .trim()
     .isLength({ min: 3, max: 20 })
-    .matches(/^[A-Z0-9-]+$/)
+    .matches(/^[A-Z0-9-_]+$/)
     .withMessage(
-      'Symbol must be 3-20 uppercase alphanumeric characters with hyphens'
+      'Symbol must be 3-20 uppercase alphanumeric characters with hyphens or underscores'
     ),
 
   body('exchange')
@@ -263,9 +263,9 @@ const validateTransaction = [
     .trim()
     .notEmpty()
     .isLength({ min: 3, max: 20 })
-    .matches(/^[A-Z0-9-]+$/)
+    .matches(/^[A-Z0-9-_]+$/)
     .withMessage(
-      'Symbol must be 3-20 uppercase alphanumeric characters with hyphens'
+      'Symbol must be 3-20 uppercase alphanumeric characters with hyphens or underscores'
     ),
 
   body('type')

@@ -25,7 +25,8 @@
               >
             </div>
           </v-app-bar-nav-icon>
-          <div class="pl-1 pr-1 text-h8">
+          <div class="pl-1 pr-1"
+          :class="(main.exchangeName || '').length > 8 ? 'text-caption' : 'text-h8'">
             {{ main.exchangeName }}
           </div>
           <v-spacer />
@@ -313,7 +314,7 @@
               <template #prepend>
                 <v-icon icon="mdi-web" />
               </template>
-              <v-list-item-title>
+              <v-list-item-title :class="(main.exchangeName || '').length > 8 ? 'text-caption' : ''">
                 {{ main.exchangeName }} <v-icon
                   icon="mdi-open-in-new"
                   color="primary"
