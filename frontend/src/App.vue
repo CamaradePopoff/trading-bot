@@ -25,8 +25,10 @@
               >
             </div>
           </v-app-bar-nav-icon>
-          <div class="pl-1 pr-1"
-          :class="(main.exchangeName || '').length > 8 ? 'text-caption' : 'text-h8'">
+          <div
+            class="pl-1 pr-1"
+            :class="(main.exchangeName || '').length > 8 ? 'text-caption' : 'text-h8'"
+          >
             {{ main.exchangeName }}
           </div>
           <v-spacer />
