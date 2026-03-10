@@ -59,7 +59,9 @@ async function getExchangeApiKeys(user) {
   }
 
   const apiKey = userService.decodeData(exchange.apiKey).decodedData?.trim()
-  const apiSecret = userService.decodeData(exchange.apiSecret).decodedData?.trim()
+  const apiSecret = userService
+    .decodeData(exchange.apiSecret)
+    .decodedData?.trim()
   const apiPassphrase = userService
     .decodeData(exchange.apiPassphrase)
     .decodedData?.trim()

@@ -5,7 +5,7 @@ sudo apt update && sudo apt upgrade -y && apt install net-tools -y
 
 # Clone repos
 mkdir -p kubot && cd kubot
-mkdir -p kucoin binance mexc coinex kraken okx
+mkdir -p kucoin binance mexc coinex kraken okx crypto.com
 cd kucoin && git clone git@github.com:CamaradePopoff/trading-bot.git . && cd ..
 cd binance && git clone git@github.com:CamaradePopoff/trading-bot.git . && cd ..
 cd mexc && git clone git@github.com:CamaradePopoff/trading-bot.git . && cd ..

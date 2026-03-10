@@ -49,10 +49,10 @@ export const useMainStore = defineStore('main', {
       }, */
       /* Coinbase: {
         name: 'Coinbase',
-        url: '???',
-        tradingAsset: 'USDT',
-        tokenAsset: '???',
-        tokenPair: '???USDT',
+        url: 'https://www.coinbase.com/advanced-trade',
+        tradingAsset: 'USDC',
+        tokenAsset: null,
+        tokenPair: null,
         id: null,
         apiKey: null,
         apiSecret: null,
@@ -125,19 +125,19 @@ export const useMainStore = defineStore('main', {
         disabled: false,
         favorites: []
       },
-      'Crypto.com': {
+      /* 'Crypto.com': {
         name: 'Crypto.com',
         url: 'https://crypto.com/exchange',
-        tradingAsset: 'USDT',
+        tradingAsset: 'USD',
         tokenAsset: 'CRO',
-        tokenPair: 'CRO-USDT',
+        tokenPair: 'CRO-USD',
         id: null,
         apiKey: null,
         apiSecret: null,
         apiPassphrase: null,
         disabled: true,
         favorites: []
-      },
+      }, */
     },
     exchange: null,
     kucoinFee: 0.001, // legacy
