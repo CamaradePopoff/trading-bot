@@ -316,11 +316,6 @@ class MemoryBot {
         `⚠️ Found ${positionsInArea.length} positions near ${sellingPrice} (zone: ${jsRound(lowerBound)}-${jsRound(upperBound)}). Not rebuying to maintain better distribution.`
           .yellow
       )
-    } else {
-      this.log(
-        `✅ No significant position clusters near ${sellingPrice} (zone: ${jsRound(lowerBound)}-${jsRound(upperBound)}). Safe to rebuy.`
-          .green
-      )
     }
 
     return shouldAvoid
