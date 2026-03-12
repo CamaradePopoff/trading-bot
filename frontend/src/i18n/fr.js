@@ -77,6 +77,7 @@ export default {
     cancel: 'Annuler',
     close: 'Fermer',
     confirm: 'Confirmer',
+    copyToClipboard: 'Copier dans le presse-papiers',
     delete: 'Supprimer',
     edit: 'Modifier',
     logs: 'Logs',

@@ -79,6 +79,7 @@ export default {
     cancel: 'Cancel',
     close: 'Close',
     confirm: 'Confirm',
+    copyToClipboard: 'Copy to clipboard',
     delete: 'Delete',
     edit: 'Edit',
     logs: 'Logs',

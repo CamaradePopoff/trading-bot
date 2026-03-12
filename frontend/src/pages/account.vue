@@ -71,7 +71,27 @@
               class="ma-4 mb-2"
               icon="mdi-information-outline"
             >
-              {{ $t('pages.account.ipWhitelistInfo', { ip: serverIp }) }}
+              <div class="d-flex align-center">
+                {{ $t('pages.account.ipWhitelistInfo', { ip: serverIp }) }}
+                <v-tooltip
+                  :text="$t('buttons.copyToClipboard')"
+                  location="top"
+                >
+                  <template #activator="{ props: tooltipProps }">
+                    <v-btn
+                      icon
+                      size="x-small"
+                      variant="plain"
+                      v-bind="tooltipProps"
+                      @click="copyIpToClipboard"
+                    >
+                      <v-icon size="small">
+                        mdi-content-copy
+                      </v-icon>
+                    </v-btn>
+                  </template>
+                </v-tooltip>
+              </div>
             </v-alert>
             <v-container>
               <v-row :class="mdAndUp ? 'pb-2' : 'pb-1'">
@@ -174,6 +194,22 @@ const serverIp = ref(null)
 const isValidUser = ref(false)
 const isValidExchange = ref({})
 const showBotConfigManager = ref(false)
+
+const copyIpToClipboard = () => {
+  const text = serverIp.value
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text)
+  } else {
+    const el = document.createElement('textarea')
+    el.value = text
+    el.style.position = 'fixed'
+    el.style.opacity = '0'
+    document.body.appendChild(el)
+    el.select()
+    document.execCommand('copy')
+    document.body.removeChild(el)
+  }
+}
 
 const initExchangeValidation = () => {
   isValidExchange.value = Object.fromEntries(
