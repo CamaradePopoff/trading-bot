@@ -24,6 +24,21 @@ function parseNumeric(value, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback
 }
 
+function canonicalKrakenAssetCode(assetCode) {
+  const upper = String(assetCode || '').toUpperCase()
+  if (!upper) return ''
+
+  // Keep a stable app-level symbol for Bitcoin.
+  if (upper === 'XBT' || upper === 'XXBT') return 'BTC'
+
+  // Kraken often prefixes assets with X (crypto) or Z (fiat),
+  // but do not strip 3-letter symbols like XPL.
+  if (upper.startsWith('Z') && upper.length > 3) return upper.slice(1)
+  if (upper.startsWith('X') && upper.length > 3) return upper.slice(1)
+
+  return upper
+}
+
 // Kraken order validation cache (stores pair metadata)
 const pairMetadataCache = new Map()
 const CACHE_DURATION = 24 * 60 * 60 * 1000 // 24 hours
@@ -161,7 +176,9 @@ async function validateOrder(user, krakenPair, side, price, amount) {
       }
     } else if (side === 'sell') {
       // Extract base asset from Kraken pair (e.g., XBTC -> BTC)
-      let baseAsset = krakenPair.replace(/USD(T|C)?$/, '').replace(/^X/, '')
+      const baseAsset = canonicalKrakenAssetCode(
+        krakenPair.replace(/USD(T|C)?$/, '')
+      )
       const balance = await getCryptoBalance(user, baseAsset)
       if (balance < amount) {
         validationErrors.push(
@@ -626,11 +643,7 @@ async function getAccountBalances(user) {
 
       // Extract base asset name
       // Remove prefix X (crypto) or Z (fiat) and suffix .HOLD if present
-      let symbol = key
-        .replace(/\.HOLD$/, '') // Remove .HOLD suffix
-        .replace(/^X/, '') // Remove X prefix (crypto)
-        .replace(/^Z/, '') // Remove Z prefix (fiat)
-        .toUpperCase()
+      const symbol = canonicalKrakenAssetCode(key.replace(/\.HOLD$/, ''))
 
       // Initialize symbol entry if it doesn't exist
       if (!balances[symbol]) {
@@ -678,10 +691,13 @@ async function getCryptoBalance(user, symbol) {
       // Not a quote asset itself, remove suffix
       asset = asset.replace(/-?USD(T|C)?$/, '')
     }
+    const canonicalAsset = canonicalKrakenAssetCode(asset)
 
     const balances = await getAccountBalances(user)
     // balances is now an array, find the matching currency
-    const balance = balances.find((b) => b.currency === asset)
+    const balance = balances.find(
+      (b) => canonicalKrakenAssetCode(b.currency) === canonicalAsset
+    )
     return balance?.available || 0
   } catch (error) {
     logger.error(`getCryptoBalance error for ${symbol}: ${error.message}`)
